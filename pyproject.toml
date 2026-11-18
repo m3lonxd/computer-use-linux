@@ -25,11 +25,16 @@ dependencies = [
 [project.optional-dependencies]
 # ekran görüntüsünü pencereye kırpma / küçültme
 image = ["pillow>=9"]
-# MCP sunucusu (nexremote-mcp)
+# MCP sunucusu (computer-use-linux-mcp)
 mcp = ["mcp>=1.2"]
 all = ["pillow>=9", "mcp>=1.2"]
 
 [project.scripts]
+computer-use-linux = "nexremote_adapters.cli.nexremote_cli:main"
+computer-use-linux-agent = "nexremote_adapters.cli.agent_loop:main"
+computer-use-linux-http = "nexremote_adapters.http.server:main"
+computer-use-linux-mcp = "nexremote_adapters.mcp.server:main"
+# eski adlar (geriye uyum)
 nexremote = "nexremote_adapters.cli.nexremote_cli:main"
 nexremote-agent = "nexremote_adapters.cli.agent_loop:main"
 nexremote-http = "nexremote_adapters.http.server:main"

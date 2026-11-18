@@ -3,33 +3,33 @@
 
 Her harness (Claude Code, Cursor, Aider, düz kabuk, proxy'lenmiş CLI'lar)
 kabuk komutu çalıştırabildiği sürece NexRemote'u kullanabilir. MCP gerekmez,
-tool-calling gerekmez, özel SDK gerekmez. Sadece `nexremote ...` komutları.
+tool-calling gerekmez, özel SDK gerekmez. Sadece `computer-use-linux ...` komutları.
 
 Kullanım:
-  nexremote setup                      ilk kurulum: erişilebilirlik + tek seferlik izin
-  nexremote caps                       ne yapabildiğimizi anlatır
-  nexremote observe                    pencereler + terminaller (modele besle)
+  computer-use-linux setup                      ilk kurulum: erişilebilirlik + tek seferlik izin
+  computer-use-linux caps                       ne yapabildiğimizi anlatır
+  computer-use-linux observe                    pencereler + terminaller (modele besle)
 
-  nexremote windows                    ekrandaki tüm pencereler (win:{...} ref)
-  nexremote window REF activate|close|minimize
-  nexremote launch [--wait N] PROG ... programı ağacı açık başlatır (Electron'a bayrak ekler)
-  nexremote tree [--window REF]        erişilebilirlik ağacı (LLM dostu metin, ref'li)
-  nexremote find "Kaydet" [--window R] öğe arar → atspi ref
-  nexremote click REF                  öğeye isimle tıklar (imleç oynamaz)
-  nexremote click X Y [--right|--middle] [--double]   koordinata gerçek tık
-  nexremote move X Y | scroll N [--at X Y] | drag X1 Y1 X2 Y2
-  nexremote key "ctrl+s"               tuş kombinasyonu
-  nexremote type "metin"               odaktaki alana yazar (Türkçe dahil)
-  nexremote set-text REF "metin"       alanın içeriğini değiştirir
-  nexremote screenshot [PATH]          ekran görüntüsü (koordinatlar = tık koordinatı)
+  computer-use-linux windows                    ekrandaki tüm pencereler (win:{...} ref)
+  computer-use-linux window REF activate|close|minimize
+  computer-use-linux launch [--wait N] PROG ... programı ağacı açık başlatır (Electron'a bayrak ekler)
+  computer-use-linux tree [--window REF]        erişilebilirlik ağacı (LLM dostu metin, ref'li)
+  computer-use-linux find "Kaydet" [--window R] öğe arar → atspi ref
+  computer-use-linux click REF                  öğeye isimle tıklar (imleç oynamaz)
+  computer-use-linux click X Y [--right|--middle] [--double]   koordinata gerçek tık
+  computer-use-linux move X Y | scroll N [--at X Y] | drag X1 Y1 X2 Y2
+  computer-use-linux key "ctrl+s"               tuş kombinasyonu
+  computer-use-linux type "metin"               odaktaki alana yazar (Türkçe dahil)
+  computer-use-linux set-text REF "metin"       alanın içeriğini değiştirir
+  computer-use-linux screenshot [PATH]          ekran görüntüsü (koordinatlar = tık koordinatı)
 
-  nexremote terms                      masaüstündeki açık terminaller
-  nexremote term-read REF [--history N]
-  nexremote term-send REF "metin" [--enter] [--key C-c ...]
+  computer-use-linux terms                      masaüstündeki açık terminaller
+  computer-use-linux term-read REF [--history N]
+  computer-use-linux term-send REF "metin" [--enter] [--key C-c ...]
 
-  nexremote run "ls -la" [--session S] [--timeout T]   kendi tmux oturumumuz
-  nexremote screen | keys "C-c" | sessions | cleanup
-  nexremote skill                      LLM'e verilecek yetenek talimatı
+  computer-use-linux run "ls -la" [--session S] [--timeout T]   kendi tmux oturumumuz
+  computer-use-linux screen | keys "C-c" | sessions | cleanup
+  computer-use-linux skill                      LLM'e verilecek yetenek talimatı
 
 Global: --json  (makine-okunur çıktı)
 """
@@ -300,7 +300,7 @@ def cmd_screenshot(nr, a) -> None:
     note = ""
     if s.scale != 1.0 or s.origin != (0, 0):
         note = (f"\ngörüntü ölçeği {s.scale:.4f}, orijin {s.origin}: görüntüdeki noktaya "
-                f"tıklamak için `nexremote click X Y --from-shot`")
+                f"tıklamak için `computer-use-linux click X Y --from-shot`")
     _out(s.to_dict(), a.json, f"ekran görüntüsü: {s.path} ({s.width}x{s.height}){note}")
 
 
@@ -381,7 +381,7 @@ def cmd_skill(nr, a) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="nexremote", description=__doc__,
+    p = argparse.ArgumentParser(prog="computer-use-linux", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--json", action="store_true", help="makine-okunur çıktı")
     sub = p.add_subparsers(dest="cmd", required=True)

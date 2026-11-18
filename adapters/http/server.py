@@ -273,7 +273,7 @@ def main(argv=None) -> int:
         if not TOKEN or len(TOKEN) < MIN_REMOTE_TOKEN:
             print("HATA: localhost dışına açmak masaüstünü ağa açar; en az "
                   f"{MIN_REMOTE_TOKEN} karakterlik token gerekir "
-                  "(üretmek için: nexremote-http --gen-token).", file=sys.stderr)
+                  "(üretmek için: computer-use-linux-http --gen-token).", file=sys.stderr)
             return 2
         if not a.tls_cert:
             print("UYARI: TLS yok — token ağda düz metin gider. --tls-cert/--tls-key "

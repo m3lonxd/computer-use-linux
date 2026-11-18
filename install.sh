@@ -43,7 +43,15 @@ exec python3 "$ROOT/adapters/mcp/server.py" "\$@"
 EOF
 chmod +x "$BIN/nexremote-mcp"
 
-echo "✓ wrapper'lar kuruldu: nexremote, nexremote-agent, nexremote-http, nexremote-mcp"
+# --- yeni görünen ad: computer-use-linux* (eski nexremote* takma ad olarak kalır) ---
+for old in nexremote nexremote-agent nexremote-http nexremote-mcp; do
+  new="computer-use-linux${old#nexremote}"
+  cp "$BIN/$old" "$BIN/$new"
+  chmod +x "$BIN/$new"
+done
+
+echo "✓ wrapper'lar kuruldu: computer-use-linux, computer-use-linux-agent, computer-use-linux-http, computer-use-linux-mcp"
+echo "  (eski nexremote* komutları takma ad olarak çalışmaya devam eder)"
 echo
 
 # --- bağımlılık kontrolü ---
@@ -70,5 +78,5 @@ if ! echo ":$PATH:" | grep -q ":$BIN:"; then
   echo "⚠  $BIN PATH'te değil. Kabuk profiline ekle:"
   echo "     export PATH=\"$BIN:\$PATH\""
 fi
-echo "Sonraki adım:  nexremote setup   (KDE bir kez 'Uzaktan kontrol' izni sorar)"
-echo "MCP (Claude Code): claude mcp add nexremote -- $BIN/nexremote-mcp"
+echo "Sonraki adım:  computer-use-linux setup   (KDE bir kez 'Uzaktan kontrol' izni sorar)"
+echo "MCP (Claude Code): claude mcp add computer-use-linux -- $BIN/computer-use-linux-mcp"
