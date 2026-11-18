@@ -87,7 +87,7 @@ body::after {
 @supports not (background: color-mix(in srgb, red, blue)) { .top { background: var(--paper); } }
 .top-row { display: flex; align-items: center; gap: 24px; height: 64px; }
 .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700; letter-spacing: -.01em; font-size: 1.05rem; white-space: nowrap; }
-.brand-mark { width: 22px; height: 22px; color: var(--accent); }
+.brand-mark { width: 28px; height: 28px; object-fit: contain; display: block; }
 .nav { display: flex; gap: 26px; margin-left: auto; font-size: .93rem; }
 .nav a { position: relative; text-decoration: none; color: var(--ink-2); padding: 6px 0; }
 .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--cursor); transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease); }
@@ -653,7 +653,7 @@ html:not(.js) .os-panel + .os-panel { margin-top: 56px; padding-top: 40px; borde
 .foot { border-top: 1px solid var(--rule); padding: 26px 0 40px; font-size: .9rem; color: var(--ink-3); }
 .foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
 .foot-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-weight: 600; }
-.foot-brand .brand-mark { width: 18px; height: 18px; }
+.foot-brand .brand-mark { width: 22px; height: 22px; }
 .foot-row a { color: var(--ink-2); }
 .foot-contact, .foot-former { overflow-wrap: anywhere; }
 

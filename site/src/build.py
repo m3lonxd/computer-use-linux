@@ -441,7 +441,7 @@ S = {
 
         "cta_h": "Give your agent the desktop.",
         "cta_p": "Unpack, install, approve once. For questions about the project, a partnership or an investment, write to us.",
-        "talk": "Talk to us", "foot_former": "Formerly NexRemote. The command, the package and the repository keep the name nexremote.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
+        "talk": "Talk to us", "foot_former": "Formerly NexRemote. The command, the package and the repository keep the name nexremote. Tux by Larry Ewing, drawn with The GIMP.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
 
         "other_lang": "tr", "other_lang_label": "TR", "other_lang_name": "Türkçe", "other_lang_href": "/tr/",
         "home": "/", "path": "/", "media": "media/", "og_locale": "en_US",
@@ -697,7 +697,7 @@ S = {
 
         "cta_h": "Ajanına masaüstünü ver.",
         "cta_p": "Aç, kur, bir kez onayla. Proje, iş birliği ya da yatırım hakkında sorularınız için bize yazın.",
-        "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Komut, paket ve depo adı nexremote olarak kalır.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
+        "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Komut, paket ve depo adı nexremote olarak kalır. Tux: Larry Ewing, The GIMP ile çizildi.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
 
         "other_lang": "en", "other_lang_label": "EN", "other_lang_name": "English", "other_lang_href": "/",
         "home": "/tr/", "path": "/tr/", "media": "../media/", "og_locale": "tr_TR",

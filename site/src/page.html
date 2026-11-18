@@ -20,7 +20,8 @@
 <meta name="twitter:description" content="{{description}}">
 <meta name="twitter:image" content="https://nexremote.vercel.app/media/hero.jpg">
 <meta name="theme-color" content="#0c0d0b">
-<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preload" as="image" href="{{media}}hero.webp" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +69,7 @@
 <header class="top">
   <div class="wrap top-row">
     <a class="brand" href="{{home}}" aria-label="Computer Use Linux">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
+      <img class="brand-mark" src="/assets/logo.png" alt="" width="28" height="28">
       <span>Computer Use Linux</span>
     </a>
     <nav class="nav" aria-label="{{nav_label}}">
@@ -980,7 +981,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
 <footer class="foot">
   <div class="wrap foot-row">
     <span class="foot-brand">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
+      <img class="brand-mark" src="/assets/logo.png" alt="" width="28" height="28">
       Computer Use Linux v{{version}} · MIT
     </span>
     <a href="#how">{{nav_how}}</a>
