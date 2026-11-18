@@ -1,4 +1,4 @@
-# NexRemote — landing site
+# Computer Use Linux — landing site
 
 Statik site (framework yok). Vercel'de `nexremote.vercel.app` olarak yayınlanır.
 

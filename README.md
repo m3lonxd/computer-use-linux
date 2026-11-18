@@ -1,10 +1,13 @@
-# NexRemote
+# Computer Use Linux
 
 Bir AI ajanına masaüstünü ve üzerinde açık terminalleri **görme ve
-kullanma** yetkisi verir — Linux (KDE, GNOME, X11, Sway, Hyprland), Windows ve
-macOS'ta aynı komutlarla. Ajan kabuk komutu çalıştırabiliyorsa yeter: Claude
-Code, Codex, Aider, opencode, kendi betiğin ya da tool-calling'i olmayan bir
+kullanma** yetkisi verir. Linux'ta doğdu (KDE, GNOME, X11, Sway, Hyprland);
+aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
+çalıştırabiliyorsa yeter: Claude Code, Codex, Aider, opencode, kendi betiğin ya da tool-calling'i olmayan bir
 yerel model.
+
+> Eski adı NexRemote. Komut (`nexremote`), paket adı ve depo
+> (`github.com/m3lonxd/nexremote`) aynı kalır; yalnızca ürün adı değişti.
 
 ```console
 $ nexremote observe
@@ -118,7 +121,7 @@ core/nexremote/
   backends/gui.py   AT-SPI ağacı (Linux), isimle bulma/tıklama
   backends/uia.py   UI Automation ağacı (Windows)
   backends/ax.py    Accessibility ağacı (macOS)
-  backends/tui.py   NexRemote'un kendi tmux/PTY oturumları
+  backends/tui.py   Computer Use Linux'un kendi tmux/PTY oturumları
   agent_cursor.py   görünür ajan imleci: hareket, kare çizimi, daemon (Unix soketi / belirteçli TCP)
   xcursor.py        imleç arka ucu, Linux (X11/XWayland, click-through)
   wincursor.py      imleç arka ucu, Windows (katmanlı pencere, WS_EX_TRANSPARENT)
@@ -134,7 +137,7 @@ tests/run_all.sh
 
 Girdi enjeksiyonu yapan testler, `tests/sandbox.sh` ile açılan **izole** bir
 masaüstünde koşar: ayrı D-Bus, sanal KWin, ayrı portal ve PipeWire. Gerçek
-ekrana, fareye ve izinlere dokunmaz. İzin diyaloğunu da NexRemote'un kendi
+ekrana, fareye ve izinlere dokunmaz. İzin diyaloğunu da Computer Use Linux'un kendi
 erişilebilirlik okuması onaylar.
 
 - X11: başsız `Xvfb` içinde (`tests/x11_sandbox.sh`).
@@ -154,7 +157,7 @@ erişilebilirlik okuması onaylar.
 - Windows: Wine 10 üzerinde test edildi; gerçek Windows 10/11'de doğrulanmadı.
   Wine'ın UI Automation'ı denetim ağacını gezemediği için isimle tıklama
   Wine'da sınanamadı. Yönetici olarak çalışan pencerelere yalnızca yönetici
-  olarak çalışan NexRemote ulaşır (UIPI).
+  olarak çalışan Computer Use Linux ulaşır (UIPI).
 - macOS: kod yazıldı ve mantığı sahte Quartz ile test edildi, **gerçek bir
   Mac'te henüz doğrulanmadı** — önizleme sürümü.
 - Konsole D-Bus yalnızca görünen ekranı verir; geçmiş satırlar için tmux gerekir.
