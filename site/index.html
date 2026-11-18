@@ -628,12 +628,12 @@ bash-5.2$</code></pre>
       <svg viewBox="0 0 640 300" role="img" aria-labelledby="diag-t">
         <title id="diag-t">A window on a three-monitor desktop is cropped, scaled to 800 by 900, and a point in the image maps back to screen coordinates.</title>
         <g class="d-screens">
-          <rect x="10" y="40" width="108" height="192" rx="3"/>
-          <rect x="118" y="38" width="192" height="108" rx="3"/>
-          <rect x="310" y="38" width="192" height="108" rx="3"/>
+          <rect class="m1" x="10" y="38" width="108" height="192" rx="3"/>
+          <rect class="m2" x="118" y="38" width="192" height="108" rx="3"/>
+          <rect class="m3" x="310" y="38" width="192" height="108" rx="3"/>
         </g>
-        <text class="d-lbl" x="10" y="28">HDMI-1</text>
-        <text class="d-lbl" x="118" y="28">DP-1</text>
+        <text class="d-lbl" x="10" y="28">HDMI-1 · x=0</text>
+        <text class="d-lbl" x="118" y="28">DP-1 · x=1080</text>
         <text class="d-lbl" x="310" y="28">DP-2 · x=3000</text>
         <rect class="d-crop-fill" x="310" y="38" width="96" height="108"/>
         <rect class="d-crop" x="310" y="38" width="96" height="108" pathLength="1"/>
@@ -642,7 +642,7 @@ bash-5.2$</code></pre>
         <circle class="d-pt d-pt-img" cx="561.8" cy="184.5" r="4"/>
         <circle class="d-pt d-pt-scr" cx="359.4" cy="65.6" r="4"/>
         <circle class="d-ping" cx="359.4" cy="65.6" r="4"/>
-        <text class="d-lbl d-lbl-img" x="500" y="138">800×900 · scale 0.8333</text>
+        <text class="d-lbl d-lbl-img" x="506" y="141">800×900 · scale 0.8333</text>
         <text class="d-lbl d-lbl-win" x="320" y="168">win:{3fd7…} 960×1080</text>
         <text class="d-lbl d-lbl-a" x="570" y="200">(412, 230)</text>
         <text class="d-lbl d-lbl-b" x="368" y="62">(3494, 276)</text>
