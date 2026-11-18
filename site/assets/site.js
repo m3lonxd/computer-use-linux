@@ -290,15 +290,31 @@
       Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
       parent.appendChild(el); return el;
     }
+    var WALL = 34;
+    function hull(P) {
+      P = P.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+      function cr(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+      var lo = [], up = [], i;
+      for (i = 0; i < P.length; i++) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], P[i]) <= 0) lo.pop(); lo.push(P[i]); }
+      for (i = P.length - 1; i >= 0; i--) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0) up.pop(); up.push(P[i]); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    }
     KEYS.forEach(function (k, i) {
       var c = k[1], pts = [], str = [], j;
       for (j = 0; j < 8; j += 2) { pts.push([c[j], c[j + 1]]); str.push(c[j] + "," + c[j + 1]); }
+      // Kapak bölgesi: üst yüzey biraz büyütülüp ön duvar yüksekliği kadar aşağı süpürülür
+      // (dışbükey örtü). Bölge sabit kalır; içindeki fotoğraf aşağı kayar, böylece üst yüz ön
+      // duvarın üstüne iner ve eski yerinde boşluk açılır; çift görüntü oluşmaz.
+      var cx = 0, cy = 0; pts.forEach(function (q) { cx += q[0] / 4; cy += q[1] / 4; });
+      var big = pts.map(function (q) { return [cx + (q[0] - cx) * 1.1, cy + (q[1] - cy) * 1.1]; });
+      var reg = hull(big.concat(big.map(function (q) { return [q[0], q[1] + WALL]; })));
+      var rstr = reg.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
       var cp = mk("clipPath", { id: "kc" + i }, defs);
-      mk("polygon", { points: str.join(" ") }, cp);
-      var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
-      mk("polygon", { "class": "kp-sh", points: str.join(" ") }, kp);
+      mk("polygon", { points: rstr }, cp);
+      var kp = mk("g", { "class": "kp", "data-key": k[0], "clip-path": "url(#kc" + i + ")" }, g);
+      mk("polygon", { "class": "kp-sh", points: rstr }, kp);
       var cap = mk("g", { "class": "kp-cap" }, kp);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#kc" + i + ")" }, cap));
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" }, cap));
       polys.push({ el: kp, pts: pts, name: k[0] });
     });
     bg.insertBefore(svg, null);
