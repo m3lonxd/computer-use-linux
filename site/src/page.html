@@ -218,37 +218,37 @@
                 <rect class="hd-term" x="20" y="48" width="420" height="246"/>
               </g>
               <g class="ss-termtext" data-sc="2,0,.3,dimtext">
-                <text class="hd-mono ss-m hd-dim" x="34" y="78">● Running test suite…</text>
+                <text class="hd-mono ss-m hd-dim" x="34" y="78">● {{st_run}}</text>
                 <text class="hd-mono ss-m" x="34" y="100">  tests/test_api.py ........F.F</text>
-                <text class="hd-mono ss-m hd-bad" x="34" y="122">✗ 2 failed · test_login, test_refresh</text>
-                <text class="hd-mono ss-m" x="34" y="144">Should I fix them? (y/n, or tell me)</text>
+                <text class="hd-mono ss-m hd-bad" x="34" y="122">✗ {{st_failed}}</text>
+                <text class="hd-mono ss-m" x="34" y="144">{{st_ask}}</text>
                 <text class="hd-mono ss-m hd-prompt" x="34" y="166">›</text>
               </g>
               <g class="ss-solid hd-set" data-sc="1,0,.25,dim">
                 <rect class="hd-frame" x="468" y="40" width="312" height="232" rx="8"/>
                 <path class="hd-bar" d="M476 40h296a8 8 0 0 1 8 8v16H468V48a8 8 0 0 1 8-8z"/>
-                <text class="hd-title ss-t" x="624" y="56" text-anchor="middle">Appearance — System Settings</text>
+                <text class="hd-title ss-t" x="624" y="56" text-anchor="middle">{{st_title_set}}</text>
                 <rect class="hd-side" x="468" y="64" width="96" height="208"/>
                 <rect class="hd-side-on" x="474" y="74" width="84" height="20" rx="4"/>
-                <text class="hd-label ss-s" x="482" y="88">Appearance</text>
-                <text class="hd-label ss-s hd-mut" x="482" y="112">Colors</text>
-                <text class="hd-label ss-s hd-mut" x="482" y="134">Fonts</text>
-                <text class="hd-label ss-s hd-mut" x="482" y="156">Icons</text>
-                <text class="hd-label ss-s" x="580" y="96">Colors</text>
+                <text class="hd-label ss-s" x="482" y="88">{{st_appearance}}</text>
+                <text class="hd-label ss-s hd-mut" x="482" y="112">{{st_colors}}</text>
+                <text class="hd-label ss-s hd-mut" x="482" y="134">{{st_fonts}}</text>
+                <text class="hd-label ss-s hd-mut" x="482" y="156">{{st_icons}}</text>
+                <text class="hd-label ss-s" x="580" y="96">{{st_colors}}</text>
                 <circle class="hd-sw" cx="722" cy="92" r="6"/><circle class="hd-sw s2" cx="738" cy="92" r="6"/><circle class="hd-sw s3" cx="754" cy="92" r="6"/>
                 <path class="hd-rule" d="M580 110h188M580 150h188M580 190h188"/>
-                <text class="hd-label ss-s" x="580" y="135">Dark</text>
+                <text class="hd-label ss-s" x="580" y="135">{{st_dark}}</text>
                 <rect class="hd-switch ss-switch" data-sc="1,.5,.75,on" x="728" y="120" width="38" height="20" rx="10"/>
                 <circle class="hd-knob" data-sc="1,.5,.75,move" data-from="0,0" data-to="18,0" cx="738" cy="130" r="7"/>
-                <text class="hd-label ss-s" x="580" y="175">Accent</text>
+                <text class="hd-label ss-s" x="580" y="175">{{st_accent}}</text>
                 <rect class="hd-pill" x="734" y="166" width="32" height="12" rx="3"/>
                 <rect class="hd-apply" x="700" y="234" width="68" height="26" rx="5"/>
-                <text class="hd-label ss-s hd-apply-t" x="734" y="251" text-anchor="middle">Apply</text>
+                <text class="hd-label ss-s hd-apply-t" x="734" y="251" text-anchor="middle">{{st_apply}}</text>
               </g>
               <g class="ss-solid" data-sc="1,0,.25,dim">
                 <rect class="hd-frame" x="250" y="292" width="530" height="196" rx="8"/>
                 <path class="hd-bar" d="M258 292h514a8 8 0 0 1 8 8v16H250v-16a8 8 0 0 1 8-8z"/>
-                <text class="hd-title ss-t" x="515" y="308" text-anchor="middle">Player — Mozilla Firefox</text>
+                <text class="hd-title ss-t" x="515" y="308" text-anchor="middle">{{st_title_player}}</text>
                 <rect class="hd-url" x="262" y="322" width="506" height="16" rx="8"/>
                 <rect class="hd-video" x="262" y="346" width="506" height="104" rx="5"/>
                 <circle class="hd-playbtn" cx="515" cy="398" r="20"/>
@@ -279,8 +279,8 @@
                 </g>
                 <g class="ss-node" data-sc="1,.12,.32,x"><rect class="ss-node-r" x="28" y="56" width="404" height="230" rx="4"/><g transform="translate(36 262)"><rect class="ss-node-l" width="186" height="18" rx="3"/><text x="7" y="13">[terminal] konsole:7891:2</text></g></g>
                 <g class="ss-node" data-sc="1,.18,.38,x"><rect class="ss-node-r" x="472" y="70" width="88" height="96" rx="4"/><g transform="translate(476 172)"><rect class="ss-node-l" width="48" height="18" rx="3"/><text x="7" y="13">[list]</text></g></g>
-                <g class="ss-node" data-sc="1,.24,.44,x"><rect class="ss-node-r" x="574" y="78" width="200" height="26" rx="4"/><g transform="translate(578 60)"><rect class="ss-node-l" width="96" height="18" rx="3"/><text x="7" y="13">[panel] Colors</text></g></g>
-                <g class="ss-node ss-node-hit" data-sc="1,.3,.5,x"><rect class="ss-node-r" x="574" y="116" width="200" height="30" rx="4"/><g transform="translate(578 154)"><rect class="ss-node-l" width="190" height="18" rx="3"/><text x="7" y="13">atspi:4:0/2/7 [checkbox] Dark</text></g></g>
+                <g class="ss-node" data-sc="1,.24,.44,x"><rect class="ss-node-r" x="574" y="78" width="200" height="26" rx="4"/><g transform="translate(578 60)"><rect class="ss-node-l" width="96" height="18" rx="3"/><text x="7" y="13">[panel] {{st_colors}}</text></g></g>
+                <g class="ss-node ss-node-hit" data-sc="1,.3,.5,x"><rect class="ss-node-r" x="574" y="116" width="200" height="30" rx="4"/><g transform="translate(578 154)"><rect class="ss-node-l" width="190" height="18" rx="3"/><text x="7" y="13">atspi:4:0/2/7 [checkbox] {{st_dark}}</text></g></g>
                 <g class="ss-node" data-sc="1,.36,.56,x"><rect class="ss-node-r" x="696" y="230" width="76" height="34" rx="4"/><g transform="translate(600 238)"><rect class="ss-node-l" width="88" height="18" rx="3"/><text x="7" y="13">[push button]</text></g></g>
                 <g class="ss-none" data-sc="1,.42,.62,x"><rect x="256" y="320" width="518" height="162" rx="5"/><g transform="translate(266 330)"><rect class="ss-node-l" width="132" height="18" rx="3"/><text x="7" y="13">{{st_notree}}</text></g></g>
               </g>
@@ -291,8 +291,8 @@
                   <rect class="ss-card" x="22" y="58" width="300" height="122" rx="6"/>
                   <g transform="translate(30 50)"><rect class="ss-node-l" width="250" height="18" rx="3"/><text x="7" y="13">konsole:7891:2 → {{st_lift}}</text></g>
                   <text class="hd-mono ss-m ss-ink" x="34" y="100">  tests/test_api.py ........F.F</text>
-                  <text class="hd-mono ss-m hd-bad" x="34" y="122">✗ 2 failed · test_login, test_refresh</text>
-                  <text class="hd-mono ss-m ss-ink" x="34" y="144">Should I fix them? (y/n, or tell me)</text>
+                  <text class="hd-mono ss-m hd-bad" x="34" y="122">✗ {{st_failed}}</text>
+                  <text class="hd-mono ss-m ss-ink" x="34" y="144">{{st_ask}}</text>
                   <text class="hd-mono ss-m ss-dim2" x="34" y="166">› _</text>
                 </g>
               </g>
@@ -301,10 +301,10 @@
               <g class="ss-layer" data-layer="3">
                 <rect class="ss-flash" data-sc="3,.02,.24,flash" x="250" y="292" width="530" height="196" rx="8"/>
                 <rect class="ss-crop" data-sc="3,.12,.42,d" x="256" y="298" width="518" height="184" rx="6" pathLength="1"/>
-                <g data-sc="3,.3,.5,x"><g transform="translate(600 452)"><rect class="ss-node-l" width="166" height="18" rx="3"/><text x="7" y="13">880×560 · scale 1.0</text></g></g>
+                <g data-sc="3,.3,.5,x"><g transform="translate(600 452)"><rect class="ss-node-l" width="166" height="18" rx="3"/><text x="7" y="13">880×560 · {{st_scale}} 1.0</text></g></g>
                 <g class="ss-math" data-sc="3,.55,.8,x"><g transform="translate(30 330)">
                   <rect class="ss-card" width="206" height="72" rx="6"/>
-                  <text class="hd-mono ss-m ss-dim2" x="12" y="24">screen = origin + image ÷ scale</text>
+                  <text class="hd-mono ss-m ss-dim2" x="12" y="24">{{st_eq}}</text>
                   <text class="hd-mono ss-m ss-ink" x="12" y="46">(1060, 520) + (440, 190)</text>
                   <text class="hd-mono ss-m ss-acc" x="12" y="64">= (1500, 710)</text>
                 </g></g>
@@ -333,18 +333,18 @@
             <p class="rung-meta"><span>{{via}}</span> KWin · EnumWindows · CGWindowList <span>{{model_gets}}</span> {{gets_text}}</p>
 <pre class="rung-code"><code><span class="c">$</span> nexremote windows
 * win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole
-  win:{8c1e…}  systemsettings   760x540+1180+60   Appearance — System Settings
-  win:{a41f…}  firefox          880x560+1060+520  Player — Mozilla Firefox</code></pre>
+  win:{8c1e…}  systemsettings   760x540+1180+60   {{st_title_set}}
+  win:{a41f…}  firefox          880x560+1060+520  {{st_title_player}}</code></pre>
           </div>
         </li>
-        <li class="rung" data-rung data-cmd='nexremote find "Dark" --window win:{8c1e…}' data-gets="{{gets_text}}">
+        <li class="rung" data-rung data-cmd='nexremote find "{{st_dark}}" --window win:{8c1e…}' data-gets="{{gets_text}}">
           <div class="rung-in" data-reveal>
             <span class="rung-n" aria-hidden="true">2</span>
             <h3>{{lad2_t}}</h3>
             <p>{{lad2_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> AT-SPI · UI Automation · AX <span>{{model_gets}}</span> {{gets_text}}</p>
-<pre class="rung-code"><code><span class="c">$</span> nexremote find "Dark" --window win:{8c1e…}
-atspi:4:0/2/7	[checkbox] Dark  &lt;toggle,click&gt;
+<pre class="rung-code"><code><span class="c">$</span> nexremote find "{{st_dark}}" --window win:{8c1e…}
+atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
 <span class="c">$</span> nexremote click atspi:4:0/2/7 --json
 { "ok": true, "ref": "atspi:4:0/2/7" }</code></pre>
           </div>
@@ -356,10 +356,10 @@ atspi:4:0/2/7	[checkbox] Dark  &lt;toggle,click&gt;
             <p>{{lad3_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> Konsole D-Bus · tmux · AttachConsole · Terminal.app <span>{{model_gets}}</span> {{gets_text}}</p>
 <pre class="rung-code"><code><span class="c">$</span> nexremote term-read konsole:7891:2
-● Running test suite…
+● {{st_run}}
   tests/test_api.py ........F.F
-✗ 2 failed · test_login, test_refresh
-Should I fix them? (y/n, or tell me)</code></pre>
+✗ {{st_failed}}
+{{st_ask}}</code></pre>
           </div>
         </li>
         <li class="rung" data-rung data-cmd="nexremote click 440 190 --from-shot" data-gets="{{gets_image}}">
