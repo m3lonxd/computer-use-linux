@@ -37,13 +37,13 @@ fare protokolüyle gönderilir. Ekran görüntüsü wlroots'ta grim ile alınır
 ## Erişilebilirlik ağacı
 
 KDE varsayılan olarak `org.a11y.Status.IsEnabled=false` ile gelir. Bu durumda
-Qt uygulamaları (Konsole, Dolphin...) ağaç yayınlamaz. `nexremote setup` bu
+Qt uygulamaları (Konsole, Dolphin...) ağaç yayınlamaz. `computer-use-linux setup` bu
 ayarı açar; o andan sonra başlatılan uygulamalar ağaç yayınlar. Firefox
 tabanlı tarayıcılar ağacı kendiliğinden yayınlar. Electron/Chromium
 uygulamaları (Discord, VS Code, Slack, Chrome) yalnızca
 `--force-renderer-accessibility` ile başlatılırsa yayınlar; çalışırken
 açılamaz (`ScreenReaderEnabled` ve `ACCESSIBILITY_ENABLED` canlı etki etmez).
-`nexremote launch <program>` bayrağı ve Qt/GTK erişilebilirlik ortamını
+`computer-use-linux launch <program>` bayrağı ve Qt/GTK erişilebilirlik ortamını
 ekleyip uygulamayı başlatır, açılan pencerenin ref'ini döndürür.
 
 ## Windows
@@ -70,5 +70,5 @@ başlatılmış NexRemote giriş gönderebilir.
 | Açık terminaller | Terminal.app / iTerm2 (AppleScript), tmux | Otomasyon (ilk kullanımda sorulur) | Yalnızca tmux |
 | Görünür ajan imleci | NSWindow (ctypes objc, pyobjc gerekmez) | — | İmleç gösterilmez |
 
-`nexremote setup` izin istemlerini açar. İzinler Sistem Ayarları → Gizlilik ve
+`computer-use-linux setup` izin istemlerini açar. İzinler Sistem Ayarları → Gizlilik ve
 Güvenlik altından geri alınır.

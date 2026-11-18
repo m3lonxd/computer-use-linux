@@ -6,11 +6,11 @@ aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
 çalıştırabiliyorsa yeter: Claude Code, Codex, Aider, opencode, kendi betiğin ya da tool-calling'i olmayan bir
 yerel model.
 
-> Eski adı NexRemote. Komut (`nexremote`), paket adı ve depo
-> (`github.com/m3lonxd/nexremote`) aynı kalır; yalnızca ürün adı değişti.
+> Eski adı NexRemote. Komut artık `computer-use-linux`; eski `nexremote` komutu takma ad olarak çalışır.
+> Paket adı ve depo (`github.com/m3lonxd/nexremote`) aynı kalır.
 
 ```console
-$ nexremote observe
+$ computer-use-linux observe
 Pencereler (6) — * etkin:
   * org.kde.konsole        1920x1080+1080+0     api : claude — Konsole
     firefox                1920x1080+1080+0     Player — Mozilla Firefox
@@ -19,11 +19,11 @@ Açık terminaller (4):
   konsole:7891:1       claude         ~/projects/api        api : claude
   konsole:29769:1      ssh            ~                     deploy@staging
 
-$ nexremote term-read konsole:29769:1          # başka bir terminalin ekranı
-$ nexremote term-send konsole:7891:1 "testleri çalıştır" --enter
-$ nexremote screenshot --window win:{…} --max-width 1568
-$ nexremote click 412 230 --from-shot          # görüntüde gördüğün yere tıkla
-$ nexremote type "Merhaba dünya — ğüşıöç"
+$ computer-use-linux term-read konsole:29769:1          # başka bir terminalin ekranı
+$ computer-use-linux term-send konsole:7891:1 "testleri çalıştır" --enter
+$ computer-use-linux screenshot --window win:{…} --max-width 1568
+$ computer-use-linux click 412 230 --from-shot          # görüntüde gördüğün yere tıkla
+$ computer-use-linux type "Merhaba dünya — ğüşıöç"
 ```
 
 ## Ne yapabilir
@@ -34,7 +34,7 @@ $ nexremote type "Merhaba dünya — ğüşıöç"
 | **Gerçek fare** — tık, sağ/çift tık, kaydırma, sürükleme; imleç yerine döner | XTEST · RemoteDesktop portalı · Sway IPC | SendInput | CGEvent |
 | **Gerçek klavye** — kısayollar, her dilde metin | XTEST · portal + pano · wtype | SendInput (Unicode) | CGEvent (Unicode) |
 | **Butona adıyla basma** — fare hiç oynamaz | AT-SPI | UI Automation | Accessibility (AX) |
-| **Electron/Chromium'u ağacı açık başlatma** — `nexremote launch` | bayrak + ortam | bayrak | bayrak |
+| **Electron/Chromium'u ağacı açık başlatma** — `computer-use-linux launch` | bayrak + ortam | bayrak | bayrak |
 | **Açık terminaller** — başka bir ajanın, ssh'ın, build'in ekranını oku; ona yaz | Konsole D-Bus, tmux | konsol tamponu (AttachConsole) | Terminal.app, iTerm2, tmux |
 | **Kendi terminali** — komut çalıştır, çıktıyı al | tmux / PTY | cmd.exe | tmux / PTY |
 | **Görünür ajan imleci** — ajan nerede çalışıyor gör; senin farene dokunmaz, tıklamayı engellemez | X11/XWayland pencere · imleç teman | katmanlı pencere · sistem oku | NSWindow · sistem oku |
@@ -51,9 +51,9 @@ Windows ve X11 ayrıca izin istemez.
 ```bash
 cd nexremote
 ./install.sh          # ~/bin altına komutları koyar, eksik paketleri listeler
-nexremote setup       # erişilebilirliği açar; Wayland izin penceresinde
+computer-use-linux setup       # erişilebilirliği açar; Wayland izin penceresinde
                       # "Allow restoring…" işaretle → Share
-nexremote caps        # neyin çalıştığını gösterir
+computer-use-linux caps        # neyin çalıştığını gösterir
 ```
 
 `pip` ile kurmak isterseniz sistem paketlerini (python3-dbus, python3-gi)
@@ -64,7 +64,7 @@ görebilmesi için: `pipx install --system-site-packages .`
 ```powershell
 cd nexremote
 py -m pip install .[all]   # comtypes (UI Automation) otomatik gelir
-nexremote caps
+computer-use-linux caps
 ```
 
 **macOS** (Python 3.9+)
@@ -72,18 +72,18 @@ nexremote caps
 ```bash
 cd nexremote
 python3 -m pip install '.[all]'
-nexremote setup       # Erişilebilirlik + Ekran Kaydı izin istemlerini açar
-nexremote caps
+computer-use-linux setup       # Erişilebilirlik + Ekran Kaydı izin istemlerini açar
+computer-use-linux caps
 ```
 
 ## Ajanına bağla
 
 | Ajan | Bağlantı |
 |---|---|
-| Kabuk çalıştıran her harness | `nexremote skill` çıktısını sistem talimatına ekle |
-| MCP istemcisi (Claude Code, Claude Desktop, Cursor) | `claude mcp add nexremote -- ~/bin/nexremote-mcp` — 23 araç + canlı kaynaklar (`nexremote://windows`, `nexremote://terminals`, `nexremote://tree/{ref}`), ekran görüntüsü görsel olarak döner |
-| HTTP konuşan uzak ajan | `NEXREMOTE_TOKEN=… nexremote-http --port 8788` ya da servis olarak: `deploy/install-service.sh` |
-| Tool-calling'i olmayan model | `nexremote-agent --model-cmd "ollama run qwen2.5" --goal "…"` |
+| Kabuk çalıştıran her harness | `computer-use-linux skill` çıktısını sistem talimatına ekle |
+| MCP istemcisi (Claude Code, Claude Desktop, Cursor) | `claude mcp add computer-use-linux -- ~/bin/computer-use-linux-mcp` — 23 araç + canlı kaynaklar (`nexremote://windows`, `nexremote://terminals`, `nexremote://tree/{ref}`), ekran görüntüsü görsel olarak döner |
+| HTTP konuşan uzak ajan | `NEXREMOTE_TOKEN=… computer-use-linux-http --port 8788` ya da servis olarak: `deploy/install-service.sh` |
+| Tool-calling'i olmayan model | `computer-use-linux-agent --model-cmd "ollama run qwen2.5" --goal "…"` |
 
 ### Başka makineden bağlanma
 
@@ -103,7 +103,7 @@ deploy/install-service.sh --uninstall
 Ağa açarken en az 24 karakterlik token zorunludur. Token sabit zamanlı
 karşılaştırılır, 4 MB'tan büyük ya da bozuk gövdeler 400 döner.
 
-Komutların tamamı: `nexremote --help`. Ajan talimatı: [`adapters/skill/nexremote.md`](adapters/skill/nexremote.md).
+Komutların tamamı: `computer-use-linux --help`. Ajan talimatı: [`adapters/skill/nexremote.md`](adapters/skill/nexremote.md).
 
 ## Mimari
 
@@ -162,7 +162,7 @@ erişilebilirlik okuması onaylar.
   Mac'te henüz doğrulanmadı** — önizleme sürümü.
 - Konsole D-Bus yalnızca görünen ekranı verir; geçmiş satırlar için tmux gerekir.
 - Electron/Chromium uygulamaları ağacı ancak `--force-renderer-accessibility`
-  ile başlatılınca yayınlar; `nexremote launch <program>` bayrağı ekler.
+  ile başlatılınca yayınlar; `computer-use-linux launch <program>` bayrağı ekler.
   Çalışan bir uygulamada sonradan açılamaz, uygulamanın yeniden başlatılması gerekir.
   Firefox tabanlı tarayıcılar ağacı kendiliğinden yayınlar. Oyunlar ve canvas
   uygulamaları için ekran görüntüsü + koordinat tıklaması kullanılır.
