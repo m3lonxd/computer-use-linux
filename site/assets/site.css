@@ -792,3 +792,8 @@ html:not(.js) .os-panel + .os-panel { margin-top: 56px; padding-top: 40px; borde
 /* sahnede kaydırmaya bağlı öğeler geçişsiz izler */
 .ss-scene [data-sc] { transition: none; }
 .ss-switch { transition: fill .3s; }
+
+/* dar ekranda hero/CTA kurulum satırı (uzun komut adı) kesilmesin, alt satıra insin */
+@media (max-width: 480px) {
+  .hero-cta .copyline code, .cta-actions .copyline code { white-space: normal; overflow-wrap: anywhere; font-size: .8rem; }
+}

@@ -731,42 +731,42 @@
     // Çıktılar CLI'ın gerçek biçimindedir; ref'lerdeki "…" kırpmadır.
     var CH = [
       [
-        { cmd: "nexremote windows" },
+        { cmd: "computer-use-linux windows" },
         { fx: function () { tag("term"); tag("set"); tag("web"); } },
         { out: "* win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole\n" +
                "  win:{8c1e…}  systemsettings   760x540+1180+60   Appearance — System Settings\n" +
                "  win:{a41f…}  firefox          880x560+1060+520  Player — Mozilla Firefox" },
-        { cmd: "nexremote terms" },
+        { cmd: "computer-use-linux terms" },
         { out: "konsole:7891:2       claude         ~/projects/api           api : claude" }
       ],
       [
         { fx: function () { untagAll(); lit("term", true); } },
-        { cmd: "nexremote term-read konsole:7891:2" },
+        { cmd: "computer-use-linux term-read konsole:7891:2" },
         { fx: function () { $$(".hl-target", desk).forEach(function (p) { p.classList.add("read"); }); } },
         { out: "● Running test suite…\n  tests/test_api.py ........F.F\n✗ 2 failed · test_login, test_refresh\nShould I fix them? (y/n, or tell me)\n›" }
       ],
       [
         { fx: function () { lit("term", true); } },
-        { cmd: function () { return 'nexremote term-send konsole:7891:2 "' + i18n.termMsg + '" --enter --json'; } },
+        { cmd: function () { return 'computer-use-linux term-send konsole:7891:2 "' + i18n.termMsg + '" --enter --json'; } },
         { typeTerm: true },
         { out: '{\n  "ok": true,\n  "ref": "konsole:7891:2"\n}' },
         { fx: function () { $("[data-reply]", desk).classList.add("on"); } }
       ],
       [
         { fx: function () { lit("term", false); lit("set", true); tag("set"); } },
-        { cmd: 'nexremote find "Dark" --window win:{8c1e…}' },
+        { cmd: 'computer-use-linux find "Dark" --window win:{8c1e…}' },
         { fx: function () { win("set").classList.add("tagged-el"); $("[data-dark-row]", desk).classList.add("found"); } },
         { out: "atspi:4:0/2/7\t[checkbox] Dark  <toggle,click>" },
-        { cmd: "nexremote click atspi:4:0/2/7 --json" },
+        { cmd: "computer-use-linux click atspi:4:0/2/7 --json" },
         { fx: function () { $("[data-switch]", desk).classList.add("on"); win("set").classList.add("dark"); } },
         { out: '{\n  "ok": true,\n  "ref": "atspi:4:0/2/7"\n}' }
       ],
       [
         { fx: function () { untagAll(); lit("set", false); lit("web", true); tag("web"); } },
-        { cmd: "nexremote screenshot --window win:{a41f…} --max-width 1568 --json" },
+        { cmd: "computer-use-linux screenshot --window win:{a41f…} --max-width 1568 --json" },
         { fx: function () { flash($("[data-shutter]", desk)); } },
         { out: '{\n  "path": "/run/user/1000/nexremote-shot.png",\n  "width": 880,\n  "height": 560,\n  …\n  "scale": 1.0,\n  "origin": [1060, 520]\n}' },
-        { cmd: "nexremote click 440 190 --from-shot --json" },
+        { cmd: "computer-use-linux click 440 190 --from-shot --json" },
         { cursorTo: "[data-play]" },
         { fx: function () { $("[data-play]", desk).classList.add("on"); $("[data-progress]", desk).classList.add("run"); } },
         { out: '{\n  "ok": true,\n  "x": 1500,\n  "y": 710,\n  "button": "left"\n}' },

@@ -124,7 +124,7 @@
             </a>
           </div>
           <div class="copyline">
-            <code id="cmd-setup">./install.sh &amp;&amp; nexremote setup</code>
+            <code id="cmd-setup">./install.sh &amp;&amp; computer-use-linux setup</code>
             <button class="copy" type="button" data-copy="#cmd-setup" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button>
           </div>
           <p class="meta">{{hero_meta}}</p>
@@ -203,7 +203,7 @@
         <div class="story-stage" aria-hidden="true">
           <div class="ss">
             <div class="ss-head">
-              <p class="ss-cmd"><span class="c">$</span> <span data-ss-cmd>nexremote windows</span></p>
+              <p class="ss-cmd"><span class="c">$</span> <span data-ss-cmd>computer-use-linux windows</span></p>
               <p class="ss-gets">{{model_gets}} <b data-ss-gets>{{gets_text}}</b></p>
             </div>
             <svg class="ss-scene" viewBox="0 0 800 500">
@@ -325,51 +325,51 @@
         </div>
       </div>
       <ol class="rungs">
-        <li class="rung" data-rung data-cmd="nexremote windows" data-gets="{{gets_text}}">
+        <li class="rung" data-rung data-cmd="computer-use-linux windows" data-gets="{{gets_text}}">
           <div class="rung-in" data-reveal>
             <span class="rung-n" aria-hidden="true">1</span>
             <h3>{{lad1_t}}</h3>
             <p>{{lad1_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> KWin · EnumWindows · CGWindowList <span>{{model_gets}}</span> {{gets_text}}</p>
-<pre class="rung-code"><code><span class="c">$</span> nexremote windows
+<pre class="rung-code"><code><span class="c">$</span> computer-use-linux windows
 * win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole
   win:{8c1e…}  systemsettings   760x540+1180+60   {{st_title_set}}
   win:{a41f…}  firefox          880x560+1060+520  {{st_title_player}}</code></pre>
           </div>
         </li>
-        <li class="rung" data-rung data-cmd='nexremote find "{{st_dark}}" --window win:{8c1e…}' data-gets="{{gets_text}}">
+        <li class="rung" data-rung data-cmd='computer-use-linux find "{{st_dark}}" --window win:{8c1e…}' data-gets="{{gets_text}}">
           <div class="rung-in" data-reveal>
             <span class="rung-n" aria-hidden="true">2</span>
             <h3>{{lad2_t}}</h3>
             <p>{{lad2_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> AT-SPI · UI Automation · AX <span>{{model_gets}}</span> {{gets_text}}</p>
-<pre class="rung-code"><code><span class="c">$</span> nexremote find "{{st_dark}}" --window win:{8c1e…}
+<pre class="rung-code"><code><span class="c">$</span> computer-use-linux find "{{st_dark}}" --window win:{8c1e…}
 atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
-<span class="c">$</span> nexremote click atspi:4:0/2/7 --json
+<span class="c">$</span> computer-use-linux click atspi:4:0/2/7 --json
 { "ok": true, "ref": "atspi:4:0/2/7" }</code></pre>
           </div>
         </li>
-        <li class="rung" data-rung data-cmd="nexremote term-read konsole:7891:2" data-gets="{{gets_text}}">
+        <li class="rung" data-rung data-cmd="computer-use-linux term-read konsole:7891:2" data-gets="{{gets_text}}">
           <div class="rung-in" data-reveal>
             <span class="rung-n" aria-hidden="true">3</span>
             <h3>{{lad3_t}}</h3>
             <p>{{lad3_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> Konsole D-Bus · tmux · AttachConsole · Terminal.app <span>{{model_gets}}</span> {{gets_text}}</p>
-<pre class="rung-code"><code><span class="c">$</span> nexremote term-read konsole:7891:2
+<pre class="rung-code"><code><span class="c">$</span> computer-use-linux term-read konsole:7891:2
 ● {{st_run}}
   tests/test_api.py ........F.F
 ✗ {{st_failed}}
 {{st_ask}}</code></pre>
           </div>
         </li>
-        <li class="rung" data-rung data-cmd="nexremote click 440 190 --from-shot" data-gets="{{gets_image}}">
+        <li class="rung" data-rung data-cmd="computer-use-linux click 440 190 --from-shot" data-gets="{{gets_image}}">
           <div class="rung-in" data-reveal>
             <span class="rung-n" aria-hidden="true">4</span>
             <h3>{{lad4_t}}</h3>
             <p>{{lad4_d}}</p>
             <p class="rung-meta"><span>{{via}}</span> spectacle / grim · GDI · screencapture <span>{{model_gets}}</span> {{gets_image}}</p>
-<pre class="rung-code"><code><span class="c">$</span> nexremote screenshot --window win:{a41f…} --max-width 1568
-<span class="c">$</span> nexremote click 440 190 --from-shot --json
+<pre class="rung-code"><code><span class="c">$</span> computer-use-linux screenshot --window win:{a41f…} --max-width 1568
+<span class="c">$</span> computer-use-linux click 440 190 --from-shot --json
 { "ok": true, "x": 1500, "y": 710, "button": "left" }</code></pre>
           </div>
         </li>
@@ -444,9 +444,9 @@ atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
           <li><button type="button" role="tab" data-ch="3" aria-selected="false">{{ch3}}</button></li>
           <li><button type="button" role="tab" data-ch="4" aria-selected="false">{{ch4}}</button></li>
         </ol>
-        <div class="log" data-log aria-live="polite"><div class="cmd">nexremote windows</div><div class="out">* win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole
+        <div class="log" data-log aria-live="polite"><div class="cmd">computer-use-linux windows</div><div class="out">* win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole
   win:{8c1e…}  systemsettings   760x540+1180+60   Appearance — System Settings
-  win:{a41f…}  firefox          880x560+1060+520  Player — Mozilla Firefox</div><div class="cmd">nexremote terms</div><div class="out">konsole:7891:2       claude         ~/projects/api           api : claude</div></div>
+  win:{a41f…}  firefox          880x560+1060+520  Player — Mozilla Firefox</div><div class="cmd">computer-use-linux terms</div><div class="out">konsole:7891:2       claude         ~/projects/api           api : claude</div></div>
         <div class="console-foot">
           <p class="caption" data-caption>{{replay_static}}</p>
           <button class="playbtn" type="button" data-toggle data-play-label="{{play}}" data-pause-label="{{pause}}" data-again-label="{{again}}">{{play}}</button>
@@ -523,7 +523,7 @@ atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-checklist"/></svg>
         <h3>{{r_caps}}</h3>
         <p>{{r_caps_n}}</p>
-        <dl><dt>{{th_cmd}}</dt><dd><code>nexremote caps</code></dd></dl>
+        <dl><dt>{{th_cmd}}</dt><dd><code>computer-use-linux caps</code></dd></dl>
       </li>
     </ul>
   </div>
@@ -596,15 +596,15 @@ atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
       <p>{{watch_p2}}</p>
     </div>
     <figure class="sample" data-reveal>
-      <div class="sample-bar" aria-hidden="true"><i></i><i></i><i></i><span>bash — nexremote</span></div>
-<pre><code data-typeon><span class="c">$</span> nexremote terms
+      <div class="sample-bar" aria-hidden="true"><i></i><i></i><i></i><span>bash — computer-use-linux</span></div>
+<pre><code data-typeon><span class="c">$</span> computer-use-linux terms
 konsole:7891:1       claude         ~/projects/api      api : claude
 konsole:7891:2       claude         ~/projects/web      web : claude
 konsole:7891:3       vim            ~/projects/docs     docs : vim
 konsole:29769:1      ssh            ~                   deploy@staging
 
-<span class="c">$</span> nexremote term-send konsole:63308:1 'echo NEXR_$((6*7))' --enter
-<span class="c">$</span> nexremote term-read konsole:63308:1
+<span class="c">$</span> computer-use-linux term-send konsole:63308:1 'echo NEXR_$((6*7))' --enter
+<span class="c">$</span> computer-use-linux term-read konsole:63308:1
 bash-5.2$ echo NEXR_$((6*7))
 NEXR_42
 bash-5.2$</code></pre>
@@ -830,21 +830,21 @@ bash-5.2$</code></pre>
       </div>
       <div class="panel" role="tabpanel" id="p-shell" aria-labelledby="tab-shell" tabindex="0">
         <p>{{p_shell}}</p>
-<pre><code>nexremote skill        <span class="c">{{p_shell_c}}</span>
-nexremote observe --json</code></pre>
+<pre><code>computer-use-linux skill        <span class="c">{{p_shell_c}}</span>
+computer-use-linux observe --json</code></pre>
       </div>
       <div class="panel" role="tabpanel" id="p-mcp" aria-labelledby="tab-mcp" tabindex="0" hidden>
         <p>{{p_mcp}}</p>
-<pre><code>claude mcp add nexremote -- ~/bin/nexremote-mcp</code></pre>
+<pre><code>claude mcp add computer-use-linux -- ~/bin/computer-use-linux-mcp</code></pre>
       </div>
       <div class="panel" role="tabpanel" id="p-http" aria-labelledby="tab-http" tabindex="0" hidden>
         <p>{{p_http}}</p>
-<pre><code>nexremote-http --port 8788 --token "$SECRET"
+<pre><code>computer-use-linux-http --port 8788 --token "$SECRET"
 curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</code></pre>
       </div>
       <div class="panel" role="tabpanel" id="p-text" aria-labelledby="tab-text" tabindex="0" hidden>
         <p>{{p_text}}</p>
-<pre><code>nexremote-agent --model-cmd "ollama run qwen2.5" \
+<pre><code>computer-use-linux-agent --model-cmd "ollama run qwen2.5" \
   --goal "{{p_text_goal}}"</code></pre>
       </div>
     </div>
@@ -909,7 +909,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
           </li>
           <li>
             <h3>{{s3_t}}</h3>
-            <div class="copyline"><code id="cmd-l3">nexremote setup &amp;&amp; nexremote caps</code><button class="copy" type="button" data-copy="#cmd-l3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
+            <div class="copyline"><code id="cmd-l3">computer-use-linux setup &amp;&amp; computer-use-linux caps</code><button class="copy" type="button" data-copy="#cmd-l3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
             <p>{{s3_d}}</p>
           </li>
         </ol>
@@ -930,7 +930,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
           </li>
           <li>
             <h3>{{w3_t}}</h3>
-            <div class="copyline"><code id="cmd-w3">nexremote caps</code><button class="copy" type="button" data-copy="#cmd-w3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
+            <div class="copyline"><code id="cmd-w3">computer-use-linux caps</code><button class="copy" type="button" data-copy="#cmd-w3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
             <p>{{w3_d}}</p>
           </li>
         </ol>
@@ -951,7 +951,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
           </li>
           <li>
             <h3>{{m3_t}}</h3>
-            <div class="copyline"><code id="cmd-m3">nexremote setup &amp;&amp; nexremote caps</code><button class="copy" type="button" data-copy="#cmd-m3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
+            <div class="copyline"><code id="cmd-m3">computer-use-linux setup &amp;&amp; computer-use-linux caps</code><button class="copy" type="button" data-copy="#cmd-m3" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button></div>
             <p>{{m3_d}}</p>
           </li>
         </ol>
@@ -981,7 +981,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
           </a>
         </div>
         <div class="copyline">
-          <code id="cmd-cta" data-typeline>./install.sh &amp;&amp; nexremote setup</code>
+          <code id="cmd-cta" data-typeline>./install.sh &amp;&amp; computer-use-linux setup</code>
           <button class="copy" type="button" data-copy="#cmd-cta" data-done="{{copied}}"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>{{copy}}</span></button>
         </div>
         <p class="meta"><a href="/download/nexremote.tar.gz" download>nexremote.tar.gz</a> ({{tgz_size}}) · {{hero_meta}}</p>

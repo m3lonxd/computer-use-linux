@@ -241,7 +241,7 @@ S = {
         "st_scale": "scale", "st_eq": "screen = origin + image ÷ scale",
         "st_notree": "no tree published", "st_lift": "plain text, no image",
         "arch_h": "One core between any agent and the desktop",
-        "arch_p": "Adapters only know the core; the core only talks to channels the desktop already provides. If a backend is missing, the rest keep working and <code>nexremote caps</code> says what is off.",
+        "arch_p": "Adapters only know the core; the core only talks to channels the desktop already provides. If a backend is missing, the rest keep working and <code>computer-use-linux caps</code> says what is off.",
         "arch_alt": "Architecture: your agent connects through one of four adapters (shell CLI, MCP, HTTP, text loop) to the Computer Use Linux core, which reaches the desktop through the channels each platform already has: KWin, Win32 or CGWindowList for windows; AT-SPI, UI Automation or AX for controls; the RemoteDesktop portal, SendInput or CGEvent for input; Konsole, Windows consoles or Terminal.app for open terminals; tmux, a PTY or cmd.exe for its own shell; grim, GDI or screencapture for screenshots.",
         "arch_agent": "Your agent", "arch_agent_s": "any harness, any model",
         "arch_text": "Text loop", "arch_core": "Core", "arch_desk": "Your desktop",
@@ -257,7 +257,7 @@ S = {
 
         "reach_kicker": "Reach",
         "reach_h": "What it reaches",
-        "reach_note": "The same commands on Linux, Windows and macOS. Each surface takes the most direct channel the system offers (the platform table below names it), and <code>nexremote caps</code> says when one is missing.",
+        "reach_note": "The same commands on Linux, Windows and macOS. Each surface takes the most direct channel the system offers (the platform table below names it), and <code>computer-use-linux caps</code> says when one is missing.",
         "th_cmd": "Commands",
         "r_win": "Windows", "r_win_n": "Every window on screen, including apps that publish no accessibility tree.",
         "r_mouse": "Mouse", "r_mouse_n": "Your pointer is put back where it was right after each click.",
@@ -312,7 +312,7 @@ S = {
 
         "pixels_kicker": "Last resort",
         "pixels_h": "When an app has nothing to read, it looks.",
-        "pixels_p": "Games, canvas apps and Chromium apps started without <code>nexremote launch</code> publish no controls. Take a screenshot cropped to one window and scaled for the model; it clicks on pixels in that image and Computer Use Linux converts them back to the screen.",
+        "pixels_p": "Games, canvas apps and Chromium apps started without <code>computer-use-linux launch</code> publish no controls. Take a screenshot cropped to one window and scaled for the model; it clicks on pixels in that image and Computer Use Linux converts them back to the screen.",
         "diag_title": "A window on a three-monitor desktop is cropped, scaled to 800 by 900, and a point in the image maps back to screen coordinates.",
         "diag_cap": "A three-monitor layout, to scale. One point, two coordinate systems.",
 
@@ -387,7 +387,7 @@ S = {
         "sh6": "Windows: Win32 windows, Unicode input through SendInput, GDI screenshots, UI Automation, reading and typing into open consoles",
         "sh7": "macOS preview: Quartz input, CGWindowList windows, the accessibility tree, Terminal.app, iTerm2 and tmux",
         "sh8": "A pip package: <code>pip install .[all]</code> on Linux, Windows and macOS",
-        "sh9": "Electron and Chromium apps by name: <code>nexremote launch vesktop</code> starts them with their tree switched on",
+        "sh9": "Electron and Chromium apps by name: <code>computer-use-linux launch vesktop</code> starts them with their tree switched on",
         "sh10": "A compact tree: hidden items and empty wrappers left out, and every control carries the ref to click it",
         "sh11": "Windows, terminals and the accessibility tree as live MCP resources",
         "sh12": "A user service for the HTTP adapter, with a token file and TLS, to drive another machine",
@@ -405,7 +405,7 @@ S = {
         "p_shell_c": "# paste into your agent's instructions",
         "p_mcp": "{{mcp_tools}} tools over stdio for Claude Code, Claude Desktop, Cursor and other MCP clients. Screenshots come back as images the model can look at.",
         "p_http": "For agents on another machine. Listens on localhost by default and refuses any other address without a token.",
-        "p_text": "For local models without tool calling. The model writes <code>nexremote</code> lines; the loop runs them and feeds the output back until it writes <code>DONE</code>.",
+        "p_text": "For local models without tool calling. The model writes <code>computer-use-linux</code> lines; the loop runs them and feeds the output back until it writes <code>DONE</code>.",
         "p_text_goal": "Open the calculator, compute 7×8, read the result",
 
         "trust_kicker": "Safety",
@@ -420,7 +420,7 @@ S = {
         "l2": "Windows: tested on Wine 10, not yet on real Windows 10 or 11. Wine's UI Automation can't walk the control tree, so click by name is untested there. Windows running as administrator are reachable only when Computer Use Linux runs as administrator too (UIPI).",
         "l3": "macOS: the code is written and its logic tested against a fake Quartz, but it has not yet been verified on a real Mac. It ships as a preview.",
         "l4": "Konsole exposes the visible screen only. For scrollback, run the agent in tmux.",
-        "l5": "Electron and Chromium apps publish their tree only when started with <code>--force-renderer-accessibility</code>. <code>nexremote launch</code> adds it, but an app that is already running has to be restarted. Games and canvas apps are driven by screenshot and coordinates.",
+        "l5": "Electron and Chromium apps publish their tree only when started with <code>--force-renderer-accessibility</code>. <code>computer-use-linux launch</code> adds it, but an app that is already running has to be restarted. Games and canvas apps are driven by screenshot and coordinates.",
         "l6": "On Linux the visible agent cursor needs X11 or XWayland and does not show on Sway without XWayland. The Windows cursor is tested on Wine; the macOS cursor has not yet run on a real Mac.",
 
         "install_kicker": "Install",
@@ -428,12 +428,12 @@ S = {
         "install_os_label": "Operating system",
         "s1_t": "Download and unpack",
         "s2_t": "Install the commands",
-        "s2_d": "Puts <code>nexremote</code>, <code>nexremote-mcp</code>, <code>nexremote-http</code> and <code>nexremote-agent</code> in <code>~/bin</code>, then lists anything missing.",
+        "s2_d": "Puts <code>computer-use-linux</code>, <code>computer-use-linux-mcp</code>, <code>computer-use-linux-http</code> and <code>computer-use-linux-agent</code> in <code>~/bin</code>, then lists anything missing.",
         "s3_t": "Grant access once",
         "s3_d": "Turns on the accessibility tree and, on Wayland, opens the desktop's remote-control dialog: tick <em>Allow restoring</em>, press <em>Share</em>. X11 asks nothing.",
         "reqs": "Needs <code>python3-dbus</code> <code>python3-gi</code> <code>xdg-desktop-portal-kde</code> <code>pipewire</code> <code>wl-clipboard</code>. Optional: <code>tmux</code> <code>python3-pil</code> <code>python3-xlib</code>, <code>pip install mcp</code>. Rather use pip? <code>pipx install --system-site-packages .</code> keeps the system's D-Bus and GObject bindings in view.",
         "w2_t": "Install with pip",
-        "w2_d": "Puts <code>nexremote</code>, <code>nexremote-mcp</code>, <code>nexremote-http</code> and <code>nexremote-agent</code> on your path. <code>comtypes</code>, for UI Automation, comes along.",
+        "w2_d": "Puts <code>computer-use-linux</code>, <code>computer-use-linux-mcp</code>, <code>computer-use-linux-http</code> and <code>computer-use-linux-agent</code> on your path. <code>comtypes</code>, for UI Automation, comes along.",
         "w3_t": "See what works",
         "w3_d": "No permission dialog. Windows running as administrator are reachable only if Computer Use Linux runs as administrator too.",
         "reqs_win": "Needs Python 3.9 or newer, started with the <code>py</code> launcher. <code>[all]</code> adds <code>pillow</code> for cropping and scaling screenshots and <code>mcp</code> for the MCP server. Tested under Wine 10, not yet on real Windows 10 or 11.",
@@ -445,7 +445,7 @@ S = {
 
         "cta_h": "Give your agent the desktop.",
         "cta_p": "Unpack, install, approve once. For questions about the project, a partnership or an investment, write to us.",
-        "talk": "Talk to us", "foot_former": "Formerly NexRemote. The command, the package and the repository keep the name nexremote. Tux by Larry Ewing, drawn with The GIMP.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
+        "talk": "Talk to us", "foot_former": "Formerly NexRemote. The old nexremote command still works as an alias. Tux by Larry Ewing, drawn with The GIMP.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
 
         "other_lang": "tr", "other_lang_label": "TR", "other_lang_name": "Türkçe", "other_lang_href": "/tr/",
         "home": "/", "path": "/", "media": "media/", "lang": "en", "og_locale": "en_US",
@@ -501,7 +501,7 @@ S = {
         "st_scale": "ölçek", "st_eq": "ekran = başlangıç + görüntü ÷ ölçek",
         "st_notree": "ağaç yayınlamıyor", "st_lift": "düz metin",
         "arch_h": "Her ajanla masaüstü arasında tek çekirdek",
-        "arch_p": "Adaptörler yalnızca çekirdeği bilir; çekirdek yalnızca masaüstünün zaten sunduğu kanallarla konuşur. Bir backend eksikse geri kalanı çalışmaya devam eder ve <code>nexremote caps</code> neyin kapalı olduğunu söyler.",
+        "arch_p": "Adaptörler yalnızca çekirdeği bilir; çekirdek yalnızca masaüstünün zaten sunduğu kanallarla konuşur. Bir backend eksikse geri kalanı çalışmaya devam eder ve <code>computer-use-linux caps</code> neyin kapalı olduğunu söyler.",
         "arch_alt": "Mimari: ajanın dört adaptörden biriyle (kabuk CLI, MCP, HTTP, metin döngüsü) Computer Use Linux çekirdeğine bağlanır; çekirdek masaüstüne her platformun zaten sunduğu kanallardan ulaşır: pencereler için KWin, Win32 ya da CGWindowList; kontroller için AT-SPI, UI Automation ya da AX; girdi için RemoteDesktop portalı, SendInput ya da CGEvent; açık terminaller için Konsole, Windows konsolları ya da Terminal.app; kendi kabuğu için tmux, PTY ya da cmd.exe; ekran görüntüsü için grim, GDI ya da screencapture.",
         "arch_agent": "Ajanın", "arch_agent_s": "her harness, her model",
         "arch_text": "Metin döngüsü", "arch_core": "Çekirdek", "arch_desk": "Masaüstün",
@@ -517,7 +517,7 @@ S = {
 
         "reach_kicker": "Erişim",
         "reach_h": "Neye uzanır",
-        "reach_note": "Linux'ta, Windows'ta ve macOS'ta aynı komutlar. Her yüzey, sistemin sunduğu en doğrudan kanalı kullanır (aşağıdaki platform tablosu hangisi olduğunu gösterir); biri eksikse <code>nexremote caps</code> bunu söyler.",
+        "reach_note": "Linux'ta, Windows'ta ve macOS'ta aynı komutlar. Her yüzey, sistemin sunduğu en doğrudan kanalı kullanır (aşağıdaki platform tablosu hangisi olduğunu gösterir); biri eksikse <code>computer-use-linux caps</code> bunu söyler.",
         "th_cmd": "Komutlar",
         "r_win": "Pencereler", "r_win_n": "Ekrandaki her pencere; erişilebilirlik ağacı yayınlamayan uygulamalar dahil.",
         "r_mouse": "Fare", "r_mouse_n": "Her tıktan hemen sonra imleciniz eski yerine konur.",
@@ -572,7 +572,7 @@ S = {
 
         "pixels_kicker": "Son çare",
         "pixels_h": "Okunacak bir şey yoksa bakar.",
-        "pixels_p": "Oyunlar, canvas uygulamaları ve <code>nexremote launch</code> olmadan başlatılan Chromium uygulamaları kontrollerini yayınlamaz. Tek pencereye kırpılmış ve modele göre küçültülmüş bir ekran görüntüsü alın; model o görüntüdeki piksele tıklar, Computer Use Linux onu ekrana geri çevirir.",
+        "pixels_p": "Oyunlar, canvas uygulamaları ve <code>computer-use-linux launch</code> olmadan başlatılan Chromium uygulamaları kontrollerini yayınlamaz. Tek pencereye kırpılmış ve modele göre küçültülmüş bir ekran görüntüsü alın; model o görüntüdeki piksele tıklar, Computer Use Linux onu ekrana geri çevirir.",
         "diag_title": "Üç monitörlü masaüstündeki bir pencere kırpılır, 800'e 900 boyutuna küçültülür ve görüntüdeki bir nokta ekran koordinatına geri çevrilir.",
         "diag_cap": "Üç monitörlü bir düzen, ölçekli. Tek nokta, iki koordinat sistemi.",
 
@@ -647,7 +647,7 @@ S = {
         "sh6": "Windows: Win32 pencereleri, SendInput ile Unicode girdi, GDI ekran görüntüsü, UI Automation, açık konsolları okuma ve onlara yazma",
         "sh7": "macOS önizlemesi: Quartz girdisi, CGWindowList pencereleri, erişilebilirlik ağacı, Terminal.app, iTerm2 ve tmux",
         "sh8": "Bir pip paketi: Linux'ta, Windows'ta ve macOS'ta <code>pip install .[all]</code>",
-        "sh9": "Electron ve Chromium uygulamaları adıyla: <code>nexremote launch vesktop</code> onları ağaçları açık başlatır",
+        "sh9": "Electron ve Chromium uygulamaları adıyla: <code>computer-use-linux launch vesktop</code> onları ağaçları açık başlatır",
         "sh10": "Sade ağaç: gizli öğeler ve boş sarmalayıcılar çıkarılır, her kontrol tıklamak için gereken ref'i taşır",
         "sh11": "Pencereler, terminaller ve erişilebilirlik ağacı canlı MCP kaynakları olarak",
         "sh12": "Başka bir makineyi yönetmek için HTTP adaptörüne token dosyalı ve TLS'li kullanıcı servisi",
@@ -665,7 +665,7 @@ S = {
         "p_shell_c": "# ajanının talimatlarına yapıştır",
         "p_mcp": "Claude Code, Claude Desktop, Cursor ve diğer MCP istemcileri için stdio üzerinden {{mcp_tools}} araç. Ekran görüntüleri, modelin bakabildiği görsel olarak döner.",
         "p_http": "Başka makinedeki ajanlar için. Varsayılan olarak yalnızca localhost'u dinler; başka bir adrese token olmadan açılmayı reddeder.",
-        "p_text": "Tool calling'i olmayan yerel modeller için. Model <code>nexremote</code> satırları yazar; döngü onları çalıştırır ve çıktıyı geri besler, ta ki model <code>DONE</code> yazana dek.",
+        "p_text": "Tool calling'i olmayan yerel modeller için. Model <code>computer-use-linux</code> satırları yazar; döngü onları çalıştırır ve çıktıyı geri besler, ta ki model <code>DONE</code> yazana dek.",
         "p_text_goal": "Hesap makinesini aç, 7×8 hesapla, sonucu oku",
 
         "trust_kicker": "Güvenlik",
@@ -680,7 +680,7 @@ S = {
         "l2": "Windows: Wine 10 üzerinde test edildi; gerçek Windows 10/11'de doğrulanmadı. Wine'ın UI Automation'ı denetim ağacını gezemediği için isimle tıklama Wine'da sınanamadı. Yönetici olarak çalışan pencerelere yalnızca yönetici olarak çalışan Computer Use Linux ulaşır (UIPI).",
         "l3": "macOS: kod yazıldı ve mantığı sahte Quartz ile test edildi, ama gerçek bir Mac'te henüz doğrulanmadı; önizleme sürümü.",
         "l4": "Konsole yalnızca görünen ekranı verir. Geçmiş satırlar için ajanı tmux içinde çalıştırın.",
-        "l5": "Electron ve Chromium uygulamaları ağaçlarını yalnızca <code>--force-renderer-accessibility</code> ile başlatılınca yayınlar. <code>nexremote launch</code> bu bayrağı ekler, ama zaten çalışan bir uygulamanın yeniden başlatılması gerekir. Oyunlar ve canvas uygulamaları ekran görüntüsü ve koordinatla kullanılır.",
+        "l5": "Electron ve Chromium uygulamaları ağaçlarını yalnızca <code>--force-renderer-accessibility</code> ile başlatılınca yayınlar. <code>computer-use-linux launch</code> bu bayrağı ekler, ama zaten çalışan bir uygulamanın yeniden başlatılması gerekir. Oyunlar ve canvas uygulamaları ekran görüntüsü ve koordinatla kullanılır.",
         "l6": "Linux'ta görünür ajan imleci X11 ya da XWayland ister; XWayland'siz Sway'de görünmez. Windows imleci Wine'da sınandı; macOS imleci henüz gerçek bir Mac'te çalıştırılmadı.",
 
         "install_kicker": "Kurulum",
@@ -688,12 +688,12 @@ S = {
         "install_os_label": "İşletim sistemi",
         "s1_t": "İndir ve aç",
         "s2_t": "Komutları kur",
-        "s2_d": "<code>nexremote</code>, <code>nexremote-mcp</code>, <code>nexremote-http</code> ve <code>nexremote-agent</code> komutlarını <code>~/bin</code> altına koyar, eksik paketleri listeler.",
+        "s2_d": "<code>computer-use-linux</code>, <code>computer-use-linux-mcp</code>, <code>computer-use-linux-http</code> ve <code>computer-use-linux-agent</code> komutlarını <code>~/bin</code> altına koyar, eksik paketleri listeler.",
         "s3_t": "Erişimi bir kez ver",
         "s3_d": "Erişilebilirlik ağacını açar; Wayland'de masaüstünün uzaktan kontrol penceresini getirir: <em>Allow restoring</em> işaretle, <em>Share</em>'e bas. X11 bir şey sormaz.",
         "reqs": "Gerekli: <code>python3-dbus</code> <code>python3-gi</code> <code>xdg-desktop-portal-kde</code> <code>pipewire</code> <code>wl-clipboard</code>. İsteğe bağlı: <code>tmux</code> <code>python3-pil</code> <code>python3-xlib</code>, <code>pip install mcp</code>. pip ile kurmak isterseniz: <code>pipx install --system-site-packages .</code> sistemdeki D-Bus ve GObject paketlerini görünür tutar.",
         "w2_t": "pip ile kur",
-        "w2_d": "<code>nexremote</code>, <code>nexremote-mcp</code>, <code>nexremote-http</code> ve <code>nexremote-agent</code> komutlarını kurar. UI Automation için <code>comtypes</code> da birlikte gelir.",
+        "w2_d": "<code>computer-use-linux</code>, <code>computer-use-linux-mcp</code>, <code>computer-use-linux-http</code> ve <code>computer-use-linux-agent</code> komutlarını kurar. UI Automation için <code>comtypes</code> da birlikte gelir.",
         "w3_t": "Neyin çalıştığına bak",
         "w3_d": "İzin penceresi yok. Yönetici olarak çalışan pencerelere yalnızca Computer Use Linux da yönetici olarak çalışırsa ulaşılır.",
         "reqs_win": "Gerekli: Python 3.9 ya da daha yenisi, <code>py</code> başlatıcısıyla. <code>[all]</code>, ekran görüntüsünü kırpıp küçültmek için <code>pillow</code> ve MCP sunucusu için <code>mcp</code> ekler. Wine 10 altında test edildi; gerçek Windows 10/11'de henüz değil.",
@@ -705,7 +705,7 @@ S = {
 
         "cta_h": "Ajanına masaüstünü ver.",
         "cta_p": "Aç, kur, bir kez onayla. Proje, iş birliği ya da yatırım hakkında sorularınız için bize yazın.",
-        "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Komut, paket ve depo adı nexremote olarak kalır. Tux: Larry Ewing, The GIMP ile çizildi.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
+        "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Eski nexremote komutu takma ad olarak çalışmaya devam eder. Tux: Larry Ewing, The GIMP ile çizildi.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
 
         "other_lang": "en", "other_lang_label": "EN", "other_lang_name": "English", "other_lang_href": "/",
         "home": "/tr/", "path": "/tr/", "media": "../media/", "lang": "tr", "og_locale": "tr_TR",
@@ -778,8 +778,8 @@ def plat_matrix(lang: str, t: dict) -> str:
 def arch_svgs(t: dict) -> tuple[str, str]:
     """Mimari diyagramı iki yönde (yatay masaüstü, dikey mobil) üretir."""
     agent = (t["arch_agent"], t["arch_agent_s"])
-    adapters = [("Shell CLI", "nexremote"), ("MCP", "nexremote-mcp"),
-                ("HTTP", "nexremote-http"), (t["arch_text"], "nexremote-agent")]
+    adapters = [("Shell CLI", "computer-use-linux"), ("MCP", "computer-use-linux-mcp"),
+                ("HTTP", "computer-use-linux-http"), (t["arch_text"], "computer-use-linux-agent")]
     core = (t["arch_core"], "nexremote.py")
     # başlık: yetenek; alt satır: Linux · Windows · macOS'taki kanal
     channels = [(t["a_win"], "KWin · Win32 · CGWindowList"), (t["a_ctl"], "AT-SPI · UIA · AX"),
