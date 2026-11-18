@@ -1,4 +1,4 @@
-/* NexRemote — site davranışı.
+/* Computer Use Linux — site davranışı.
    Tek rAF kaydırma döngüsü (oku → yaz), IntersectionObserver ile görünme,
    ekran dışındaki animasyonlar durur. prefers-reduced-motion: son durum, hareket yok. */
 (function () {
@@ -35,7 +35,7 @@
   // ----------------------------------------------------------------- tema
   var themeBtn = $(".theme");
   if (themeBtn) themeBtn.addEventListener("click", function () {
-    var cur = H.dataset.theme || (mm("(prefers-color-scheme: dark)") ? "dark" : "light");
+    var cur = H.dataset.theme || "dark"; // koyu varsayılan; açık tema yalnızca seçilince
     var next = cur === "dark" ? "light" : "dark";
     H.dataset.theme = next;
     store.set("nr-theme", next);
@@ -185,17 +185,6 @@
   });
 
   if (!reduced) {
-    // hero sahnesi: eğik başlar, kaydırdıkça düzleşir
-    var tilt = $("[data-hero-tilt]");
-    if (tilt) tasks.push(function (vh) {
-      var p = clamp(scrollY / (vh * 0.55), 0, 1), e = 1 - Math.pow(1 - p, 3);
-      if (p >= 1 && tilt.dataset.flat) return null;
-      return function () {
-        tilt.dataset.flat = p >= 1 ? "1" : "";
-        tilt.style.transform = "rotateX(" + (22 * (1 - e)).toFixed(2) + "deg) scale(" + (0.9 + 0.1 * e).toFixed(4) + ")";
-      };
-    });
-
     // koyu bantlar: içeri girerken kenarlardan açılır (clip-path)
     $$("[data-wipe]").forEach(function (el) {
       tasks.push(function (vh) {
@@ -220,100 +209,35 @@
     });
   }
 
-  // ======================================================== HERO döngüsü
-  var hero = $("[data-hero]");
-  if (hero && !reduced) (function () {
-    var i18n = JSON.parse($("#replay-i18n").textContent);
-    var cmdEl = $("[data-hd-cmd]", hero), outEl = $("[data-hd-out]", hero);
-    var steps = $$("[data-hd-step]", hero), agent = $("[data-hd-agent]", hero);
-    var typed = $("[data-hd-typed]", hero), caret = $(".hd-caret", hero);
-    var visible = true, waiters = [];
-    function active() { return visible && !D.hidden; }
-    function wake() { if (active()) { var w = waiters; waiters = []; w.forEach(function (f) { f(); }); } }
-    watch(hero, function (v) { visible = v; wake(); }, "60px");
-    D.addEventListener("visibilitychange", wake);
-    async function wait(ms) {
-      await sleep(ms);
-      while (!active()) await new Promise(function (r) { waiters.push(r); });
+  // ================================================== döngü videoları
+  // Hero ve "terminaller" bölümünün arka planı. Fotoğraf (poster) hep altta durur;
+  // video yalnızca oynatılabiliyorsa üstüne biner. Veri tasarrufu ve azaltılmış
+  // hareket tercihinde video hiç indirilmez; ekran dışındaki video durur; ikinci
+  // video (data-gec) görünür olana dek yüklenmez.
+  (function () {
+    var videos = $$("video.dongu");
+    if (!videos.length) return;
+    var saveData = false;
+    try { saveData = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
+    if (saveData || reduced) {
+      videos.forEach(function (v) { v.removeAttribute("autoplay"); v.pause(); v.remove(); });
+      return;
     }
-    function set(c, on) { hero.classList.toggle(c, on); }
-    function step(n) { steps.forEach(function (s, i) { s.classList.toggle("on", i === n); }); }
-    function out(t) { outEl.textContent = t; outEl.classList.remove("fresh"); void outEl.offsetWidth; outEl.classList.add("fresh"); }
-    function agentTo(x, y, instant) {
-      agent.style.transition = instant ? "none" : "transform 1.1s cubic-bezier(.45,.05,.25,1), opacity .3s";
-      agent.style.transform = "translate(" + x + "px," + y + "px)";
+    function play(v) {
+      if (v.hasAttribute("data-gec")) { v.removeAttribute("data-gec"); v.preload = "auto"; v.load(); }
+      var p = v.play();
+      // Otomatik oynatma engellenirse alttaki fotoğraf görünür kalır. pause() ile
+      // kesilen play() (AbortError) bir sonraki görünüşte yeniden denenir.
+      if (p && p.catch) p.catch(function (err) { if (err && err.name === "NotAllowedError") v.remove(); });
     }
-    function click() { set("s-click", false); void hero.offsetWidth; set("s-click", true); }
-    function moveCaret() {
-      var w = 0; try { w = typed.getComputedTextLength(); } catch (e) { /* düzen yok */ }
-      caret.setAttribute("x", 78 + w + (w ? 4 : 0));
+    if (hasIO) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) play(en.target); else en.target.pause(); });
+      }, { rootMargin: "200px 0px" });
+      videos.forEach(function (v) { io.observe(v); });
+    } else {
+      videos.forEach(play);
     }
-    async function type(el, text, speed, after) {
-      for (var i = 1; i <= text.length; i++) { el.textContent = text.slice(0, i); if (after) after(); await wait(speed); }
-    }
-    async function run(cmd) {
-      cmdEl.textContent = ""; outEl.textContent = "";
-      await type(cmdEl, cmd, 24);
-      await wait(320);
-    }
-    function reset() {
-      hero.className = "hd";
-      typed.textContent = ""; moveCaret();
-      agentTo(1080, 640, true);
-      step(-1);
-    }
-    async function loop() {
-      reset();
-      await wait(900);
-      for (;;) {
-        step(0);
-        await run("nexremote windows");
-        out("* win:{c31f…}  org.kde.konsole  1100x780+0+0      api : claude — Konsole\n" +
-            "  win:{8c1e…}  systemsettings   760x540+1180+60   Appearance — System Settings\n" +
-            "  win:{a41f…}  firefox          880x560+1060+520  Player — Mozilla Firefox");
-        set("s-tags", true);
-        await wait(2300);
-
-        step(1); set("s-tags", false);
-        await run('nexremote find "Dark" --window win:{8c1e…}');
-        set("s-node", true);
-        out("atspi:4:0/2/7\t[checkbox] Dark  <toggle,click>");
-        await wait(1700);
-        await run("nexremote point atspi:4:0/2/7 --json");
-        set("s-agent", true); agentTo(1122, 198);
-        await wait(1150);
-        click(); set("s-dark", true);
-        out('{ "ok": true, "ref": "atspi:4:0/2/7", "x": 1702, "y": 258 }');
-        await wait(1900);
-
-        step(2); set("s-node", false); set("s-agent", false);
-        await run("nexremote term-read konsole:7891:2");
-        set("s-hl", true);
-        out("✗ 2 failed · test_login, test_refresh\nShould I fix them? (y/n, or tell me)\n›");
-        await wait(1900);
-        await run('nexremote term-send konsole:7891:2 "' + i18n.termMsg + '" --enter');
-        await type(typed, i18n.termMsg, 28, moveCaret);
-        out('{ "ok": true, "ref": "konsole:7891:2" }');
-        await wait(500);
-        set("s-reply", true);
-        await wait(1700);
-
-        step(3); set("s-hl", false);
-        await run("nexremote screenshot --window win:{a41f…} --max-width 1568 --json");
-        set("s-flash", false); void hero.offsetWidth; set("s-flash", true); set("s-shot", true);
-        out('{ "path": "/run/user/1000/nexremote-shot.png",\n  "width": 880, "height": 560,\n  "scale": 1.0, "origin": [1060, 520] }');
-        await wait(1900);
-        await run("nexremote click 440 190 --from-shot --json");
-        set("s-agent", true); agentTo(805, 544);
-        await wait(1150);
-        click(); set("s-play", true); set("s-run", true);
-        out('{ "ok": true, "x": 1500, "y": 710, "button": "left" }');
-        await wait(3200);
-        reset();
-        await wait(700);
-      }
-    }
-    loop();
   })();
 
   // ====================================================== kayan şerit

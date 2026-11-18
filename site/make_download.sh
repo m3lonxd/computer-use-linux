@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NexRemote indirilebilir paketi üretir (site üzerinden dağıtım için).
+# Computer Use Linux indirilebilir paketi üretir (site üzerinden dağıtım için).
 # GitHub askıda olduğundan kullanıcılar projeyi doğrudan buradan indirir.
 set -euo pipefail
 

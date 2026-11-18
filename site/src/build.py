@@ -205,8 +205,6 @@ S = {
         "cta_download": "Download", "cta_see": "See it work",
         "copy": "Copy", "copied": "Copied",
         "hero_meta": "MIT · Linux · Windows · macOS (preview) · Python 3.9+",
-        "hv_title": "Drawing of a desktop, here KDE Plasma on Linux, with terminals, a settings window and a video player. The agent's pointer lists the windows, finds the Dark switch by name and presses it, reads a terminal, and clicks the player from a screenshot.",
-        "hv1": "Window manager", "hv2": "Accessibility tree", "hv3": "Terminal text", "hv4": "Pixels, last",
         "mq_label": "Setups documented for",
 
         "prob_kicker": "The problem",
@@ -446,7 +444,7 @@ S = {
         "talk": "Talk to us", "foot_former": "Formerly NexRemote. The command, the package and the repository keep the name nexremote.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
 
         "other_lang": "tr", "other_lang_label": "TR", "other_lang_name": "Türkçe", "other_lang_href": "/tr/",
-        "home": "/", "path": "/",
+        "home": "/", "path": "/", "media": "media/", "og_locale": "en_US",
     },
     "tr": {
         "title": "Computer Use Linux — AI ajanın masaüstünü kullansın",
@@ -463,8 +461,6 @@ S = {
         "cta_download": "İndir", "cta_see": "Çalışırken gör",
         "copy": "Kopyala", "copied": "Kopyalandı",
         "hero_meta": "MIT · Linux · Windows · macOS (önizleme) · Python 3.9+",
-        "hv_title": "Bir masaüstü çizimi (burada Linux'ta KDE Plasma): terminaller, bir ayarlar penceresi ve bir video oynatıcı. Ajanın imleci pencereleri listeler, Koyu anahtarını adıyla bulup basar, bir terminali okur ve ekran görüntüsünden oynatıcıya tıklar.",
-        "hv1": "Pencere yöneticisi", "hv2": "Erişilebilirlik ağacı", "hv3": "Terminal metni", "hv4": "En son piksel",
         "mq_label": "Kurulumu belgelenmiş ortamlar",
 
         "prob_kicker": "Sorun",
@@ -704,7 +700,7 @@ S = {
         "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Komut, paket ve depo adı nexremote olarak kalır.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
 
         "other_lang": "en", "other_lang_label": "EN", "other_lang_name": "English", "other_lang_href": "/",
-        "home": "/tr/", "path": "/tr/",
+        "home": "/tr/", "path": "/tr/", "media": "../media/", "og_locale": "tr_TR",
     },
 }
 

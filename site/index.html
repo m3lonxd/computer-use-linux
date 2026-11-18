@@ -11,8 +11,17 @@
 <meta property="og:title" content="Computer Use Linux — let your AI agent use the desktop">
 <meta property="og:description" content="Shell commands that let an AI agent see and use the desktop on Linux, Windows and macOS: every window, a real mouse and keyboard, controls by name, and the terminals already open on screen.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Computer Use Linux">
+<meta property="og:url" content="https://nexremote.vercel.app/">
+<meta property="og:image" content="https://nexremote.vercel.app/media/hero.jpg">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Computer Use Linux — let your AI agent use the desktop">
+<meta name="twitter:description" content="Shell commands that let an AI agent see and use the desktop on Linux, Windows and macOS: every window, a real mouse and keyboard, controls by name, and the terminals already open on screen.">
+<meta name="twitter:image" content="https://nexremote.vercel.app/media/hero.jpg">
 <meta name="theme-color" content="#0c0d0b">
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="media/hero.webp" type="image/webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -85,153 +94,41 @@
 
 <!-- ================================================================ HERO -->
 <section class="hero band" aria-labelledby="hero-h">
-  <div class="grid-bg" data-parallax aria-hidden="true"></div>
-  <div class="wrap hero-top">
-    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Desktop control for AI agents · Linux · Windows · macOS</p>
-    <h1 id="hero-h" class="mega"><span class="l l1"><span class="w"><span style="--wi:0">Your</span></span> <span class="w"><span style="--wi:1">agent</span></span> <span class="w"><span style="--wi:2">can</span></span> <span class="w"><span style="--wi:3">run</span></span> <span class="w"><span style="--wi:4">commands.</span></span></span> <span class="l l2"><span class="w"><span style="--wi:5">Now</span></span> <span class="w"><span style="--wi:6">it</span></span> <span class="w"><span style="--wi:7">can</span></span> <span class="w"><span style="--wi:8">use</span></span> <span class="w"><span style="--wi:9">the</span></span> <span class="w"><span style="--wi:10">screen.</span></span></span></h1>
-    <div class="hero-row">
-      <p class="lede" data-reveal>Computer Use Linux turns the desktop into shell commands: every window, a real mouse and keyboard, buttons pressed by name, and the terminals you already have open, other agents included. Born on Linux, it runs the same commands on Windows and macOS too (macOS is a preview). No root, no SDK, and a vision model only when an app gives it nothing else to read.</p>
-      <div class="hero-cta" data-reveal>
-        <div class="btn-row">
-          <a class="btn btn-invert" href="/download/nexremote.zip" download data-magnet>
-            <svg class="ico" aria-hidden="true"><use href="#i-download"/></svg>
-            <span>Download</span>
-            <span class="btn-meta">v0.5.0 · zip · 237 KB</span>
-          </a>
-          <a class="btn btn-ghost" href="#replay" data-magnet>
-            <svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>
-            <span>See it work</span>
-          </a>
-        </div>
-        <div class="copyline">
-          <code id="cmd-setup">./install.sh &amp;&amp; nexremote setup</code>
-          <button class="copy" type="button" data-copy="#cmd-setup" data-done="Copied"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>Copy</span></button>
-        </div>
-        <p class="meta">MIT · Linux · Windows · macOS (preview) · Python 3.9+</p>
-      </div>
-    </div>
+  <div class="v-bg" aria-hidden="true">
+    <picture>
+      <source srcset="media/hero.webp" type="image/webp">
+      <img class="v-media" src="media/hero.jpg" alt="" width="1920" height="1072" fetchpriority="high">
+    </picture>
+    <video class="v-media dongu" autoplay muted loop playsinline preload="auto" poster="media/hero.webp" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback>
+      <source src="media/hero.webm" type="video/webm">
+      <source src="media/hero.mp4" type="video/mp4">
+    </video>
   </div>
-
-  <div class="hero-stage" data-hero-stage>
-    <div class="hero-tilt" data-hero-tilt>
-      <figure class="hd s-node s-dark s-hl s-reply s-shot s-play s-agent" data-hero>
-        <svg class="hd-scene" viewBox="0 0 1200 720" role="img" aria-labelledby="hd-t">
-          <title id="hd-t">Drawing of a desktop, here KDE Plasma on Linux, with terminals, a settings window and a video player. The agent&#x27;s pointer lists the windows, finds the Dark switch by name and presses it, reads a terminal, and clicks the player from a screenshot.</title>
-          <defs>
-            <linearGradient id="hd-wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="hd-wall-a"/><stop offset="1" class="hd-wall-b"/></linearGradient>
-          </defs>
-          <rect class="hd-desk" width="1200" height="720"/>
-          <path class="hd-wallgrid" d="M0 120H1200M0 240H1200M0 360H1200M0 480H1200M0 600H1200M200 0V720M400 0V720M600 0V720M800 0V720M1000 0V720"/>
-
-          <!-- Konsole: çalışan ajan -->
-          <g class="hd-win" data-hw="term">
-            <rect class="hd-frame" x="40" y="36" width="600" height="390" rx="10"/>
-            <path class="hd-bar" d="M50 36h580a10 10 0 0 1 10 10v22H40V46a10 10 0 0 1 10-10z"/>
-            <text class="hd-title" x="340" y="57" text-anchor="middle">api : claude — Konsole</text>
-            <circle class="hd-ctl" cx="596" cy="52" r="5"/><circle class="hd-ctl" cx="614" cy="52" r="5"/><circle class="hd-ctl" cx="578" cy="52" r="5"/>
-            <rect class="hd-term" x="40" y="68" width="600" height="358"/>
-            <rect class="hd-tab on" x="40" y="68" width="150" height="26"/><text class="hd-tabt on" x="56" y="86">claude</text>
-            <rect class="hd-tab" x="190" y="68" width="150" height="26"/><text class="hd-tabt" x="206" y="86">claude</text>
-            <rect class="hd-tab" x="340" y="68" width="110" height="26"/><text class="hd-tabt" x="356" y="86">ssh</text>
-            <rect class="hd-hl" x="48" y="200" width="584" height="52" rx="4"/>
-            <text class="hd-mono hd-dim" x="60" y="128">● Running test suite…</text>
-            <text class="hd-mono" x="60" y="152">  tests/test_api.py ........F.F</text>
-            <text class="hd-mono" x="60" y="176">  tests/test_ui.py  ...........</text>
-            <text class="hd-mono hd-bad" x="60" y="220">✗ 2 failed · test_login, test_refresh</text>
-            <text class="hd-mono" x="60" y="244">Should I fix them? (y/n, or tell me)</text>
-            <text class="hd-mono"><tspan class="hd-prompt" x="60" y="276">›</tspan> <tspan data-hd-typed></tspan></text>
-            <text class="hd-mono hd-dim hd-reply" x="60" y="302">● Reading tests/test_api.py…</text>
-            <rect class="hd-caret" x="76" y="263" width="9" height="17"/>
-            <g class="hd-tag" transform="translate(52 396)"><rect width="222" height="22" rx="4"/><text x="10" y="15.5">win:{c31f…} org.kde.konsole</text></g>
-          </g>
-
-          <!-- tmux: ikinci ajan -->
-          <g class="hd-win" data-hw="tmux">
-            <rect class="hd-frame" x="40" y="446" width="380" height="226" rx="10"/>
-            <path class="hd-bar" d="M50 446h360a10 10 0 0 1 10 10v22H40v-22a10 10 0 0 1 10-10z"/>
-            <text class="hd-title" x="230" y="467" text-anchor="middle">codex — tmux</text>
-            <rect class="hd-term" x="40" y="478" width="380" height="194"/>
-            <text class="hd-mono hd-dim" x="56" y="508">codex › refactor the auth module</text>
-            <text class="hd-mono" x="56" y="532">  editing src/auth.py</text>
-            <text class="hd-mono hd-ok" x="56" y="556">  ✓ 14 passed</text>
-            <text class="hd-mono hd-dim" x="56" y="580">codex › _</text>
-          </g>
-
-          <!-- Sistem Ayarları -->
-          <g class="hd-win hd-set" data-hw="set">
-            <rect class="hd-frame" x="680" y="56" width="480" height="320" rx="10"/>
-            <path class="hd-bar" d="M690 56h460a10 10 0 0 1 10 10v22H680V66a10 10 0 0 1 10-10z"/>
-            <text class="hd-title" x="920" y="77" text-anchor="middle">Appearance — System Settings</text>
-            <rect class="hd-side" x="680" y="88" width="150" height="288"/>
-            <rect class="hd-side-on" x="690" y="100" width="130" height="28" rx="5"/>
-            <text class="hd-label" x="704" y="119">Appearance</text>
-            <text class="hd-label hd-mut" x="704" y="151">Colors</text>
-            <text class="hd-label hd-mut" x="704" y="181">Fonts</text>
-            <text class="hd-label hd-mut" x="704" y="211">Icons</text>
-            <text class="hd-label hd-mut" x="704" y="241">Cursors</text>
-            <text class="hd-h" x="852" y="122">Global Theme</text>
-            <text class="hd-label" x="852" y="162">Colors</text>
-            <circle class="hd-sw" cx="1090" cy="157" r="8"/><circle class="hd-sw s2" cx="1112" cy="157" r="8"/><circle class="hd-sw s3" cx="1134" cy="157" r="8"/>
-            <path class="hd-rule" d="M852 178h292M852 218h292M852 258h292"/>
-            <text class="hd-label" x="852" y="203">Dark</text>
-            <rect class="hd-switch" x="1100" y="187" width="44" height="22" rx="11"/>
-            <circle class="hd-knob" cx="1111" cy="198" r="8"/>
-            <text class="hd-label" x="852" y="243">Accent</text>
-            <rect class="hd-pill" x="1104" y="234" width="40" height="14" rx="4"/>
-            <rect class="hd-apply" x="1064" y="326" width="80" height="30" rx="6"/>
-            <text class="hd-label hd-apply-t" x="1104" y="346" text-anchor="middle">Apply</text>
-            <g class="hd-node">
-              <rect class="hd-node-r" x="842" y="182" width="310" height="32" rx="5"/>
-              <g transform="translate(842 160)"><rect class="hd-node-l" width="262" height="20" rx="4"/><text x="8" y="14.5">atspi:4:0/2/7 [checkbox] Dark</text></g>
-            </g>
-            <g class="hd-tag" transform="translate(692 346)"><rect width="218" height="22" rx="4"/><text x="10" y="15.5">win:{8c1e…} systemsettings</text></g>
-          </g>
-
-          <!-- Tarayıcı oynatıcı -->
-          <g class="hd-win" data-hw="web">
-            <rect class="hd-frame" x="450" y="400" width="710" height="272" rx="10"/>
-            <path class="hd-bar" d="M460 400h690a10 10 0 0 1 10 10v22H450v-22a10 10 0 0 1 10-10z"/>
-            <text class="hd-title" x="805" y="421" text-anchor="middle">Player — Mozilla Firefox</text>
-            <rect class="hd-url" x="466" y="440" width="678" height="22" rx="11"/>
-            <text class="hd-urlt" x="482" y="455">localhost:5173/player</text>
-            <rect class="hd-video" x="466" y="470" width="678" height="160" rx="6"/>
-            <circle class="hd-playbtn" cx="805" cy="544" r="28"/>
-            <path class="hd-ico-play" d="M796 530v28l23-14z"/>
-            <path class="hd-ico-pause" d="M793 531h8v26h-8zM809 531h8v26h-8z"/>
-            <rect class="hd-track" x="482" y="612" width="646" height="4" rx="2"/>
-            <rect class="hd-fill" x="482" y="612" width="646" height="4" rx="2"/>
-            <rect class="hd-line" x="466" y="642" width="300" height="9" rx="3"/>
-            <rect class="hd-line" x="466" y="657" width="180" height="7" rx="3"/>
-            <rect class="hd-shutter" x="450" y="400" width="710" height="272" rx="10"/>
-            <rect class="hd-crop" x="456" y="406" width="698" height="260" rx="8" pathLength="1"/>
-            <g class="hd-tag" transform="translate(1000 642)"><rect width="144" height="22" rx="4"/><text x="10" y="15.5">win:{a41f…} zen</text></g>
-          </g>
-
-          <!-- panel -->
-          <rect class="hd-panel" x="0" y="688" width="1200" height="32"/>
-          <circle class="hd-launch" cx="24" cy="704" r="9"/>
-          <rect class="hd-task" x="48" y="694" width="20" height="20" rx="4"/><rect class="hd-task" x="76" y="694" width="20" height="20" rx="4"/><rect class="hd-task" x="104" y="694" width="20" height="20" rx="4"/><rect class="hd-task" x="132" y="694" width="20" height="20" rx="4"/>
-          <text class="hd-clock" x="1176" y="709" text-anchor="end">14:32</text>
-
-          <!-- ajan imleci -->
-          <g class="hd-agent" data-hd-agent style="transform: translate(805px, 544px)">
-            <circle class="hd-ripple" r="16"/>
-            <circle class="hd-ripple r2" r="16"/>
-            <path class="hd-arrow" d="M0 0V25.6c0 2.2 2.4 3.2 3.9 1.7l5.6-5.5c.6-.6 1.4-.9 2.2-.9h8.1c2.1 0 3.2-2.6 1.6-4.1L3.9-1.6C2.4-3 0-1.9 0 0Z"/>
-          </g>
-        </svg>
-
-        <figcaption class="hd-bar-ui" aria-hidden="true">
-          <p class="hd-cmd"><span class="hd-ps">$</span> <span data-hd-cmd>nexremote click 440 190 --from-shot --json</span><span class="hd-cur"></span></p>
-          <pre class="hd-out" data-hd-out>{ "ok": true, "x": 1500, "y": 710, "button": "left" }</pre>
-          <ol class="hd-steps">
-            <li data-hd-step><span>1</span>Window manager</li>
-            <li data-hd-step><span>2</span>Accessibility tree</li>
-            <li data-hd-step><span>3</span>Terminal text</li>
-            <li data-hd-step class="on"><span>4</span>Pixels, last</li>
-          </ol>
-        </figcaption>
-      </figure>
+  <div class="wrap hero-top">
+    <div class="hero-in">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Desktop control for AI agents · Linux · Windows · macOS</p>
+      <h1 id="hero-h" class="mega"><span class="l l1"><span class="w"><span style="--wi:0">Your</span></span> <span class="w"><span style="--wi:1">agent</span></span> <span class="w"><span style="--wi:2">can</span></span> <span class="w"><span style="--wi:3">run</span></span> <span class="w"><span style="--wi:4">commands.</span></span></span> <span class="l l2"><span class="w"><span style="--wi:5">Now</span></span> <span class="w"><span style="--wi:6">it</span></span> <span class="w"><span style="--wi:7">can</span></span> <span class="w"><span style="--wi:8">use</span></span> <span class="w"><span style="--wi:9">the</span></span> <span class="w"><span style="--wi:10">screen.</span></span></span></h1>
+      <div class="hero-row">
+        <p class="lede" data-reveal>Computer Use Linux turns the desktop into shell commands: every window, a real mouse and keyboard, buttons pressed by name, and the terminals you already have open, other agents included. Born on Linux, it runs the same commands on Windows and macOS too (macOS is a preview). No root, no SDK, and a vision model only when an app gives it nothing else to read.</p>
+        <div class="hero-cta" data-reveal>
+          <div class="btn-row">
+            <a class="btn btn-invert" href="/download/nexremote.zip" download data-magnet>
+              <svg class="ico" aria-hidden="true"><use href="#i-download"/></svg>
+              <span>Download</span>
+              <span class="btn-meta">v0.5.0 · zip · 237 KB</span>
+            </a>
+            <a class="btn btn-ghost" href="#replay" data-magnet>
+              <svg class="ico" aria-hidden="true"><use href="#i-play"/></svg>
+              <span>See it work</span>
+            </a>
+          </div>
+          <div class="copyline">
+            <code id="cmd-setup">./install.sh &amp;&amp; nexremote setup</code>
+            <button class="copy" type="button" data-copy="#cmd-setup" data-done="Copied"><span class="copy-ico" aria-hidden="true"><svg class="ico i1"><use href="#i-copy"/></svg><svg class="ico i2"><use href="#i-check"/></svg></span><span data-label>Copy</span></button>
+          </div>
+          <p class="meta">MIT · Linux · Windows · macOS (preview) · Python 3.9+</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -665,7 +562,16 @@ Should I fix them? (y/n, or tell me)</code></pre>
 
 <!-- =============================================================== WATCH -->
 <section class="watch band sec" data-wipe aria-labelledby="watch-h">
-  <div class="grid-bg" data-parallax aria-hidden="true"></div>
+  <div class="v-bg" aria-hidden="true">
+    <picture>
+      <source srcset="media/ikinci.webp" type="image/webp">
+      <img class="v-media" src="media/ikinci.jpg" alt="" width="1920" height="1072" loading="lazy" decoding="async">
+    </picture>
+    <video class="v-media dongu" muted loop playsinline preload="none" poster="media/ikinci.webp" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback data-gec>
+      <source src="media/ikinci.webm" type="video/webm">
+      <source src="media/ikinci.mp4" type="video/mp4">
+    </video>
+  </div>
   <div class="wrap watch-grid">
     <div data-reveal>
       <span class="bignum bignum-inline" aria-hidden="true">06</span>
