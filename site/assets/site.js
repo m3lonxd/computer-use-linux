@@ -240,6 +240,123 @@
     }
   })();
 
+  // ============================================ etkileşimli klavye (hero)
+  // Hero fotoğrafındaki her tuş kapağının üst yüzeyi (1920x1072 görsel uzayında bir dörtgen).
+  // Fare bir kapağın üstüne gelince fotoğraftan kesilmiş o kapak yaması birkaç piksel iner,
+  // kararır, altında koyu bir boşluk açılır. Yama, videonun üstünde ama koyu gradyanın altında durur.
+  // Hit-test elementFromPoint ile değil, fare konumunun görsel uzayına çevrilip dörtgende
+  // nokta testi yapılmasıyla; metin ve düğmeler olduğu gibi tıklanır. Dokunmatikte kapalı.
+  if (fine) (function () {
+    var hero = $(".hero"), bg = hero && $(".v-bg", hero), img = bg && $("img.v-media", bg);
+    if (!img) return;
+    var IW = 1920, IH = 1072, NS = "http://www.w3.org/2000/svg";
+    var KEYS = [
+      ["Esc",[710,717,793,683,860,728,767,764]],
+      ["~",[810,805,903,773,970,820,872,861]],
+      ["1",[970,757,1053,716,1125,765,1040,811]],
+      ["Tab",[909,915,1066,852,1154,905,968,957]],
+      ["F1",[1000,605,1083,579,1147,628,1057,654]],
+      ["F2",[1138,562,1223,529,1282,573,1200,609]],
+      ["F3",[1268,510,1348,479,1417,530,1337,556]],
+      ["2",[1123,700,1205,664,1270,713,1197,759]],
+      ["3",[1268,642,1348,611,1402,647,1320,691]],
+      ["E",[1433,727,1515,689,1597,743,1505,776]],
+      ["W",[1288,787,1365,751,1450,803,1352,849]],
+      ["S",[1402,885,1488,848,1567,900,1488,941]],
+      ["Z",[1435,1015,1528,980,1600,1028,1515,1066]],
+      ["X",[1583,957,1670,919,1750,965,1660,1001]],
+      ["D",[1555,810,1638,776,1722,833,1635,874]],
+      ["C",[1728,890,1802,860,1892,900,1813,936]],
+      ["G",[1713,737,1795,706,1870,763,1798,796]],
+      ["F5",[1508,420,1583,390,1650,438,1577,466]],
+      ["F6",[1628,375,1695,352,1767,398,1703,418]],
+      ["F7",[1746,335,1800,309,1880,358,1815,378]],
+      ["4",[1400,600,1480,559,1555,610,1470,646]],
+      ["6",[1540,540,1615,509,1687,563,1615,586]],
+      ["7",[1665,497,1743,461,1812,510,1732,544]],
+      ["8",[1795,445,1868,413,1937,460,1870,491]],
+      ["Y",[1711,613,1797,579,1865,626,1776,658]],
+      ["A",[1251,942,1337,906,1415,952,1329,985]],
+      ["T",[1577,668,1655,632,1734,686,1642,714]],
+      ["Q",[1137,874,1198,839,1299,898,1214,928]],
+      ["Caps",[1008,1041,1189,962,1263,1016,1099,1073]]
+    ];
+    var svg = D.createElementNS(NS, "svg"), defs = D.createElementNS(NS, "defs"), g = D.createElementNS(NS, "g");
+    svg.setAttribute("class", "keys"); svg.setAttribute("aria-hidden", "true");
+    svg.appendChild(defs); svg.appendChild(g);
+    var polys = [], pics = [];
+    function mk(tag, attrs, parent) {
+      var el = D.createElementNS(NS, tag);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      parent.appendChild(el); return el;
+    }
+    KEYS.forEach(function (k, i) {
+      var c = k[1], pts = [], str = [], j;
+      for (j = 0; j < 8; j += 2) { pts.push([c[j], c[j + 1]]); str.push(c[j] + "," + c[j + 1]); }
+      var cp = mk("clipPath", { id: "kc" + i }, defs);
+      mk("polygon", { points: str.join(" ") }, cp);
+      var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
+      mk("polygon", { "class": "kp-sh", points: str.join(" ") }, kp);
+      var cap = mk("g", { "class": "kp-cap" }, kp);
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#kc" + i + ")" }, cap));
+      polys.push({ el: kp, pts: pts, name: k[0] });
+    });
+    bg.insertBefore(svg, null);
+
+    function src() {
+      var u = img.currentSrc || img.src;
+      if (u) pics.forEach(function (p) { p.setAttribute("href", u); });
+    }
+    if (img.complete) src(); else img.addEventListener("load", src, { once: true });
+
+    // object-fit: cover + object-position (CSS'teki değer) dönüşümü
+    var sc = 1, ox = 0, oy = 0;
+    function layout() {
+      var w = bg.clientWidth, h = bg.clientHeight;
+      sc = Math.max(w / IW, h / IH);
+      var pos = (getComputedStyle(img).objectPosition || "50% 50%").split(" ");
+      function off(v, free) { return /%$/.test(v) ? free * parseFloat(v) / 100 : parseFloat(v) || 0; }
+      ox = off(pos[0], w - IW * sc); oy = off(pos[1] || "50%", h - IH * sc);
+      g.setAttribute("transform", "translate(" + ox.toFixed(2) + " " + oy.toFixed(2) + ") scale(" + sc.toFixed(5) + ")");
+    }
+    layout();
+    addEventListener("resize", layout);
+
+    function inside(x, y, p) {
+      var c = false, n = p.length, i, j = n - 1;
+      for (i = 0; i < n; i++) {
+        var xi = p[i][0], yi = p[i][1], xj = p[j][0], yj = p[j][1];
+        if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+        j = i;
+      }
+      return c;
+    }
+    var cur = null, lx = -1, ly = -1, blocked = false;
+    function press(k) {
+      if (k === cur) return;
+      if (cur) cur.el.classList.remove("on");
+      cur = k;
+      if (cur) cur.el.classList.add("on");
+    }
+    function test() {
+      if (blocked || lx < 0) { press(null); return; }
+      var r = bg.getBoundingClientRect();
+      var x = (lx - r.left - ox) / sc, y = (ly - r.top - oy) / sc, i;
+      if (cur && inside(x, y, cur.pts)) return;
+      for (i = 0; i < polys.length; i++) if (inside(x, y, polys[i].pts)) { press(polys[i]); return; }
+      press(null);
+    }
+    hero.addEventListener("pointermove", function (e) {
+      if (e.pointerType && e.pointerType !== "mouse" && e.pointerType !== "pen") return;
+      lx = e.clientX; ly = e.clientY;
+      blocked = !!(e.target.closest && e.target.closest("a, button, .copyline"));
+      test();
+    });
+    hero.addEventListener("pointerleave", function () { lx = -1; press(null); });
+    addEventListener("scroll", function () { if (lx >= 0) test(); }, { passive: true });
+    addEventListener("blur", function () { lx = -1; press(null); });
+  })();
+
   // ====================================================== kayan şerit
   var marquee = $("[data-marquee]");
   if (marquee && !reduced) watch(marquee, function (v) { marquee.classList.toggle("on", v); });
