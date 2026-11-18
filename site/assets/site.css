@@ -296,27 +296,41 @@ html:not(.js) .mq-dup { display: none; }
 .rung-meta span + span::before { content: "\A"; white-space: pre; }
 .rung-code { margin: 14px 0 0; padding: 14px 16px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto; font-size: .78rem; line-height: 1.65; color: var(--ink-2); }
 .rung-code .c, .sample .c, .panel .c { color: var(--cursor); }
-.story-stage { display: none; }
 
 /* masaüstü: sabitlenmiş sahne, adımlar yanından akar */
 .story-pin .story { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(40px, 5vw, 80px); }
 .story-pin .rungs { gap: 0; }
 .story-pin .rung { min-height: 88vh; display: flex; align-items: center; }
-.story-pin .rung-in { background: none; border: 0; padding: 0 0 0 68px; opacity: .3; transition: opacity .5s var(--ease); }
+.story-pin .rung-in { max-width: 390px; background: none; border: 0; padding: 0 0 0 68px; opacity: .3; transition: opacity .5s var(--ease); }
 .story-pin .rung.on .rung-in { opacity: 1; }
 .story-pin .rung-in.in { transform: none; }
 .story-pin .rung-n { left: 0; top: -4px; transition: background-color .4s, color .4s; }
 .story-pin .rung.on .rung-n { background: var(--cursor); color: #12061f; }
 .story-pin .rung-code { display: none; }
-.story-pin .story-stage { display: block; position: sticky; top: max(84px, calc(50vh - 300px)); align-self: start; margin: 12vh 0; }
-.ss { padding: 16px; border-radius: 18px; background: var(--paper-2); border: 1px solid var(--rule-2); box-shadow: var(--lift); }
-.ss-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+/* sinematik sahne: tek video, şema monitörün ekranına matrix3d ile oturur (JS dört köşeyi hesaplar) */
+.story-bg { display: none; }
+.story-pin .story-bg { display: block; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; margin-left: -50vw; z-index: -1; pointer-events: none; }
+.sb-in { position: sticky; top: 0; height: 100vh; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
+.sb-media { position: absolute; inset: 0; }
+.sb-media picture { display: block; position: absolute; inset: 0; }
+.sb-media .v-media { object-fit: fill; object-position: 0 0; }
+/* metin tarafı okunur kalsın: soldan koyu gradyan */
+.sb-in::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgb(8 5 15 / .82) 0%, rgb(8 5 15 / .55) 30%, transparent 52%); }
+.story-pin .story-stage { display: block; position: absolute; left: 0; top: 0; z-index: 2; width: 760px; height: 546px; transform-origin: 0 0; visibility: hidden; }
+.story-stage.ready { visibility: visible; }
+.ss { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 14px 16px; background: #0a0714; position: relative; overflow: hidden; }
+.ss::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, rgb(255 255 255 / .09) 0%, rgb(255 255 255 / .02) 32%, transparent 55%), radial-gradient(120% 90% at 50% 50%, transparent 60%, rgb(0 0 0 / .35) 100%); }
+.ss-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
 .ss-cmd { margin: 0; font: 500 .84rem var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ss-cmd .c { color: var(--cursor); }
 .ss-gets { margin: 0; flex: none; font: 400 .75rem var(--mono); color: var(--ink-3); padding: 5px 10px; border: 1px solid var(--rule-2); border-radius: 999px; }
 .ss-gets b { color: var(--cursor); font-weight: 500; margin-left: 4px; }
-.ss-scene { width: 100%; height: auto; border-radius: 10px; }
-.ss-meter { display: flex; align-items: center; gap: 12px; margin-top: 14px; font: 400 .72rem var(--mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .1em; }
+.ss-scene { width: 100%; flex: 1 1 0; min-height: 0; height: auto; border-radius: 6px; }
+.ss-meter { display: flex; align-items: center; gap: 12px; margin-top: 10px; font: 400 .72rem var(--mono); color: var(--ink-3); text-transform: uppercase; letter-spacing: .1em; }
 .ss-track { flex: 1; height: 4px; border-radius: 2px; background: var(--rule-2); overflow: hidden; }
 .ss-track i { display: block; height: 100%; background: linear-gradient(90deg, var(--cursor) 70%, #e8b04b); transform: scaleX(0); transform-origin: 0 50%; }
 .ss-dots { display: none; }

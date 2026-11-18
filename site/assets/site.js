@@ -373,17 +373,83 @@
       return { el: el, L: +a[0], a: +a[1], b: +a[2], m: a[3], f: pt(el.dataset.from), t: pt(el.dataset.to) };
     });
     var last = -1;
+
+    // Sinematik sahne: tek arka plan videosu; şema paneli (.story-stage) videodaki monitörün
+    // ekranına oturur. Ekranın iç köşeleri video piksel uzayında (1280x720) bilinir; kapsayıcı
+    // boyutuna göre video ölçeği/kaymasıyla köşeler ekrana çevrilir ve panel, birim dikdörtgeni
+    // bu dört noktaya götüren homografiyle (matrix3d) yerleştirilir. Veri tasarrufunda video
+    // hiç indirilmez (poster kalır); ekran dışındayken durur.
+    var stage = $(".story-stage", story), bgIn = $(".sb-in", story), media = $(".sb-media", story), vid = $("video.sb-v", story);
+    var VW = 1280, VH = 720, PW = 760, PH = 546;
+    var SCR = [[452, 46], [1089, 8], [1089, 466], [452, 447]];       // TL, TR, BR, BL
+    var saveData = false;
+    try { saveData = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
+    if (vid && (saveData || reduced)) { vid.removeAttribute("data-gec"); vid.remove(); vid = null; }
+    // (0,0),(PW,0),(PW,PH),(0,PH) -> dst: 8 bilinmeyenli doğrusal sistem (Gauss), CSS matrix3d dizilimi
+    function homography(dst) {
+      var src = [[0, 0], [PW, 0], [PW, PH], [0, PH]], A = [], i, j, k;
+      for (i = 0; i < 4; i++) {
+        var x = src[i][0], y = src[i][1], u = dst[i][0], v = dst[i][1];
+        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]);
+        A.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]);
+      }
+      for (i = 0; i < 8; i++) {
+        var m = i;
+        for (j = i + 1; j < 8; j++) if (Math.abs(A[j][i]) > Math.abs(A[m][i])) m = j;
+        var tmp = A[i]; A[i] = A[m]; A[m] = tmp;
+        for (j = i + 1; j < 8; j++) {
+          var f = A[j][i] / A[i][i];
+          for (k = i; k < 9; k++) A[j][k] -= f * A[i][k];
+        }
+      }
+      var h = [];
+      for (i = 7; i >= 0; i--) {
+        var sum = A[i][8];
+        for (j = i + 1; j < 8; j++) sum -= A[i][j] * h[j];
+        h[i] = sum / A[i][i];
+      }
+      return "matrix3d(" + [h[0], h[3], 0, h[6], h[1], h[4], 0, h[7], 0, 0, 1, 0, h[2], h[5], 0, 1].map(function (n) { return n.toFixed(8); }).join(",") + ")";
+    }
+    function layoutStage() {
+      if (!stage || !bgIn || !pinned()) return;
+      var W = bgIn.clientWidth, Hh = bgIn.clientHeight;
+      if (!W || !Hh) return;
+      var s = Math.max(W / VW, Hh / VH);
+      // monitörün sağ kenarı pencerenin içinde kalsın (dar ekranda video sola kayar)
+      var ox = clamp(W - Math.max(16, W * 0.03) - SCR[1][0] * s, W - VW * s, 0);
+      var oy = Hh * 0.09;                                              // üstte başlığın altında nefes payı
+      media.style.left = ox.toFixed(1) + "px"; media.style.top = oy.toFixed(1) + "px";
+      media.style.width = (VW * s).toFixed(1) + "px"; media.style.height = (VH * s).toFixed(1) + "px";
+      stage.style.transform = homography(SCR.map(function (p) { return [ox + p[0] * s, oy + p[1] * s]; }));
+      stage.classList.add("ready");
+    }
+    var live = false;
+    function sbPlay(on) {
+      if (!vid) return;
+      if (on) {
+        if (vid.hasAttribute("data-gec")) { vid.removeAttribute("data-gec"); vid.preload = "auto"; vid.load(); }
+        var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {});
+      } else vid.pause();
+    }
+
     function pinned() { return !reduced && pinMQ && pinMQ.matches; }
-    function setPin() { H.classList.toggle("story-pin", pinned()); schedule(); }
+    function setPin() {
+      var on = pinned();
+      H.classList.toggle("story-pin", on);
+      if (on) layoutStage(); else { sbPlay(false); live = false; }
+      schedule();
+    }
+    addEventListener("resize", layoutStage);
     setPin();
     if (pinMQ && pinMQ.addEventListener) pinMQ.addEventListener("change", setPin);
 
     tasks.push(function (vh) {
       if (!pinned()) return null;
       var r = $(".rungs", story).getBoundingClientRect();
-      if (r.top > vh || r.bottom < 0) return null;
+      if (r.top > vh || r.bottom < 0) return live ? function () { live = false; sbPlay(false); } : null;
       var p = clamp((vh / 2 - r.top) / r.height, 0, 1);
       return function () {
+        if (!live) { live = true; sbPlay(true); }
         var t = [0, 1, 2, 3].map(function (i) { return clamp(p * 4 - i + 0.2, 0, 1); });
         var inn = t.map(function (x) { return ss(0, 0.12, x); });
         layers.forEach(function (l, i) { l.style.opacity = (inn[i] * (i < 3 ? 1 - inn[i + 1] : 1)).toFixed(3); });
