@@ -62,5 +62,16 @@ cd site && python3 -m http.server 8899 --bind 127.0.0.1     # http://127.0.0.1:8
 ## Deploy
 Bu çalışmada deploy edilmedi. Yayınlamak için (kullanıcı onayıyla):
 ```bash
-cd site && vercel --prod
+bash site/deploy.sh      # ~/nexremote kökünden
 ```
+`vercel --prod`'u doğrudan çalıştırmayın: Hobby planı, commit yazarı ekip
+sahibinin GitHub hesabı olmayan dağıtımı `BLOCKED` bırakır. Betik siteyi Git
+dışı geçici bir kopyadan yayınlar.
+
+## Tasarım ilkeleri (anti-slop)
+Bu site bilinçli olarak AI-şablonundan kaçınır:
+- Mor/pembe mesh gradyan YOK — mühendislik ızgarası dokusu var.
+- "3 kart + sahte istatistik + yorumlar" YOK — ürünün kendisi (terminal, ağaç, diyagram) gösteriliyor.
+- Inter-for-everything YOK — başlıklar Inter Tight, kod/teknik metin IBM Plex Mono.
+- Her animasyon bir işe yarıyor: daktilo gerçek çıktıyı gösterir, diyagram akışı anlatır. Konfeti/glow/parçacık YOK.
+- `prefers-reduced-motion` her animasyonda dikkate alınır.

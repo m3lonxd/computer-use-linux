@@ -11,9 +11,12 @@ facade yalnızca bu sınıfı görür.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import shutil
 import subprocess
+import time
 from typing import Optional
 
 from ..models import Screenshot
@@ -41,12 +44,70 @@ def session_kind() -> str:
     return "tty"
 
 
+_KIND_TTL = 600.0
+
+
+def _kind_file() -> str:
+    from .base import runtime_dir
+    return os.path.join(runtime_dir(), "nexremote-kinds.json")
+
+
+def _session_sig(name: str) -> str:
+    """Kanal seçiminin geçerli olduğu oturum: aynı ekran + aynı D-Bus."""
+    parts = [name] + [os.environ.get(k, "") for k in (
+        "DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "XDG_SESSION_ID",
+        "SWAYSOCK", "HYPRLAND_INSTANCE_SIGNATURE")]
+    return hashlib.sha1("\0".join(parts).encode()).hexdigest()[:16]
+
+
 class LinuxDesktop(Desktop):
     def __init__(self) -> None:
         self.name = session_kind()
         self._x11 = None
         self._wm: Optional[str] = None
         self._input: Optional[str] = None
+        self._watch = None
+        self._sig = _session_sig(self.name)
+        cached = self._load_kinds()
+        if cached:
+            self._wm, self._input = cached.get("wm"), cached.get("input")
+
+    # ------------------------------------------------- kanal seçimi önbelleği
+    # Pencere/giriş kanalını bulmak D-Bus yoklaması ister (KWin, portal); her
+    # CLI sürecinde yeniden yapılmasın. Bir kanal hata verirse önbellek silinir.
+    def _load_kinds(self) -> Optional[dict]:
+        if os.environ.get("NEXREMOTE_KIND_CACHE", "1") == "0":
+            return None
+        try:
+            with open(_kind_file()) as f:
+                d = json.load(f).get(self._sig)
+        except (OSError, ValueError, AttributeError):
+            return None
+        if not d or time.time() - float(d.get("t", 0)) > _KIND_TTL:
+            return None
+        return d
+
+    def _save_kinds(self) -> None:
+        if self._wm is None or self._input is None:
+            return
+        if os.environ.get("NEXREMOTE_KIND_CACHE", "1") == "0":
+            return
+        try:
+            path = _kind_file()
+            tmp = f"{path}.{os.getpid()}.tmp"
+            with open(tmp, "w") as f:
+                json.dump({self._sig: {"wm": self._wm, "input": self._input,
+                                       "t": time.time()}}, f)
+            os.replace(tmp, path)
+        except OSError:
+            pass
+
+    def forget_kinds(self) -> None:
+        self._wm = self._input = None
+        try:
+            os.remove(_kind_file())
+        except OSError:
+            pass
 
     # ------------------------------------------------------- kanal seçimi
     def _x11_ok(self) -> bool:
@@ -76,6 +137,7 @@ class LinuxDesktop(Desktop):
                 self._wm = "x11"
             else:
                 self._wm = ""
+            self._save_kinds()
         return self._wm
 
     def _wm_provider(self):
@@ -95,6 +157,7 @@ class LinuxDesktop(Desktop):
                 self._input = "tools"
             else:
                 self._input = ""
+            self._save_kinds()
         return self._input
 
     # ------------------------------------------------------------ yetenekler
@@ -192,14 +255,37 @@ class LinuxDesktop(Desktop):
         return steps
 
     # --------------------------------------------------------------- pencere
+    def enable_watch(self) -> None:
+        """Uzun ömürlü süreçte KWin pencere listesini sürekli izle (her istekte
+        betik yükleyip kaldırmak yerine). Yalnızca KWin'de; hata verirse sessizce
+        tek seferlik betiğe dönülür."""
+        if os.environ.get("NEXREMOTE_KWIN_WATCH", "1") == "0":
+            return
+        self._watch = "lazy"
+
+    def _kwin_windows(self) -> list[dict]:
+        from .. import kwin
+        if self._watch == "lazy":
+            self._watch = kwin.Watcher.start()      # None: desteklenmiyor
+        if self._watch is not None:
+            got = self._watch.windows()
+            if got is not None:
+                return got
+            self._watch = None                      # izleyici güvenilmez: tek seferliğe dön
+        return kwin.windows()
+
     def windows(self) -> list[WinInfo]:
         kind = self._wm_kind()
         if kind == "kwin":
-            from .. import kwin
+            try:
+                ws = self._kwin_windows()
+            except Exception:
+                self.forget_kinds()
+                raise
             return [WinInfo(id=w["id"], title=w["title"], app=w["app"], pid=w["pid"],
                             x=w["x"], y=w["y"], w=w["w"], h=w["h"],
                             active=bool(w["active"]), minimized=bool(w.get("minimized")))
-                    for w in kwin.windows()]
+                    for w in ws]
         if kind == "x11":
             return self._x().windows()
         if kind:
@@ -210,7 +296,10 @@ class LinuxDesktop(Desktop):
         kind = self._wm_kind()
         if kind == "kwin":
             from .. import kwin
-            return kwin.act(wid, action)
+            ok = kwin.act(wid, action)
+            if self._watch not in (None, "lazy"):
+                self._watch.invalidate()
+            return ok
         if kind == "x11":
             return self._x().act(wid, action)
         if kind:
@@ -245,13 +334,20 @@ class LinuxDesktop(Desktop):
             return None  # konum isteğe bağlı bilgi (imleci geri koymak için)
         return None
 
+    def _portal(self, line: str) -> str:
+        from .. import portal_input
+        try:
+            return portal_input.call(line)
+        except (OSError, RuntimeError, TimeoutError):
+            self.forget_kinds()       # servis/portal gitti: sonraki çağrı yeniden yoklasın
+            raise
+
     def move(self, x: float, y: float) -> None:
         m = self._mouse()
         if m == "x11":
             self._x().move(x, y)
         elif m == "portal":
-            from .. import portal_input
-            portal_input.call(f"MOVE {x:.1f} {y:.1f}")
+            self._portal(f"MOVE {x:.1f} {y:.1f}")
         elif m == "sway":
             self._wm_provider().move(x, y)
         else:
@@ -264,8 +360,7 @@ class LinuxDesktop(Desktop):
         if m == "x11":
             self._x().button(button, pressed)
         elif m == "portal":
-            from .. import portal_input
-            portal_input.call(f"{'DOWN' if pressed else 'UP'} {button}")
+            self._portal(f"{'DOWN' if pressed else 'UP'} {button}")
         elif m == "sway":
             self._wm_provider().button(button, pressed)
         else:
@@ -276,8 +371,7 @@ class LinuxDesktop(Desktop):
         m = self._mouse()
         if m == "portal":
             # daemon tek çağrıda taşır+tıklar: olaylar arası zamanlama orada ayarlı
-            from .. import portal_input
-            portal_input.call(f"CLICK {int(x)} {int(y)} {button} {int(count)}")
+            self._portal(f"CLICK {int(x)} {int(y)} {button} {int(count)}")
         elif m in ("x11", "sway"):
             super().click(x, y, button, count)
         else:
@@ -287,13 +381,21 @@ class LinuxDesktop(Desktop):
                 if not inp.click_at(int(x), int(y), btn):
                     raise RuntimeError("tıklanamadı (ydotool/xdotool hata verdi)")
 
+    def click_and_return(self, x: float, y: float, button: str = "left", count: int = 1,
+                         back: Optional[tuple[int, int]] = None) -> None:
+        if back is not None and self._mouse() == "portal":
+            # tık + imleci geri koyma tek komut (eski servis bx by'yi yok sayar)
+            self._portal(f"CLICK {int(x)} {int(y)} {button} {int(count)} "
+                         f"{int(back[0])} {int(back[1])}")
+            return
+        super().click_and_return(x, y, button, count, back)
+
     def scroll(self, dy: int, dx: int = 0) -> None:
         m = self._mouse()
         if m == "x11":
             self._x().scroll(dy, dx)
         elif m == "portal":
-            from .. import portal_input
-            portal_input.call(f"SCROLL {int(dy)} {int(dx)}")
+            self._portal(f"SCROLL {int(dy)} {int(dx)}")
         elif m == "sway":
             self._wm_provider().scroll(dy, dx)
         else:
@@ -304,8 +406,7 @@ class LinuxDesktop(Desktop):
         if kind == "x11":
             self._x().key(combo)
         elif kind == "portal":
-            from .. import portal_input
-            portal_input.call("KEY " + combo)
+            self._portal("KEY " + combo)
         else:
             from .. import input as inp
             if not inp.key(combo):
@@ -326,6 +427,12 @@ class LinuxDesktop(Desktop):
     def close(self) -> None:
         if self._x11 is not None:
             self._x11.close()
+        if self._watch not in (None, "lazy"):
+            try:
+                self._watch.stop()
+            except Exception:
+                pass
+            self._watch = None
 
     _TERMINAL_APPS = ("konsole", "kitty", "alacritty", "foot", "wezterm", "terminal",
                       "xterm", "ghostty", "yakuake", "tilix", "terminator")
@@ -353,9 +460,96 @@ class LinuxDesktop(Desktop):
                  "gnome-wayland": "gnome-screenshot", "x11": "scrot"}.get(self.name)
         return sorted(tools, key=lambda t: t[1] != first) if first else tools
 
+    def _portal_screenshot(self, path: str, timeout: float = 5.0) -> bool:
+        """xdg Screenshot portalı (etkileşimsiz): KWin'den doğrudan alır, ~0.4 sn
+        (spectacle ~1.3 sn). Portal dosyayı kullanıcının Resimler klasörüne
+        yazar; hemen hedef yola taşınır."""
+        import time
+        try:
+            import dbus
+            from gi.repository import GLib
+            from .._dbus import session_bus
+            bus = session_bus()
+            obj = bus.get_object("org.freedesktop.portal.Desktop",
+                                 "/org/freedesktop/portal/desktop")
+        except Exception:
+            return False
+        token = f"nexshot{os.getpid()}_{int(time.monotonic() * 1000)}"
+        sender = bus.get_unique_name()[1:].replace(".", "_")
+        req = f"/org/freedesktop/portal/desktop/request/{sender}/{token}"
+        box: dict = {}
+        loop = GLib.MainLoop()
+
+        def on_response(code, results):
+            box["code"], box["results"] = int(code), results
+            loop.quit()
+
+        match = bus.add_signal_receiver(on_response, "Response",
+                                        "org.freedesktop.portal.Request",
+                                        "org.freedesktop.portal.Desktop", req)
+        timer = 0
+        try:
+            obj.Screenshot("", {"interactive": False, "handle_token": token},
+                           dbus_interface="org.freedesktop.portal.Screenshot",
+                           timeout=timeout)
+            if "code" not in box:
+                timer = GLib.timeout_add(int(timeout * 1000), loop.quit)
+                loop.run()
+        except dbus.DBusException:
+            return False
+        finally:
+            match.remove()
+            if timer and "code" in box:      # zaman aşımı tetiklendiyse kaynak zaten silindi
+                GLib.source_remove(timer)
+        if box.get("code") != 0:
+            return False
+        uri = str(box["results"].get("uri", ""))
+        if not uri.startswith("file://"):
+            return False
+        from urllib.parse import unquote
+        src = unquote(uri[len("file://"):])
+        try:
+            shutil.move(src, path)
+        except OSError:
+            try:
+                os.remove(src)   # kullanıcının klasöründe artık bırakma
+            except OSError:
+                pass
+            return False
+        return os.path.getsize(path) > 0
+
+    def screenshot_image(self, crop=None):
+        """En hızlı yol: giriş servisinin zaten açık ekran yayınındaki son kare
+        (~10 ms + kodlama). crop=(x, y, w, h): servis yalnızca o bölgeyi yazar.
+        Kullanılamazsa None — çağıran dosya yoluna düşer.
+        Dönüş: (PIL görüntüsü, ekran orijini, ölçek)."""
+        if os.environ.get("NEXREMOTE_SHOT_STREAM", "1") == "0":
+            return None
+        from .. import portal_input
+        if not os.path.exists(portal_input.SOCK) and self._input_kind() != "portal":
+            return None
+        try:
+            return portal_input.frame_image(crop)
+        except Exception:
+            return None   # çoklu ekran, GStreamer eksik, servis yok: eski yol çalışır
+
     def screenshot(self, path: str) -> Screenshot:
         path = os.path.abspath(path)
         errors = []
+        frame = self.screenshot_image()
+        if frame is not None:
+            img, origin, scale = frame
+            img.save(path, compress_level=1)
+            return Screenshot(path=path, width=img.width, height=img.height,
+                              backend="pipewire", display=os.environ.get("WAYLAND_DISPLAY"),
+                              scale=scale, origin=origin)
+        if self.name == "kde-wayland" and os.environ.get("NEXREMOTE_SHOT_PORTAL", "1") != "0":
+            if os.path.exists(path):
+                os.remove(path)
+            if self._portal_screenshot(path):
+                w, h = png_size(path)
+                return Screenshot(path=path, width=w, height=h, backend="portal",
+                                  display=os.environ.get("WAYLAND_DISPLAY"))
         for cmd, tool in self._shot_tools(path):
             if not shutil.which(tool):
                 continue
