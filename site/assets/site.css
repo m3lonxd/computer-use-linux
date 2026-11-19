@@ -311,10 +311,10 @@ html:not(.js) .mq-dup { display: none; }
 .story-bg { display: none; }
 .story-pin .story-bg { display: block; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; margin-left: -50vw; z-index: -1; pointer-events: none; }
 .sb-in { position: sticky; top: 0; height: 100vh; overflow: hidden;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, transparent 64px, #000 calc(64px + 24px), #000 92%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, transparent 64px, #000 calc(64px + 24px), #000 92%, transparent 100%); }
 .sb-media { position: absolute; inset: 0; }
-.sb-layer { position: absolute; inset: 0; opacity: 0; transition: opacity .5s var(--ease); }
+.sb-layer { position: absolute; inset: calc(64px + 12px) 0 0 0; opacity: 0; transition: opacity .5s var(--ease); }
 .sb-layer.on { opacity: 1; }
 .sb-layer picture { display: block; position: absolute; inset: 0; }
 .sb-layer .v-media { object-fit: cover; object-position: 70% center; }
