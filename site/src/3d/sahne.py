@@ -84,7 +84,7 @@ def grime(m):
     nt.links.new(wear.outputs["Result"], b.inputs["Base Color"])
 grime(M_CAP)
 M_LEG = mat("harf", (0.40, 0.37, 0.37), rough=0.7)
-M_CASE = mat("kasa", (0.16, 0.06, 0.32), rough=0.42, metal=0.85)
+M_CASE = mat("kasa", (0.022, 0.021, 0.026), rough=0.45, metal=0.8)   # koyu kasa; mor ışık yalnız alttaki RGB şeritten
 M_PLATE = mat("plaka", (0.01, 0.01, 0.012), rough=0.6)
 M_DESK = mat("masa", (0.035, 0.03, 0.03), rough=0.75, noise=0.1)
 
