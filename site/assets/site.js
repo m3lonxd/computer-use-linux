@@ -309,6 +309,8 @@
     // ve kendi silüetine kırpılmış fotoğraf kapağı. Kırpma kapakla birlikte kayar, yuvanın
     // kırpması sabit kalır: kapak inerken üstünde koyu aralık açılır, ön duvarı yuvanın alt
     // kenarında kesilip kısalır. Fotoğrafın başka hiçbir parçası yer değiştirmez.
+    var fe = mk("filter", { id: "kfe", x: "-10%", y: "-10%", width: "120%", height: "120%" }, defs);
+    mk("feGaussianBlur", { stdDeviation: "2.5" }, fe);
     KEYS.forEach(function (k, i) {
       var c = k[1], pts = [], j, cx = 0, cy = 0;
       for (j = 0; j < 8; j += 2) pts.push([c[j], c[j + 1]]);
@@ -318,14 +320,19 @@
       // Üst yüzün boşalttığı şerit (üst yüzün TRAVEL kadar süpürülmüşü) siyahla değil,
       // hemen üstündeki görüntünün aynı miktar aşağı kaymış, hafif koyu kopyasıyla dolar:
       // gerçek klavyedeki gibi arkadaki tuşun duvarı uzar.
-      var top = sweep(pts, cx, cy, 1.02, 0), gap = sweep(pts, cx, cy, 1.05, TRAVEL);
-      mk("polygon", { points: top }, mk("clipPath", { id: "kt" + i }, defs));
-      mk("polygon", { points: gap }, mk("clipPath", { id: "kg" + i }, defs));
+      // Kırpma yerine yumuşak kenarlı maske: düz poligon kenarı görüntüde çizgi ya da köşeli
+      // kutu olarak seçilmesin, birkaç piksel içinde alttaki videoya karışsın.
+      var top = sweep(pts, cx, cy, 1.0, 0), gap = sweep(pts, cx, cy, 1.0, TRAVEL);
+      function soft(id, pointsStr) {
+        var m = mk("mask", { id: id, maskUnits: "userSpaceOnUse", x: 0, y: 0, width: IW, height: IH }, defs);
+        mk("polygon", { points: pointsStr, fill: "#fff", filter: "url(#kfe)" }, m);
+      }
+      soft("kt" + i, top); soft("kg" + i, gap);
       var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
       pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" },
-        mk("g", { "class": "kp-bk" }, mk("g", { "clip-path": "url(#kg" + i + ")" }, kp))));
+        mk("g", { "class": "kp-bk" }, mk("g", { mask: "url(#kg" + i + ")" }, kp))));
       var cap = mk("g", { "class": "kp-cap" }, kp);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#kt" + i + ")" }, cap));
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", mask: "url(#kt" + i + ")" }, cap));
       // İmleç tuşun yalnız üst yüzünde değil duvarlarında da tuşa basar (üst yüz + duvar silüeti).
       var hb = pts.map(function (q) { return [cx + (q[0] - cx) * 1.04, cy + (q[1] - cy) * 1.04]; });
       polys.push({ el: kp, pts: pts, hit: hull(hb.concat(hb.map(function (q) { return [q[0], q[1] + WALL]; }))), name: k[0] });
