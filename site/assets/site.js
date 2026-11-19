@@ -299,6 +299,8 @@
       for (i = P.length - 1; i >= 0; i--) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0) up.pop(); up.push(P[i]); }
       return lo.slice(0, -1).concat(up.slice(0, -1));
     }
+    // Her tuşun hemen üstündeki aralığın görüntüden ölçülmüş rengi; açılan şerit bununla dolar.
+    var GAPC = {"Esc":"#2a2f38","~":"#22141c","1":"#32163a","Tab":"#110b0c","F1":"#5a4b6d","F2":"#5b433c","F3":"#2d3038","2":"#0b070a","3":"#0a0709","E":"#0c090a","W":"#100b0b","S":"#080608","Z":"#0f0a0b","X":"#140d0d","D":"#140d0d","C":"#241612","G":"#110a0b","F5":"#212026","F6":"#27232d","F7":"#27222a","4":"#383439","6":"#1b0f11","7":"#170d0e","8":"#231410","Y":"#150d0b","A":"#09080a","T":"#18110e","Q":"#0d090a","Caps":"#150d0e"};
     var TRAVEL = 32;  // üst yüzün inişi (WALL'dan küçük); site.css'teki .kp.on translateY ile aynı olmalı
     function sweep(pts, cx, cy, f, h) {
       var b = pts.map(function (q) { return [cx + (q[0] - cx) * f, cy + (q[1] - cy) * f]; });
@@ -316,10 +318,11 @@
       for (j = 0; j < 8; j += 2) pts.push([c[j], c[j + 1]]);
       pts.forEach(function (q) { cx += q[0] / 4; cy += q[1] / 4; });
       // Yalnız üst yüz iner: kendi ön duvarının üst kısmını örter, duvar kısalmış görünür.
-      // Yan duvarlara ve çevreye dokunulmaz, böylece düz kesik kenar ya da dikiş oluşmaz.
-      // Üst yüzün boşalttığı şerit (üst yüzün TRAVEL kadar süpürülmüşü) siyahla değil,
-      // hemen üstündeki görüntünün aynı miktar aşağı kaymış, hafif koyu kopyasıyla dolar:
-      // gerçek klavyedeki gibi arkadaki tuşun duvarı uzar.
+      // Yan duvarlara ve çevreye dokunulmaz, böylece kesik kenar ya da dikiş oluşmaz.
+      // Üst yüzün boşalttığı şerit görüntü kopyasıyla doldurulmaz (kopya, üstteki kenarları
+      // ikinci bir tuş kenarı gibi tekrarlıyordu) ve yarı saydam da değildir (eski kapağın
+      // etiketi altından seçiliyordu): o tuşun üstündeki aralığın kendi rengiyle, opak ve
+      // yumuşak kenarlı dolar; çevresiyle aynı tonda olduğu için kutu gibi seçilmez.
       // Kırpma yerine yumuşak kenarlı maske: düz poligon kenarı görüntüde çizgi ya da köşeli
       // kutu olarak seçilmesin, birkaç piksel içinde alttaki videoya karışsın.
       var top = sweep(pts, cx, cy, 1.0, 0), gap = sweep(pts, cx, cy, 1.0, TRAVEL);
@@ -329,8 +332,7 @@
       }
       soft("kt" + i, top); soft("kg" + i, gap);
       var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" },
-        mk("g", { "class": "kp-bk" }, mk("g", { mask: "url(#kg" + i + ")" }, kp))));
+      mk("rect", { "class": "kp-bk", width: IW, height: IH, fill: GAPC[k[0]] || "#0d0a0b", mask: "url(#kg" + i + ")" }, kp);
       var cap = mk("g", { "class": "kp-cap" }, kp);
       pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", mask: "url(#kt" + i + ")" }, cap));
       // İmleç tuşun yalnız üst yüzünde değil duvarlarında da tuşa basar (üst yüz + duvar silüeti).
