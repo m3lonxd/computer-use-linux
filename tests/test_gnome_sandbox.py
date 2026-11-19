@@ -34,8 +34,11 @@ def skip(name: str, why: str) -> None:
 
 
 def nx(*args: str, timeout: float = 40) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
-                          capture_output=True, text=True, timeout=timeout, env=ENV)
+    try:
+        return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
+                              capture_output=True, text=True, timeout=timeout, env=ENV)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(args, 124, "", f"zaman aşımı ({timeout:.0f} sn)")
 
 
 def events() -> list[dict]:
@@ -84,32 +87,66 @@ def main() -> int:
               any("nexremote-probe" in (w.get("title") or "") for w in wl),
               (ws.stderr.strip() or f"{len(wl)} pencere")[:100])
 
-        found = nx("find", "probe-entry", "--json")
-        check("find: AT-SPI ile ada göre öğe bulma",
-              found.returncode == 0 and "probe" in found.stdout.lower(), found.stderr.strip()[:80])
-
         # --- portal girişi: izin diyaloğu onaylanmazsa atla
-        n = len(events())
-        r = nx("click", "640", "400", timeout=60)
-        hit = wait_for(lambda: since(n, "button"), 5)
+        # Gözlem: Mutter sanal imlecinde oturumdaki ilk tık(lar) istemciye ulaşmıyor
+        # (kök neden bulunamadı). En çok 4 deneme; kaç tıkın yutulduğu yazılır.
+        r, hit, tries = None, [], 0
+        for tries in range(1, 5):
+            n = len(events())
+            r = nx("click", "640", "400", timeout=60)
+            hit = wait_for(lambda: since(n, "button"), 2.5)
+            if hit or r.returncode != 0:
+                break
+        if hit:
+            print(f"    (sol tık {tries}. denemede ulaştı; ilk {tries - 1} tık yutuldu)")
         if r.returncode != 0 and not hit:
-            skip("portal ile fare/klavye", "RemoteDesktop izin diyaloğu başsızda onaylanamadı: "
+            skip("fare/klavye", "RemoteDesktop izin diyaloğu başsızda onaylanamadı: "
                  + (r.stderr.strip() or r.stdout.strip())[:120])
         else:
             check("sol tık doğru koordinatta", bool(hit) and hit[0]["button"] == 1
                   and abs(hit[0]["x"] - 640) <= 2 and abs(hit[0]["y"] - 400) <= 2,
-                  str(hit[0] if hit else ""))
+                  str(hit[0] if hit else events()[-4:]))
             nx("click", "640", "12")
             time.sleep(0.2)
             text = "Merhaba dünya ğüşıöç"
             r = nx("type", text)
             got = wait_for(lambda: [e for e in since(0, "text") if e["value"] == text], 8)
-            check("portal ile Türkçe yazı", r.returncode == 0 and bool(got),
+            check("Türkçe yazı (ğüşıöç panodan)", r.returncode == 0 and bool(got),
                   (since(0, "text") or [{}])[-1].get("value", r.stderr.strip()))
             n = len(events())
             nx("key", "ctrl+a")
             check("tuş kombinasyonu ctrl+a",
                   bool(wait_for(lambda: [e for e in since(n, "key") if e["name"] == "a" and e["ctrl"]])))
+            n = len(events())
+            nx("scroll", "3", "--at", "700", "450")
+            down = wait_for(lambda: since(n, "scroll"))
+            n = len(events())
+            nx("scroll", "-2")
+            up = wait_for(lambda: since(n, "scroll"))
+            check("kaydırma aşağı ve yukarı", bool(down) and bool(up)
+                  and (down[0]["direction"] == 1 or down[0]["dy"] > 0)
+                  and (up[0]["direction"] == 0 or up[0]["dy"] < 0), f"{down[:1]} {up[:1]}")
+
+        # AT-SPI: adlı düğmeyi isimle bul ve tıkla (portal gerektirmez)
+        ap = subprocess.Popen([sys.executable, f"{HERE}/atspi_probe.py", LOG],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            wait_for(lambda: since(0, "atspi-ready"), 20)
+            time.sleep(1.0)
+            found = nx("find", "NexProbeButton")
+            check("find: AT-SPI ile ada göre öğe bulma",
+                  found.returncode == 0 and "NexProbeButton" in found.stdout,
+                  (found.stdout + found.stderr).strip()[:80])
+            ref = next((t for ln in found.stdout.splitlines() for t in ln.split()
+                        if t.startswith("atspi:")), "")
+            n = len(events())
+            r = nx("click", ref) if ref else None
+            check("click: AT-SPI ile adlı düğmeye tıklama (REF)",
+                  bool(r) and r.returncode == 0 and bool(wait_for(lambda: since(n, "activate"))),
+                  (r.stdout + r.stderr).strip()[:80] if r else "ref bulunamadı")
+        finally:
+            ap.terminate()
+            ap.wait(5)
 
         shot = os.path.join(os.environ["XDG_RUNTIME_DIR"], "s.png")
         r = nx("screenshot", shot, "--json")
@@ -120,8 +157,18 @@ def main() -> int:
         if r.returncode != 0 or not os.path.exists(shot):
             skip("ekran görüntüsü", (r.stderr.strip() or "araç yok / portal onayı yok")[:120])
         else:
-            check("ekran görüntüsü alındı", os.path.getsize(shot) > 1000,
-                  f"{info.get('backend')} {info.get('width')}x{info.get('height')}")
+            try:
+                from PIL import Image
+                colors = len(Image.open(shot).convert("RGB").getcolors(1 << 24) or [])
+            except Exception:
+                colors = -1   # Pillow yok: yalnızca boyut denetlenir
+            check("ekran görüntüsü alındı (boş/siyah değil)",
+                  os.path.getsize(shot) > 1000 and colors != 1 and info.get("width") == 1280,
+                  f"{info.get('backend')} {info.get('width')}x{info.get('height')} renk={colors}")
+
+        obs = nx("observe", "--json")
+        check("observe çalıştı", obs.returncode == 0 and "gnome" in obs.stdout.lower(),
+              obs.stderr.strip()[:80])
     finally:
         if probe.poll() is None:
             probe.terminate()

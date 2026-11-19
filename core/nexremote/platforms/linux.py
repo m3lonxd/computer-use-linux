@@ -146,6 +146,11 @@ class LinuxDesktop(Desktop):
             return Cap(True, tool)
         if self._x11_ok():
             return Cap(True, "xlib (kök pencere)")
+        if self.name == "gnome-wayland":
+            from .. import gnome_shot, portal_input
+            if portal_input.use_mutter() and gnome_shot.mutter_available():
+                return Cap(True, "Mutter ScreenCast (gst-launch-1.0 pipewiresrc)")
+            return Cap(True, "xdg-desktop-portal Screenshot (ilk kullanımda onay ister)")
         return Cap(False, "ekran görüntüsü aracı yok", ["spectacle | grim | gnome-screenshot | scrot"])
 
     def _terminals_cap(self) -> Cap:
@@ -368,6 +373,21 @@ class LinuxDesktop(Desktop):
                 errors.append(f"{tool}: {e}")
         if self._x11_ok():
             return self._x().screenshot(path)
+        if self.name == "gnome-wayland":
+            from .. import gnome_shot, portal_input
+            try:
+                if portal_input.use_mutter() and gnome_shot.mutter_available():
+                    gnome_shot.mutter_grab(path)
+                    backend = "mutter-screencast"
+                else:
+                    gnome_shot.portal_grab(path)
+                    backend = "portal-screenshot"
+                if os.path.exists(path) and os.path.getsize(path) > 0:
+                    w, h = png_size(path)
+                    return Screenshot(path=path, width=w, height=h, backend=backend,
+                                      display=os.environ.get("WAYLAND_DISPLAY"))
+            except Exception as e:
+                errors.append(f"gnome: {e}")
         raise Unsupported("ekran görüntüsü alınamadı"
                           + (f" ({'; '.join(errors)})" if errors
                              else " — spectacle, grim, gnome-screenshot ya da scrot gerekli"))

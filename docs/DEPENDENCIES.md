@@ -72,3 +72,15 @@ başlatılmış NexRemote giriş gönderebilir.
 
 `computer-use-linux setup` izin istemlerini açar. İzinler Sistem Ayarları → Gizlilik ve
 Güvenlik altından geri alınır.
+
+## GNOME (Mutter) — gerçek GNOME Shell 48.7'de doğrulandı (başsız, Docker)
+
+- Pencere listesi: GNOME'da pencere-yönetici kanalı yok; AT-SPI penceresi olan uygulamalar listelenir.
+- Fare/klavye: varsayılan RemoteDesktop portalıdır (ilk kullanımda GNOME izin sorar).
+  Başsız/uzaktan yönetilen makinelerde `NEXREMOTE_INPUT_BACKEND=mutter` portalsız,
+  izinsiz `org.gnome.Mutter.RemoteDesktop` yolunu seçer (kullanıcı onayı atlanır; bilerek kullanın).
+- ASCII dışı (ü, ğ, é...) metin Mutter'da klavye düzenine bağlı olduğundan panodan yapıştırılır: `wl-clipboard`.
+- Ekran görüntüsü: `gnome-screenshot`, yoksa Mutter yolunda `gstreamer1.0-pipewire` + `gstreamer1.0-tools`,
+  portal yolunda xdg-desktop-portal Screenshot.
+- Test: `tests/gnome_sandbox.sh python3 tests/test_gnome_sandbox.py` (gnome-shell, xdg-desktop-portal-gnome,
+  python3-dbusmock gerekir; yoksa atlanır).

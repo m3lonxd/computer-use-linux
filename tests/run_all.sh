@@ -31,6 +31,7 @@ fi
 run "giriş — sandbox"           tests/sandbox.sh python3 tests/test_input_sandbox.py
 run "CLI uçtan uca — sandbox"   tests/sandbox.sh bash -c 'cd tests && python3 test_cli_sandbox.py'
 run "gerçek Sway — başsız"      tests/sway_sandbox.sh python3 tests/test_sway_sandbox.py
+run "GNOME mantık (sahte D-Bus)"   python3 tests/test_gnome_logic.py
 run "gerçek GNOME — başsız"    tests/gnome_sandbox.sh python3 tests/test_gnome_sandbox.py
 run "Electron — sandbox"        tests/sandbox.sh bash -c 'cd tests && python3 test_electron_sandbox.py'
 echo; [[ $fail -eq 0 ]] && echo "TÜMÜ GEÇTİ" || echo "BAŞARISIZ TEST VAR"
