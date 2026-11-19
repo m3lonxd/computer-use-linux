@@ -318,8 +318,10 @@ html:not(.js) .mq-dup { display: none; }
 /* aktif adımın metni: sol üstte (Tux'un kafasının üstündeki koyu duvar), kompakt kart */
 .story-card { position: absolute; z-index: 3; left: clamp(20px, 3vw, 48px); top: 88px; width: clamp(300px, 26vw, 370px); padding: 18px 20px 18px 66px; border-radius: 14px;
   background: rgb(14 14 13 / .7); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--rule-2); }
-.sc-in { transition: opacity .28s var(--ease), transform .28s var(--ease); }
-.sc-in.out { opacity: 0; transform: translateY(6px); }
+/* yalnız saydamlık: transform, içteki mutlak konumlu numara rozetinin
+   referans kutusunu değiştirir ve rozet geçişte başlığın üstüne atlar */
+.sc-in { transition: opacity .2s var(--ease); }
+.sc-in.out { opacity: 0; }
 .sc-in .rung-n { position: absolute; left: 18px; top: 18px; width: 36px; height: 36px; font-size: .95rem; background: var(--accent); color: #1a0f02; }
 .sc-in h3 { font-size: 1.12rem; line-height: 1.25; letter-spacing: -.02em; margin: 2px 0 8px; }
 .sc-in p { margin: 0; font-size: .88rem; line-height: 1.55; color: var(--ink-2); }

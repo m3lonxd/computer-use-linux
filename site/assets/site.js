@@ -463,7 +463,7 @@
       clearTimeout(cardTimer);
       if (!card.firstChild) { fill(); return; }
       card.classList.add("out");
-      cardTimer = setTimeout(fill, 220);
+      cardTimer = setTimeout(fill, 180);
     }
 
     function setPin() {
