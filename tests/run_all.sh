@@ -7,7 +7,7 @@ fail=0
 # 77 = gereken bileşimci/araç yok, test atlandı (başarısızlık sayılmaz)
 run() {
     echo; echo "▶ $1"; shift
-    "$@" 2>&1 | grep -E '✓|✗|⊘|SONUÇ|KABUL|SANDBOX|MCP:|HTTP:|WLROOTS|WINDOWS|MACOS|PLATFORM|İMLEÇ|ELECTRON|SWAY|DAEMON|atlandı'
+    "$@" 2>&1 | grep -E '✓|✗|⊘|SONUÇ|KABUL|SANDBOX|MCP:|HTTP:|WLROOTS|WINDOWS|MACOS|PLATFORM|İMLEÇ|ELECTRON|SWAY|GNOME|DAEMON|atlandı'
     local rc=${PIPESTATUS[0]}
     [[ $rc -eq 0 || $rc -eq 77 ]] || fail=1
 }
@@ -31,6 +31,8 @@ fi
 run "giriş — sandbox"           tests/sandbox.sh python3 tests/test_input_sandbox.py
 run "CLI uçtan uca — sandbox"   tests/sandbox.sh bash -c 'cd tests && python3 test_cli_sandbox.py'
 run "gerçek Sway — başsız"      tests/sway_sandbox.sh python3 tests/test_sway_sandbox.py
+run "GNOME mantık (sahte D-Bus)"   python3 tests/test_gnome_logic.py
+run "gerçek GNOME — başsız"    tests/gnome_sandbox.sh python3 tests/test_gnome_sandbox.py
 run "Electron — sandbox"        tests/sandbox.sh bash -c 'cd tests && python3 test_electron_sandbox.py'
 echo; [[ $fail -eq 0 ]] && echo "TÜMÜ GEÇTİ" || echo "BAŞARISIZ TEST VAR"
 exit $fail

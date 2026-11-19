@@ -297,6 +297,126 @@ class PortalSession:
         self.session = None
 
 
+class MutterSession:
+    """GNOME Shell (Mutter) RemoteDesktop + ScreenCast — portalsız, izin diyaloğu YOK.
+
+    org.gnome.Mutter.RemoteDesktop oturum veri yolundan doğrudan konuşur
+    (gnome-remote-desktop'ın kullandığı arayüz). Kullanıcı onayı istemediği için
+    yalnızca açıkça seçilirse kullanılır: NEXREMOTE_INPUT_BACKEND=mutter
+    (başsız/test oturumları, bilerek uzaktan yönetilen makineler). Varsayılan
+    yol portaldır ve ilk kullanımda kullanıcıya sorar. PortalSession ile aynı
+    arayüzü sunar."""
+
+    RD = "org.gnome.Mutter.RemoteDesktop"
+    SC = "org.gnome.Mutter.ScreenCast"
+
+    def __init__(self) -> None:
+        import dbus
+        from dbus.mainloop.glib import DBusGMainLoop
+        DBusGMainLoop(set_as_default=True)
+        self.dbus = dbus
+        self.bus = dbus.SessionBus()
+        self.session: Optional[str] = None      # RemoteDesktop oturum yolu
+        self.sc_session: Optional[str] = None
+        self.streams: list[dict] = []           # {path, x, y, w, h}
+        self.devices = 3
+
+    def _iface(self, path: str, iface: str):
+        name = self.RD if iface.startswith(self.RD) else self.SC
+        return self.dbus.Interface(self.bus.get_object(name, path), iface)
+
+    def _monitors(self) -> list[dict]:
+        """Mantıksal monitörler: (connector, x, y, w, h)."""
+        dc = self.dbus.Interface(
+            self.bus.get_object("org.gnome.Mutter.DisplayConfig", "/org/gnome/Mutter/DisplayConfig"),
+            "org.gnome.Mutter.DisplayConfig")
+        _serial, physical, logical, _props = dc.GetCurrentState()
+        modes = {}
+        for conn, _v, _p, _s in (m[0] for m in physical):
+            modes[str(conn)] = None
+        for m in physical:
+            conn = str(m[0][0])
+            for mode in m[1]:
+                if bool(mode[6].get("is-current", False)):
+                    modes[conn] = (int(mode[1]), int(mode[2]))
+        out = []
+        for lm in logical:
+            x, y, scale = int(lm[0]), int(lm[1]), float(lm[2])
+            conn = str(lm[5][0][0])
+            pw, ph = modes.get(conn) or (0, 0)
+            out.append({"connector": conn, "x": x, "y": y,
+                        "w": int(round(pw / scale)), "h": int(round(ph / scale))})
+        return out
+
+    def start(self) -> None:
+        dbus = self.dbus
+        rd = dbus.Interface(self.bus.get_object(self.RD, "/org/gnome/Mutter/RemoteDesktop"), self.RD)
+        self.session = str(rd.CreateSession())
+        sid = str(self.bus.get_object(self.RD, self.session).Get(
+            self.RD + ".Session", "SessionId", dbus_interface="org.freedesktop.DBus.Properties"))
+        sc = dbus.Interface(self.bus.get_object(self.SC, "/org/gnome/Mutter/ScreenCast"), self.SC)
+        self.sc_session = str(sc.CreateSession({"remote-desktop-session-id": dbus.String(sid)}))
+        scs = self._iface(self.sc_session, self.SC + ".Session")
+        mons = self._monitors()
+        if not mons:
+            raise RuntimeError("GNOME Shell monitör listesi boş")
+        for m in mons:
+            path = str(scs.RecordMonitor(m["connector"], {}))
+            self.streams.append({"path": path, "x": m["x"], "y": m["y"], "w": m["w"], "h": m["h"],
+                                 "node": m["connector"], "sx": 1.0, "sy": 1.0})
+        self._iface(self.session, self.RD + ".Session").Start()
+        # Mutter sanal aygıtları ilk olayı yutar (imleç odağı/klavye odağı henüz
+        # kurulmadı): ilk tık ve ilk tuş kaybolurdu. Isıtma: sıfır hareket + Shift.
+        time.sleep(0.3)
+        sess = self._sess()
+        st0 = self.streams[0]
+        sess.NotifyPointerMotionAbsolute(st0["path"], st0["w"] / 2.0, st0["h"] / 2.0)
+        sess.NotifyKeyboardKeysym(self.dbus.UInt32(_MOD_KEYSYM["shift"]), self.dbus.Boolean(True))
+        sess.NotifyKeyboardKeysym(self.dbus.UInt32(_MOD_KEYSYM["shift"]), self.dbus.Boolean(False))
+        time.sleep(0.4)
+
+    def _sess(self):
+        return self._iface(self.session, self.RD + ".Session")
+
+    def screens_text(self) -> str:
+        return PortalSession.screens_text(self)
+
+    def _stream_for(self, x: float, y: float):
+        return PortalSession._stream_for(self, x, y)
+
+    def move(self, x: float, y: float) -> None:
+        s, lx, ly = self._stream_for(x, y)
+        self._sess().NotifyPointerMotionAbsolute(s["path"], float(lx), float(ly))
+
+    def button(self, btn: str, pressed: bool) -> None:
+        if btn not in BTN:
+            raise ValueError(f"bilinmeyen fare tuşu: {btn}")
+        self._sess().NotifyPointerButton(self.dbus.Int32(BTN[btn]), self.dbus.Boolean(pressed))
+
+    def scroll(self, dy: int, dx: int = 0) -> None:
+        if dy:
+            self._sess().NotifyPointerAxisDiscrete(self.dbus.UInt32(0), self.dbus.Int32(int(dy)))
+        if dx:
+            self._sess().NotifyPointerAxisDiscrete(self.dbus.UInt32(1), self.dbus.Int32(int(dx)))
+
+    def keysym(self, sym: int, pressed: bool) -> None:
+        self._sess().NotifyKeyboardKeysym(self.dbus.UInt32(sym), self.dbus.Boolean(pressed))
+
+    def close(self) -> None:
+        if not self.session:
+            return
+        try:
+            self._sess().Stop()
+        except Exception:
+            pass
+        self.session = None
+
+
+def use_mutter() -> bool:
+    """GNOME'da portalsız Mutter yolu yalnızca açıkça istenirse kullanılır."""
+    return os.environ.get("NEXREMOTE_INPUT_BACKEND", "").lower() == "mutter"
+
+
 def _load_token() -> Optional[str]:
     try:
         with open(TOKEN_FILE) as f:
@@ -387,7 +507,7 @@ class Daemon:
 
 def serve() -> int:
     from gi.repository import GLib
-    portal = PortalSession()
+    portal = MutterSession() if use_mutter() else PortalSession()
     try:
         portal.start()
     except Exception as e:
@@ -432,9 +552,13 @@ def serve() -> int:
         print("[nexremote-input] portal oturumu kapatıldı", file=sys.stderr)
         loop.quit()
 
-    portal.bus.add_signal_receiver(on_session_closed, "Closed",
-                                   "org.freedesktop.portal.Session",
-                                   "org.freedesktop.portal.Desktop", portal.session)
+    if isinstance(portal, PortalSession):
+        portal.bus.add_signal_receiver(on_session_closed, "Closed",
+                                       "org.freedesktop.portal.Session",
+                                       "org.freedesktop.portal.Desktop", portal.session)
+    else:
+        portal.bus.add_signal_receiver(on_session_closed, "Closed",
+                                       portal.RD + ".Session", portal.RD, portal.session)
     GLib.io_add_watch(srv.fileno(), GLib.IO_IN, on_conn)
     print(f"[nexremote-input] hazır: {SOCK} · ekranlar: {portal.screens_text()}",
           file=sys.stderr, flush=True)
@@ -510,6 +634,10 @@ def call(line: str) -> str:
     return reply[3:]
 
 
+def _gnome_session() -> bool:
+    return "gnome" in (os.environ.get("XDG_CURRENT_DESKTOP") or "").lower()
+
+
 def _keyable(ch: str) -> bool:
     """Klavye düzeninden bağımsız tuşlanabilir mi? (ASCII + Latin-1)
 
@@ -518,6 +646,10 @@ def _keyable(ch: str) -> bool:
     yapıştırılır.
     """
     cp = ord(ch)
+    if _gnome_session():
+        # Mutter keysym'i etkin düzende arar; US düzeninde Latin-1 harfleri yok
+        # (ü, é...) ve sessizce düşer — ASCII dışı her şey panodan yapıştırılır.
+        return ch in "\n\t" or 0x20 <= cp <= 0x7e
     return ch in "\n\t" or 0x20 <= cp <= 0x7e or 0xa0 <= cp <= 0xff
 
 
@@ -587,6 +719,10 @@ def available() -> tuple[bool, str]:
         except ImportError:          # betik olarak çalıştırıldığında
             from nexremote._dbus import session_bus
         bus = session_bus()
+        if use_mutter():
+            v = dbus.Interface(bus.get_object(MutterSession.RD, "/org/gnome/Mutter/RemoteDesktop"),
+                               "org.freedesktop.DBus.Properties").Get(MutterSession.RD, "Version")
+            return True, f"Mutter RemoteDesktop v{int(v)} (izinsiz; {'çalışıyor' if running() else 'hazır'})"
         obj = bus.get_object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
         v = dbus.Interface(obj, "org.freedesktop.DBus.Properties").Get(
             "org.freedesktop.portal.RemoteDesktop", "version")
