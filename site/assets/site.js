@@ -299,9 +299,10 @@
       for (i = P.length - 1; i >= 0; i--) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0) up.pop(); up.push(P[i]); }
       return lo.slice(0, -1).concat(up.slice(0, -1));
     }
-    function sweep(pts, cx, cy, f) {
+    var TRAVEL = 22;  // üst yüzün inişi (WALL'dan küçük); site.css'teki .kp.on translateY ile aynı olmalı
+    function sweep(pts, cx, cy, f, h) {
       var b = pts.map(function (q) { return [cx + (q[0] - cx) * f, cy + (q[1] - cy) * f]; });
-      return hull(b.concat(b.map(function (q) { return [q[0], q[1] + WALL]; })))
+      return hull(b.concat(b.map(function (q) { return [q[0], q[1] + h]; })))
         .map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
     }
     // Her tuş iki katman: sabit "yuva" (kapak silüetiyle aynı, koyu; basınca belirir)
@@ -312,17 +313,19 @@
       var c = k[1], pts = [], j, cx = 0, cy = 0;
       for (j = 0; j < 8; j += 2) pts.push([c[j], c[j + 1]]);
       pts.forEach(function (q) { cx += q[0] / 4; cy += q[1] / 4; });
-      var sil = sweep(pts, cx, cy, 1.03), well = sil;
-      mk("polygon", { points: well }, mk("clipPath", { id: "kw" + i }, defs));
-      mk("polygon", { points: sil }, mk("clipPath", { id: "ks" + i }, defs));
-      // Kapak inince üstünde açılan şerit siyahla doldurulmaz: gerçek klavyedeki gibi arkadaki
-      // tuşun duvarı uzar. Bunun için kapağın hemen üstündeki görüntü aynı miktar aşağı kayar
-      // (kp-bk, hafif gölgeli). Kapak kendi silüetine kırpılıdır; ikisi de yuvaya kırpılır,
-      // böylece ön duvar yuvanın alt kenarında kısalır.
-      var kp = mk("g", { "class": "kp", "data-key": k[0], "clip-path": "url(#kw" + i + ")" }, g);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" }, mk("g", { "class": "kp-bk" }, kp)));
+      // Yalnız üst yüz iner: kendi ön duvarının üst kısmını örter, duvar kısalmış görünür.
+      // Yan duvarlara ve çevreye dokunulmaz, böylece düz kesik kenar ya da dikiş oluşmaz.
+      // Üst yüzün boşalttığı şerit (üst yüzün TRAVEL kadar süpürülmüşü) siyahla değil,
+      // hemen üstündeki görüntünün aynı miktar aşağı kaymış, hafif koyu kopyasıyla dolar:
+      // gerçek klavyedeki gibi arkadaki tuşun duvarı uzar.
+      var top = sweep(pts, cx, cy, 1.02, 0), gap = sweep(pts, cx, cy, 1.05, TRAVEL);
+      mk("polygon", { points: top }, mk("clipPath", { id: "kt" + i }, defs));
+      mk("polygon", { points: gap }, mk("clipPath", { id: "kg" + i }, defs));
+      var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" },
+        mk("g", { "class": "kp-bk" }, mk("g", { "clip-path": "url(#kg" + i + ")" }, kp))));
       var cap = mk("g", { "class": "kp-cap" }, kp);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#ks" + i + ")" }, cap));
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#kt" + i + ")" }, cap));
       polys.push({ el: kp, pts: pts, name: k[0] });
     });
     bg.insertBefore(svg, null);
