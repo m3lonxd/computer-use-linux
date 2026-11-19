@@ -19,6 +19,8 @@ ap.add_argument("--frac", type=float, default=1.0)
 ap.add_argument("--border", default="")   # x0,y0,x1,y1 (0-1, alttan) yalnız bu bölge render edilir
 ap.add_argument("--exr", action="store_true")
 ap.add_argument("--batch", default="")   # çıktı klasörü: taban + her görünür tuş için yarı/tam basılı bölge renderı
+ap.add_argument("--fracs", default="0.5,1.0")   # basış kareleri (TRAVEL oranı)
+ap.add_argument("--skip-base", action="store_true")
 ap.add_argument("--dump", default="")    # tuşların ekran şekillerini JSON olarak yaz, render alma
 A = ap.parse_args(argv)
 
@@ -302,7 +304,9 @@ if A.batch:
     os.makedirs(A.batch, exist_ok=True)
     DK = json.load(open(A.batch + "/dokum.json"))
     sc.cycles.seed = 7
-    r.filepath = A.batch + "/taban.png"; bpy.ops.render.render(write_still=True); print("TABAN")
+    if not A.skip_base:
+        r.filepath = A.batch + "/taban.png"; bpy.ops.render.render(write_still=True); print("TABAN")
+    FR = [float(x) for x in A.fracs.split(",")]
     for n, v in DK.items():
         xs = [p[0] for p in v["all"]]; ys = [p[1] for p in v["all"]]
         cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
@@ -312,9 +316,9 @@ if A.batch:
         r.use_border = True; r.use_crop_to_border = False
         r.border_min_x, r.border_min_y, r.border_max_x, r.border_max_y = x0, y0, x1, y1
         ob = caps[n]; z0 = ob.location.z
-        for frac in (0.5, 1.0):
+        for frac in FR:
             ob.location.z = z0 - TRAVEL * frac
-            r.filepath = A.batch + "/%s_%d.png" % (n, int(frac * 100)); bpy.ops.render.render(write_still=True)
+            r.filepath = A.batch + "/%s_%d.png" % (n, round(frac * 100)); bpy.ops.render.render(write_still=True)
         ob.location.z = z0; print("TUS", n)
     r.use_border = False
     raise SystemExit(0)

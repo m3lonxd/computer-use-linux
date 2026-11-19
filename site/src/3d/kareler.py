@@ -1,8 +1,8 @@
 """3D renderlarından site varlıklarını üretir.
 
-Girdi: <kare>/taban.png ve <kare>/<tuş>_50.png, <tuş>_100.png (Blender, şeffaf zemin),
+Girdi: <kare>/taban.png ve <kare>/<tuş>_<yüzde>.png (Blender, şeffaf zemin),
        <kare>/dokum.json (tuşların ekran şekilleri), media/hero-foto.jpg (orijinal fotoğraf).
-Çıktı: media/hero.{jpg,webp} (fotoğraf + 3D klavye), media/keys3d/<slug>_{50,100}.webp
+Çıktı: media/hero.{jpg,webp} (fotoğraf + 3D klavye), media/keys3d/<slug>_<yüzde>.webp
        (yalnız taban görselden farklı pikseller, yumuşak kenarlı), src/3d/tuslar.json
        (site.js'e gömülecek: tuş başına üst yüz, algılama bölgesi, kare kutusu).
 Kullanım: python3 kareler.py <kare_klasörü>
@@ -15,6 +15,8 @@ SITE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 KARE = sys.argv[1]
 W, H = 1920, 1080
 GRAIN = 2.0  # fotoğrafın greniyle karışsın diye 3D katmana hafif gren
+# basış kareleri (TRAVEL yüzdesi); sahne.py --fracs ile aynı olmalı
+FRAMES = [int(x) for x in os.environ.get("FRAMES", "17,33,50,67,83,100").split(",")]
 
 
 def hull(P):
@@ -55,12 +57,12 @@ os.makedirs(os.path.join(SITE, "media", "keys3d"), exist_ok=True)
 SLUG = {"~": "tilde", "Esc": "esc", "Tab": "tab", "Caps": "caps"}
 out = {}
 for n, v in DK.items():
-    fr = {f: os.path.join(KARE, "%s_%d.png" % (n, f)) for f in (50, 100)}
+    fr = {f: os.path.join(KARE, "%s_%d.png" % (n, f)) for f in FRAMES}
     if not all(os.path.exists(p) for p in fr.values()):
         continue
     comp = {f: np.asarray(over(foto, Image.open(p).convert("RGBA"), 1).convert("RGB")).astype(np.float32) for f, p in fr.items()}
     # taban görselden anlamlı fark: iki karenin birleşimi; yumuşak kenarlı maske
-    d = np.maximum(np.abs(comp[50] - HA).mean(2), np.abs(comp[100] - HA).mean(2))
+    d = np.max([np.abs(comp[f] - HA).mean(2) for f in FRAMES], axis=0)
     # yalnız Blender'ın render ettiği bölge (tuş şekli + 48 px, sahne.py --batch ile aynı) karşılaştırılır;
     # bölge dışı şeffaf kaldığından fotoğrafı gösterir ve fark sayılmamalı
     xs_, ys_ = [p[0] for p in v["all"]], [p[1] for p in v["all"]]
@@ -80,14 +82,14 @@ for n, v in DK.items():
     x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
     slug = SLUG.get(n, n.lower())
     hv = hashlib.sha256()
-    for f in (50, 100):
+    for f in FRAMES:
         im = Image.fromarray(comp[f].astype(np.uint8)).crop((x0, y0, x1, y1)).convert("RGBA")
         im.putalpha(m.crop((x0, y0, x1, y1)))
         fp = os.path.join(SITE, "media", "keys3d", "%s_%d.webp" % (slug, f))
         im.save(fp, quality=86, method=6); hv.update(open(fp, "rb").read())
     top = hull([tuple(p) for p in v["top"]])
     hit = hull([tuple(p) for p in v["all"]])
-    out[n] = {"f": slug, "v": hv.hexdigest()[:8], "b": [x0, y0, x1 - x0, y1 - y0],
+    out[n] = {"f": slug, "v": hv.hexdigest()[:8], "k": FRAMES, "b": [x0, y0, x1 - x0, y1 - y0],
               "t": [round(c) for p in top for c in p], "h": [round(c) for p in hit for c in p]}
     print("%-5s kare %dx%d" % (n, x1 - x0, y1 - y0))
 json.dump(out, open(os.path.join(os.path.dirname(__file__), "tuslar.json"), "w"), separators=(",", ":"))
