@@ -390,55 +390,111 @@
     });
     var last = -1;
 
-    // Sinematik sahne: her adımın şeması kendi videosunun içinde (monitör ekranında). Dört katman
-    // üst üste durur; aktif adımın katmanı çapraz solarak görünür, yalnızca o oynar. Yalnızca
-    // aktif ve sıradaki adımın videosu indirilir. Veri tasarrufu / azaltılmış harekette video
-    // hiç indirilmez (posterler kalır). Ekran dışındayken hepsi durur.
-    var sbl = $$(".sb-layer", story);
+    // Sinematik sahne: tek arka plan videosu; şema paneli (.story-stage) videodaki monitörün
+    // ekranına oturur. Ekranın iç köşeleri video piksel uzayında (1280x720) bilinir; video
+    // ölçeği/kaymasıyla köşeler ekrana çevrilir ve panel, birim dikdörtgeni bu dört noktaya götüren
+    // homografiyle (matrix3d) yerleştirilir. Veri tasarrufunda / azaltılmış harekette video hiç
+    // indirilmez (poster kalır); ekran dışındayken durur.
+    var stage = $(".story-stage", story), bgIn = $(".sb-in", story), media = $(".sb-media", story), vid = $("video.sb-v", story);
+    var card = $("[data-sc-in]", story);
+    var VW = 1280, VH = 720, PW = 760, PH = 520, TOP = 76;
+    var SCR = [[452, 46], [1089, 8], [1089, 466], [452, 447]];       // TL, TR, BR, BL
     var saveData = false;
     try { saveData = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
-    var noVid = saveData || reduced;
-    var sbv = sbl.map(function (l) {
-      var v = $("video", l);
-      if (v && noVid) { v.removeAttribute("data-gec"); v.remove(); v = null; }
-      if (v) v.addEventListener("playing", function () { v.classList.add("live"); });
-      return v;
-    });
-    function sbLoad(i) {
-      var v = sbv[i];
-      if (v && v.hasAttribute("data-gec")) { v.removeAttribute("data-gec"); v.preload = "auto"; v.load(); }
+    if (vid && (saveData || reduced)) { vid.removeAttribute("data-gec"); vid.remove(); vid = null; }
+    if (vid) vid.addEventListener("playing", function () { vid.classList.add("live"); });
+    // (0,0),(PW,0),(PW,PH),(0,PH) -> dst: 8 bilinmeyenli doğrusal sistem (Gauss), CSS matrix3d dizilimi
+    function homography(dst) {
+      var src = [[0, 0], [PW, 0], [PW, PH], [0, PH]], A = [], i, j, k;
+      for (i = 0; i < 4; i++) {
+        var x = src[i][0], y = src[i][1], u = dst[i][0], v = dst[i][1];
+        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]);
+        A.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]);
+      }
+      for (i = 0; i < 8; i++) {
+        var m = i;
+        for (j = i + 1; j < 8; j++) if (Math.abs(A[j][i]) > Math.abs(A[m][i])) m = j;
+        var tmp = A[i]; A[i] = A[m]; A[m] = tmp;
+        for (j = i + 1; j < 8; j++) {
+          var f = A[j][i] / A[i][i];
+          for (k = i; k < 9; k++) A[j][k] -= f * A[i][k];
+        }
+      }
+      var h = [];
+      for (i = 7; i >= 0; i--) {
+        var sum = A[i][8];
+        for (j = i + 1; j < 8; j++) sum -= A[i][j] * h[j];
+        h[i] = sum / A[i][i];
+      }
+      return "matrix3d(" + [h[0], h[3], 0, h[6], h[1], h[4], 0, h[7], 0, 0, 1, 0, h[2], h[5], 0, 1].map(function (n) { return n.toFixed(8); }).join(",") + ")";
     }
-    var live = false, curL = 0;
-    function sbShow(idx) {
-      curL = idx;
-      sbl.forEach(function (l, i) { l.classList.toggle("on", i === idx); });
-      sbv.forEach(function (v, i) {
-        if (!v) return;
-        if (i === idx && live) { sbLoad(i); var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); }
-        else if (i !== idx) setTimeout(function () { if (curL !== i) v.pause(); }, 600);   // solma bitince durur
-      });
-      if (live) sbLoad(idx + 1);
+    function layoutStage() {
+      if (!stage || !bgIn || !pinned()) return;
+      var W = bgIn.clientWidth, Hh = bgIn.clientHeight;
+      if (!W || !Hh) return;
+      var A = Hh - TOP;
+      // kaplama ölçeği; geniş ekranda monitör ekranı en az ~760px olsun
+      var s = Math.max(W / VW, A / VH, W >= 1400 ? 760 / (SCR[1][0] - SCR[0][0]) : 0);
+      // monitörün sağ kenarı pencerede kalsın (video sola kayar)
+      var ox = clamp(W - Math.max(16, W * 0.03) - SCR[1][0] * s, W - VW * s, 0);
+      // üstte menünün altında kal, fazlalığı alttan kırp (Tux ayakları görünür kalsın)
+      var oy = Math.max(TOP - Math.max(0, VH * s - A) * 0.5, TOP - 6 - SCR[1][1] * s);
+      media.style.left = ox.toFixed(1) + "px"; media.style.top = oy.toFixed(1) + "px";
+      media.style.width = (VW * s).toFixed(1) + "px"; media.style.height = (VH * s).toFixed(1) + "px";
+      // ekranın kenarlarında 2px içe pay: panel çerçevenin dışına taşmaz
+      var cx = 0, cy = 0; SCR.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
+      stage.style.transform = homography(SCR.map(function (p) {
+        var dx = cx - p[0], dy = cy - p[1], d = Math.sqrt(dx * dx + dy * dy) || 1, k = 2 / s;
+        return [ox + (p[0] + dx / d * k * 1.2) * s, oy + (p[1] + dy / d * k * 1.2) * s];
+      }));
+      stage.classList.add("ready");
     }
+    var live = false;
     function sbPlay(on) {
       live = on;
-      if (on) sbShow(curL);
-      else sbv.forEach(function (v) { if (v) v.pause(); });
+      if (!vid) return;
+      if (on) {
+        if (vid.hasAttribute("data-gec")) { vid.removeAttribute("data-gec"); vid.preload = "auto"; vid.load(); }
+        var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {});
+      } else vid.pause();
     }
-    // sayfa bölüme yaklaşınca ilk adımın videosu yüklenir
-    if (hasIO && !noVid) {
+    // sayfa bölüme yaklaşınca video yüklenir
+    if (hasIO && vid) {
       var pre = new IntersectionObserver(function (en) {
-        if (en[0].isIntersecting) { sbLoad(0); pre.disconnect(); }
+        if (en[0].isIntersecting) {
+          if (vid.hasAttribute("data-gec")) { vid.removeAttribute("data-gec"); vid.preload = "auto"; vid.load(); }
+          pre.disconnect();
+        }
       }, { rootMargin: "800px 0px" });
       pre.observe(story);
+    }
+    // adım kartı: aktif adımın başlık + metni, değişirken yumuşak geçiş
+    var cardTimer = 0;
+    function setCard(idx) {
+      if (!card) return;
+      var src = rungs[idx], n = $(".rung-n", src), h = $("h3", src), p = $("p", src);
+      var fill = function () {
+        card.innerHTML = "";
+        var a = document.createElement("span"); a.className = "rung-n"; a.textContent = n ? n.textContent : String(idx + 1);
+        var b = document.createElement("h3"); b.textContent = h ? h.textContent : "";
+        var c = document.createElement("p"); c.textContent = p ? p.textContent : "";
+        card.appendChild(a); card.appendChild(b); card.appendChild(c);
+        card.classList.remove("out");
+      };
+      clearTimeout(cardTimer);
+      if (!card.firstChild) { fill(); return; }
+      card.classList.add("out");
+      cardTimer = setTimeout(fill, 220);
     }
 
     function pinned() { return !reduced && pinMQ && pinMQ.matches; }
     function setPin() {
       var on = pinned();
       H.classList.toggle("story-pin", on);
-      if (!on) sbPlay(false);
+      if (on) layoutStage(); else sbPlay(false);
       schedule();
     }
+    addEventListener("resize", layoutStage);
     setPin();
     if (pinMQ && pinMQ.addEventListener) pinMQ.addEventListener("change", setPin);
 
@@ -472,7 +528,7 @@
           rungs.forEach(function (rg, i) { rg.classList.toggle("on", i === idx); });
           cmdEl.textContent = rungs[idx].dataset.cmd;
           getsEl.textContent = rungs[idx].dataset.gets;
-          sbShow(idx);
+          setCard(idx);
         }
         fill.style.transform = "scaleX(" + p.toFixed(4) + ")";
       };
