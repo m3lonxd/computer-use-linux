@@ -18,6 +18,8 @@ ap.add_argument("--mode", default="proc", choices=["proc", "proj"])
 ap.add_argument("--frac", type=float, default=1.0)
 ap.add_argument("--border", default="")   # x0,y0,x1,y1 (0-1, alttan) yalnız bu bölge render edilir
 ap.add_argument("--exr", action="store_true")
+ap.add_argument("--batch", default="")   # çıktı klasörü: taban + her görünür tuş için yarı/tam basılı bölge renderı
+ap.add_argument("--dump", default="")    # tuşların ekran şekillerini JSON olarak yaz, render alma
 A = ap.parse_args(argv)
 
 U = 0.01905            # 1u (m)
@@ -225,7 +227,7 @@ idx = {}
 for i, (n, ob) in enumerate(sorted(caps.items())):
     ob.pass_index = i + 1; idx[n] = i + 1
 if A.mode == "proj":
-    PH = bpy.data.images.load(SITE + "/media/hero.jpg")
+    PH = bpy.data.images.load(SITE + "/media/hero-foto.jpg")
     mp = bpy.data.materials.new("foto"); mp.use_nodes = True; nt = mp.node_tree
     for n_ in list(nt.nodes): nt.nodes.remove(n_)
     tx = nt.nodes.new("ShaderNodeTexImage"); tx.image = PH; tx.interpolation = "Linear"; tx.extension = "EXTEND"
@@ -246,6 +248,23 @@ if A.mode == "proj":
     sc.view_settings.view_transform = "Standard"; sc.view_settings.look = "None"; sc.view_settings.exposure = 0
     cd.dof.use_dof = False
     for l in [o for o in bpy.data.objects if o.type == "LIGHT"]: l.hide_render = True
+
+# ---------------------------------------------------------------- döküm
+if A.dump:
+    from bpy_extras.object_utils import world_to_camera_view
+    rw, rh = map(int, A.res.split("x")); sc.render.resolution_x = rw; sc.render.resolution_y = rh
+    dg = bpy.context.evaluated_depsgraph_get(); D = {}
+    for n, ob in caps.items():
+        if not n: continue
+        ev = ob.evaluated_get(dg); me = ev.to_mesh(); mw = ev.matrix_world
+        pts = []
+        for v in me.vertices:
+            c = world_to_camera_view(sc, cam, mw @ v.co); pts.append((c.x * rw, (1 - c.y) * rh, (mw @ v.co).z))
+        ev.to_mesh_clear()
+        zmax = max(p[2] for p in pts)
+        top = [(x, y) for x, y, z in pts if z > zmax - 0.0006]          # üst yüz (çanak dahil)
+        D[n] = {"all": [(round(x, 1), round(y, 1)) for x, y, z in pts], "top": [(round(x, 1), round(y, 1)) for x, y in top]}
+    json.dump(D, open(A.dump, "w")); print("DOKUM", A.dump, len(D)); raise SystemExit(0)
 
 # ---------------------------------------------------------------- basış
 if A.press:
@@ -276,6 +295,29 @@ if A.border:
 if A.exr:
     r.image_settings.file_format = "OPEN_EXR_MULTILAYER"; r.image_settings.color_depth = "32"
     r.filepath = A.out.rsplit(".", 1)[0] + ".exr"
+if A.batch:
+    # Tek süreçte: önce tam kare taban, sonra her tuş için yalnız kendi bölgesi (aynı tohum,
+    # aynı örnek sayısı) yarı ve tam basılı. Bölge tuşun ekran şeklinden 48 px geniş.
+    import os
+    os.makedirs(A.batch, exist_ok=True)
+    DK = json.load(open(A.batch + "/dokum.json"))
+    sc.cycles.seed = 7
+    r.filepath = A.batch + "/taban.png"; bpy.ops.render.render(write_still=True); print("TABAN")
+    for n, v in DK.items():
+        xs = [p[0] for p in v["all"]]; ys = [p[1] for p in v["all"]]
+        cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+        if not (0 < cx < rw and 0 < cy < rh): continue
+        x0, x1 = max(0, min(xs) - 48) / rw, min(rw, max(xs) + 48) / rw
+        y0, y1 = 1 - min(rh, max(ys) + 48) / rh, 1 - max(0, min(ys) - 48) / rh
+        r.use_border = True; r.use_crop_to_border = False
+        r.border_min_x, r.border_min_y, r.border_max_x, r.border_max_y = x0, y0, x1, y1
+        ob = caps[n]; z0 = ob.location.z
+        for frac in (0.5, 1.0):
+            ob.location.z = z0 - TRAVEL * frac
+            r.filepath = A.batch + "/%s_%d.png" % (n, int(frac * 100)); bpy.ops.render.render(write_still=True)
+        ob.location.z = z0; print("TUS", n)
+    r.use_border = False
+    raise SystemExit(0)
 if A.blend:
     bpy.ops.wm.save_as_mainfile(filepath=A.blend)
 bpy.ops.render.render(write_still=True)

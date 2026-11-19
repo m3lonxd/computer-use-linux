@@ -1,5 +1,9 @@
 # Computer Use Linux
 
+![Computer Use Linux: Tux ve klavye](site/media/hero.jpg)
+
+**Site:** [computeruselinux.vercel.app](https://computeruselinux.vercel.app) · [English](https://computeruselinux.vercel.app/) · [Türkçe](https://computeruselinux.vercel.app/tr/)
+
 Bir AI ajanına masaüstünü ve üzerinde açık terminalleri **görme ve
 kullanma** yetkisi verir. Linux'ta doğdu (KDE, GNOME, X11, Sway, Hyprland);
 aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
@@ -7,7 +11,7 @@ aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
 yerel model.
 
 > Eski adı NexRemote. Komut artık `computer-use-linux`; eski `nexremote` komutu takma ad olarak çalışır.
-> Paket adı ve depo (`github.com/m3lonxd/nexremote`) aynı kalır.
+> Depo artık `github.com/m3lonxd/computer-use-linux`; eski `github.com/m3lonxd/nexremote` adresi buraya yönlenir. Python paket adı `nexremote` olarak kalır.
 
 ```console
 $ computer-use-linux observe

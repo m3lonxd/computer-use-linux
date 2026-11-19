@@ -82,6 +82,7 @@
     </nav>
     <div class="top-tools">
       <a class="btn btn-sm" href="/download/nexremote.zip" download><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg><span>{{cta_download}}</span></a>
+      <a class="lang gh" href="{{repo_url}}" rel="noopener" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2.2Z"/></svg></a>
       <a class="lang" href="{{other_lang_href}}" hreflang="{{other_lang}}" data-lang="{{other_lang}}" lang="{{other_lang}}" title="{{other_lang_name}}">{{other_lang_label}}</a>
       <button class="theme" type="button" aria-label="{{theme_label}}" title="{{theme_label}}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18V3Z" fill="currentColor"/><circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
@@ -100,10 +101,6 @@
       <source srcset="{{media}}hero.webp" type="image/webp">
       <img class="v-media" src="{{media}}hero.jpg" alt="" width="1920" height="1080" fetchpriority="high">
     </picture>
-    <video class="v-media dongu" autoplay muted loop playsinline preload="auto" poster="{{media}}hero.webp" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback>
-      <source src="{{media}}hero.webm" type="video/webm">
-      <source src="{{media}}hero.mp4" type="video/mp4">
-    </video>
   </div>
   <div class="wrap hero-top">
     <div class="hero-in">
@@ -871,6 +868,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
     <a href="#how">{{nav_how}}</a>
     <a href="#install">{{nav_install}}</a>
     <a href="/download/nexremote.zip" download>{{cta_download}}</a>
+    <a href="{{repo_url}}" rel="noopener">GitHub</a>
     <span class="foot-former">{{foot_former}}</span>
     <span class="foot-contact">{{foot_contact}}: <a href="{{mailto}}">{{email}}</a></span>
     <a href="{{other_lang_href}}" hreflang="{{other_lang}}" data-lang="{{other_lang}}" class="lang-foot" lang="{{other_lang}}">{{other_lang_name}}</a>

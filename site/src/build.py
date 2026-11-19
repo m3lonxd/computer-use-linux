@@ -40,6 +40,8 @@ ROOT = os.path.dirname(SITE)
 CONTACT_EMAIL = "omeralibayrakcii@gmail.com"
 
 
+REPO_URL = "https://github.com/m3lonxd/computer-use-linux"
+
 def read(rel: str) -> str:
     with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
         return f.read()
@@ -202,7 +204,7 @@ S = {
         "eyebrow": "Desktop control for AI agents · Linux · Windows · macOS",
         "h1a": "Your agent can run commands.",
         "h1b": "Now it can use the screen.",
-        "lede": "Computer Use Linux turns the desktop into shell commands: every window, a real mouse and keyboard, buttons pressed by name, and the terminals you already have open, other agents included. Born on Linux, it runs the same commands on Windows and macOS too (macOS is a preview). No root, no SDK, and a vision model only when an app gives it nothing else to read.",
+        "lede": "Your AI agent sees every window and uses a real mouse and keyboard. Linux first, Windows and macOS too.",
         "cta_download": "Download", "cta_see": "See it work",
         "copy": "Copy", "copied": "Copied",
         "hero_meta": "MIT · Linux · Windows · macOS (preview) · Python 3.9+",
@@ -463,7 +465,7 @@ S = {
         "eyebrow": "AI ajanları için masaüstü kontrolü · Linux · Windows · macOS",
         "h1a": "",
         "h1b": "Ajanına eller ver.",
-        "lede": "Computer Use Linux masaüstünü kabuk komutlarına çevirir: her pencere, gerçek fare ve klavye, adıyla basılan düğmeler ve zaten açık olan terminaller, diğer ajanlar dahil. Linux'ta doğdu; aynı komutlar Windows'ta ve macOS'ta da çalışır (macOS önizleme). Root yok, SDK yok; görsel model ancak uygulama okunacak başka bir şey vermediğinde devreye girer.",
+        "lede": "Yapay zekâ ajanın her pencereyi görür, gerçek fare ve klavyeyi kullanır. Önce Linux, Windows ve macOS da.",
         "cta_download": "İndir", "cta_see": "Çalışırken gör",
         "copy": "Kopyala", "copied": "Kopyalandı",
         "hero_meta": "MIT · Linux · Windows · macOS (önizleme) · Python 3.9+",
@@ -897,6 +899,7 @@ def render(lang: str, st: dict[str, int]) -> str:
     vals["arch_svg_h"], vals["arch_svg_v"] = arch_svgs(t)
     vals["plat_matrix"] = plat_matrix(lang, t)
     vals["wine_result"] = WINE_RESULT
+    vals["repo_url"] = REPO_URL
     # Önbellek kırıcı: varlığın içeriği değişince adres değişir, tarayıcı eskiyi tutmaz.
     for key, name in (("css_hash", "site.css"), ("js_hash", "site.js")):
         with open(os.path.join(SITE, "assets", name), "rb") as fh:
