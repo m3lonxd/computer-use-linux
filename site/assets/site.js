@@ -308,8 +308,6 @@
     // ve kendi silüetine kırpılmış fotoğraf kapağı. Kırpma kapakla birlikte kayar, yuvanın
     // kırpması sabit kalır: kapak inerken üstünde koyu aralık açılır, ön duvarı yuvanın alt
     // kenarında kesilip kısalır. Fotoğrafın başka hiçbir parçası yer değiştirmez.
-    var blur = mk("filter", { id: "kblur", x: "-20%", y: "-20%", width: "140%", height: "140%" }, defs);
-    mk("feGaussianBlur", { stdDeviation: "3.5" }, blur);
     KEYS.forEach(function (k, i) {
       var c = k[1], pts = [], j, cx = 0, cy = 0;
       for (j = 0; j < 8; j += 2) pts.push([c[j], c[j + 1]]);
@@ -317,11 +315,13 @@
       var sil = sweep(pts, cx, cy, 1.03), well = sil;
       mk("polygon", { points: well }, mk("clipPath", { id: "kw" + i }, defs));
       mk("polygon", { points: sil }, mk("clipPath", { id: "ks" + i }, defs));
-      // Yuvanın gölgesi kırpılmaz ve bulanıktır: kapağın açtığı aralık sert siyah bir kutu
-      // yerine yumuşak bir gölge olur. Kapak ise yuvaya kırpılır; ön duvarı alt kenarda kısalır.
-      var kp = mk("g", { "class": "kp", "data-key": k[0] }, g);
-      mk("polygon", { "class": "kp-sh", points: well, filter: "url(#kblur)" }, kp);
-      var cap = mk("g", { "class": "kp-cap" }, mk("g", { "clip-path": "url(#kw" + i + ")" }, kp));
+      // Kapak inince üstünde açılan şerit siyahla doldurulmaz: gerçek klavyedeki gibi arkadaki
+      // tuşun duvarı uzar. Bunun için kapağın hemen üstündeki görüntü aynı miktar aşağı kayar
+      // (kp-bk, hafif gölgeli). Kapak kendi silüetine kırpılıdır; ikisi de yuvaya kırpılır,
+      // böylece ön duvar yuvanın alt kenarında kısalır.
+      var kp = mk("g", { "class": "kp", "data-key": k[0], "clip-path": "url(#kw" + i + ")" }, g);
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" }, mk("g", { "class": "kp-bk" }, kp)));
+      var cap = mk("g", { "class": "kp-cap" }, kp);
       pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#ks" + i + ")" }, cap));
       polys.push({ el: kp, pts: pts, name: k[0] });
     });
