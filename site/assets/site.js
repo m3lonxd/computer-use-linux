@@ -326,7 +326,9 @@
         mk("g", { "class": "kp-bk" }, mk("g", { "clip-path": "url(#kg" + i + ")" }, kp))));
       var cap = mk("g", { "class": "kp-cap" }, kp);
       pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#kt" + i + ")" }, cap));
-      polys.push({ el: kp, pts: pts, name: k[0] });
+      // İmleç tuşun yalnız üst yüzünde değil duvarlarında da tuşa basar (üst yüz + duvar silüeti).
+      var hb = pts.map(function (q) { return [cx + (q[0] - cx) * 1.04, cy + (q[1] - cy) * 1.04]; });
+      polys.push({ el: kp, pts: pts, hit: hull(hb.concat(hb.map(function (q) { return [q[0], q[1] + WALL]; }))), name: k[0] });
     });
     bg.insertBefore(svg, null);
 
@@ -369,8 +371,10 @@
       if (blocked || lx < 0) { press(null); return; }
       var r = bg.getBoundingClientRect();
       var x = (lx - r.left - ox) / sc, y = (ly - r.top - oy) / sc, i;
-      if (cur && inside(x, y, cur.pts)) return;
+      if (cur && inside(x, y, cur.hit)) return;
+      // önce üst yüzler: bir tuşun duvarı öndeki tuşun üst yüzüne taşarsa üst yüz kazanır
       for (i = 0; i < polys.length; i++) if (inside(x, y, polys[i].pts)) { press(polys[i]); return; }
+      for (i = 0; i < polys.length; i++) if (inside(x, y, polys[i].hit)) { press(polys[i]); return; }
       press(null);
     }
     hero.addEventListener("pointermove", function (e) {
