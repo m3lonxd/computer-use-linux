@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v={{version}}">
+<link rel="stylesheet" href="/assets/site.css?v={{css_hash}}">
 <script>
   // JS varsa "js" sınıfı: yalnızca o zaman, görünmeden önce gizlenecek öğeler gizlenir.
   // Tema, boyamadan önce uygulanır (yanıp sönme olmasın).
@@ -1009,6 +1009,6 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
 </footer>
 
 <script id="replay-i18n" type="application/json">{{replay_json}}</script>
-<script src="/assets/site.js?v={{version}}" defer></script>
+<script src="/assets/site.js?v={{js_hash}}" defer></script>
 </body>
 </html>

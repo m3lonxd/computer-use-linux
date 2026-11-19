@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import functools
 import html
+import hashlib
 import json
 import os
 import re
@@ -894,6 +895,10 @@ def render(lang: str, st: dict[str, int]) -> str:
     vals["arch_svg_h"], vals["arch_svg_v"] = arch_svgs(t)
     vals["plat_matrix"] = plat_matrix(lang, t)
     vals["wine_result"] = WINE_RESULT
+    # Önbellek kırıcı: varlığın içeriği değişince adres değişir, tarayıcı eskiyi tutmaz.
+    for key, name in (("css_hash", "site.css"), ("js_hash", "site.js")):
+        with open(os.path.join(SITE, "assets", name), "rb") as fh:
+            vals[key] = hashlib.sha256(fh.read()).hexdigest()[:10]
 
     def sub(m: re.Match) -> str:
         key = m.group(1)
