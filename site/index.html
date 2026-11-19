@@ -549,7 +549,7 @@ Should I fix them? (y/n, or tell me)</code></pre>
           <li><span class="env-n">X11</span><span class="tb tb-virt">Xvfb sandbox</span><p>End-to-end suite on a headless X server: XTEST input, EWMH windows, screenshots, the CLI.</p></li>
           <li><span class="env-n">Sway</span><span class="tb tb-virt">Headless Sway</span><p>A real Sway 1.10, run headless: windows, clicks and scrolling through Sway IPC, typing with wtype, screenshots with grim.</p></li>
           <li><span class="env-n">Hyprland</span><span class="tb tb-mock">Fake IPC</span><p>hyprctl is replaced by a fake; not yet run on a real compositor.</p></li>
-          <li><span class="env-n">GNOME</span><span class="tb tb-none">Untested</span><p>The portal path should work; the window list falls back to AT-SPI.</p></li>
+          <li><span class="env-n">GNOME 48</span><span class="tb tb-virt">Headless GNOME</span><p>Verified on a real headless GNOME Shell 48 (Mutter): window list and find/click by name through AT-SPI, mouse and keyboard input, scrolling, screenshots. Input goes through the RemoteDesktop portal (asks once); headless setups can opt into direct Mutter input. Multi-monitor and the interactive portal dialog are not tested yet.</p></li>
         </ul>
       </li>
       <li class="os" data-reveal>
@@ -741,8 +741,8 @@ bash-5.2$</code></pre>
       <div class="stat" data-reveal><dt>ways to plug in: shell, MCP, HTTP, text loop</dt><dd data-count="4">4</dd></div>
       <div class="stat" data-reveal><dt>desktop surfaces it reaches</dt><dd data-count="9">9</dd></div>
       <div class="stat" data-reveal><dt>harness setups documented</dt><dd data-count="11">11</dd></div>
-      <div class="stat" data-reveal><dt>test suites, 4 of them in a throwaway desktop</dt><dd data-count="15">15</dd></div>
-      <div class="stat stat-wide" data-reveal><dt>lines of Python, core and adapters</dt><dd data-count="11258">11,258</dd></div>
+      <div class="stat" data-reveal><dt>test suites, 4 of them in a throwaway desktop</dt><dd data-count="17">17</dd></div>
+      <div class="stat stat-wide" data-reveal><dt>lines of Python, core and adapters</dt><dd data-count="11534">11,534</dd></div>
       <div class="stat stat-zero" data-reveal><dt>root or admin rights needed</dt><dd data-count="0">0</dd></div>
     </dl>
   </div>
@@ -807,7 +807,7 @@ bash-5.2$</code></pre>
         <h3 class="track-h"><svg class="ico" aria-hidden="true"><use href="#i-planned"/></svg>Planned</h3>
         <ul class="track-list next" data-stagger>
           <li data-reveal><strong>Real Windows and Mac hardware.</strong> Run the suites on Windows 10 and 11 and on a Mac, then drop the preview label.</li>
-          <li data-reveal><strong>GNOME and a real Hyprland.</strong> Test the portal path and the window list on GNOME, and run Hyprland on a real compositor instead of fake IPC.</li>
+          <li data-reveal><strong>A real Hyprland, and GNOME beyond headless.</strong> Run Hyprland on a real compositor instead of fake IPC (it needs a KMS device), and test GNOME with several monitors and the interactive portal dialog.</li>
         </ul>
       </div>
     </div>
@@ -871,7 +871,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
     <div class="limits" data-reveal>
       <h3>Limits</h3>
       <ul>
-        <li>Linux: KDE Plasma 6 on Wayland is tested on a real desktop, X11 on a real X server (Xvfb), Sway on a real headless compositor, Hyprland with fake IPC. On GNOME the window list falls back to AT-SPI only.</li>
+        <li>Linux: KDE Plasma 6 on Wayland is tested on a real desktop, X11 on a real X server (Xvfb), Sway on a real headless compositor, GNOME Shell 48 on a real headless compositor, Hyprland with fake IPC. On GNOME the window list comes from AT-SPI only.</li>
         <li>Windows: tested on Wine 10, not yet on real Windows 10 or 11. Wine&#x27;s UI Automation can&#x27;t walk the control tree, so click by name is untested there. Windows running as administrator are reachable only when Computer Use Linux runs as administrator too (UIPI).</li>
         <li>macOS: the code is written and its logic tested against a fake Quartz, but it has not yet been verified on a real Mac. It ships as a preview.</li>
         <li>Konsole exposes the visible screen only. For scrollback, run the agent in tmux.</li>

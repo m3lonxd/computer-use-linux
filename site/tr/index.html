@@ -549,7 +549,7 @@ Düzeltmemi ister misin? (e/h)</code></pre>
           <li><span class="env-n">X11</span><span class="tb tb-virt">Xvfb sandbox</span><p>Ekransız bir X sunucusunda uçtan uca test: XTEST girdisi, EWMH pencereleri, ekran görüntüsü, CLI.</p></li>
           <li><span class="env-n">Sway</span><span class="tb tb-virt">Ekransız Sway</span><p>Ekransız çalışan gerçek bir Sway 1.10: pencereler, Sway IPC ile tıklama ve kaydırma, wtype ile yazma, grim ile ekran görüntüsü.</p></li>
           <li><span class="env-n">Hyprland</span><span class="tb tb-mock">Sahte IPC</span><p>hyprctl yerine sahtesi konur; henüz gerçek bir compositor&#x27;da çalıştırılmadı.</p></li>
-          <li><span class="env-n">GNOME</span><span class="tb tb-none">Test edilmedi</span><p>Portal yolu çalışmalı; pencere listesi AT-SPI&#x27;ye düşer.</p></li>
+          <li><span class="env-n">GNOME 48</span><span class="tb tb-virt">Ekransız GNOME</span><p>Gerçek bir ekransız GNOME Shell 48 (Mutter) üzerinde doğrulandı: AT-SPI ile pencere listesi ve isimle bul/tıkla, fare ve klavye girişi, kaydırma, ekran görüntüsü. Giriş RemoteDesktop portalı ile (bir kez onay ister); ekransız kurulumlar doğrudan Mutter girişini seçebilir. Çok monitör ve etkileşimli portal diyaloğu henüz test edilmedi.</p></li>
         </ul>
       </li>
       <li class="os" data-reveal>
@@ -741,8 +741,8 @@ bash-5.2$</code></pre>
       <div class="stat" data-reveal><dt>bağlanma yolu: kabuk, MCP, HTTP, metin döngüsü</dt><dd data-count="4">4</dd></div>
       <div class="stat" data-reveal><dt>ulaştığı masaüstü yüzeyi</dt><dd data-count="9">9</dd></div>
       <div class="stat" data-reveal><dt>kurulumu belgelenmiş harness</dt><dd data-count="11">11</dd></div>
-      <div class="stat" data-reveal><dt>test paketi; 4 tanesi atılabilir bir masaüstünde</dt><dd data-count="15">15</dd></div>
-      <div class="stat stat-wide" data-reveal><dt>satır Python, çekirdek ve adaptörler</dt><dd data-count="11258">11.258</dd></div>
+      <div class="stat" data-reveal><dt>test paketi; 4 tanesi atılabilir bir masaüstünde</dt><dd data-count="17">17</dd></div>
+      <div class="stat stat-wide" data-reveal><dt>satır Python, çekirdek ve adaptörler</dt><dd data-count="11534">11.534</dd></div>
       <div class="stat stat-zero" data-reveal><dt>gereken root ya da yönetici yetkisi</dt><dd data-count="0">0</dd></div>
     </dl>
   </div>
@@ -807,7 +807,7 @@ bash-5.2$</code></pre>
         <h3 class="track-h"><svg class="ico" aria-hidden="true"><use href="#i-planned"/></svg>Planlanan</h3>
         <ul class="track-list next" data-stagger>
           <li data-reveal><strong>Gerçek Windows ve Mac donanımı.</strong> Testleri Windows 10 ve 11&#x27;de ve bir Mac&#x27;te koşmak, sonra önizleme etiketini kaldırmak.</li>
-          <li data-reveal><strong>GNOME ve gerçek Hyprland.</strong> Portal yolunu ve pencere listesini GNOME&#x27;da test etmek; Hyprland&#x27;i sahte IPC yerine gerçek bir compositor&#x27;da çalıştırmak.</li>
+          <li data-reveal><strong>Gerçek Hyprland ve ekransızın ötesinde GNOME.</strong> Hyprland&#x27;i sahte IPC yerine gerçek bir compositor&#x27;da çalıştırmak (KMS aygıtı gerekiyor); GNOME&#x27;u birden çok monitör ve etkileşimli portal diyaloğuyla test etmek.</li>
         </ul>
       </div>
     </div>
@@ -871,7 +871,7 @@ curl -s -H "Authorization: Bearer $SECRET" -X POST localhost:8788/terminals</cod
     <div class="limits" data-reveal>
       <h3>Sınırlar</h3>
       <ul>
-        <li>Linux: KDE Plasma 6 Wayland gerçek masaüstünde, X11 gerçek bir X sunucusunda (Xvfb), Sway gerçek bir ekransız compositor&#x27;da, Hyprland sahte IPC ile test edildi. GNOME&#x27;da pencere listesi yalnızca AT-SPI&#x27;ye düşer.</li>
+        <li>Linux: KDE Plasma 6 Wayland gerçek masaüstünde, X11 gerçek bir X sunucusunda (Xvfb), Sway gerçek bir ekransız compositor&#x27;da, GNOME Shell 48 gerçek bir ekransız compositor&#x27;da, Hyprland sahte IPC ile test edildi. GNOME&#x27;da pencere listesi yalnızca AT-SPI&#x27;den gelir.</li>
         <li>Windows: Wine 10 üzerinde test edildi; gerçek Windows 10/11&#x27;de doğrulanmadı. Wine&#x27;ın UI Automation&#x27;ı denetim ağacını gezemediği için isimle tıklama Wine&#x27;da sınanamadı. Yönetici olarak çalışan pencerelere yalnızca yönetici olarak çalışan Computer Use Linux ulaşır (UIPI).</li>
         <li>macOS: kod yazıldı ve mantığı sahte Quartz ile test edildi, ama gerçek bir Mac&#x27;te henüz doğrulanmadı; önizleme sürümü.</li>
         <li>Konsole yalnızca görünen ekranı verir. Geçmiş satırlar için ajanı tmux içinde çalıştırın.</li>
