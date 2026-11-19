@@ -293,7 +293,7 @@
     var WALL = 34;
     // Basılı hali Higgsfield ile tek tek üretilmiş tuşlar: [dosya, x, y, g, y] (1920x1072 uzayı).
     // Bu tuşlarda kaydırma efekti yerine gerçek basılı fotoğraf yaması gösterilir.
-    var PRESSED = {"1":["1",952,703,192,161],"2":["2",1105,651,182,162],"3":["3",1252,600,167,143],"C":["c",1709,849,202,139],"D":["d",1536,763,206,165],"E":["e",1414,676,203,152],"Esc":["esc",692,671,186,145],"F1":["f1",983,568,182,137],"F2":["f2",1120,517,179,144],"F3":["f3",1250,467,185,140],"S":["s",1382,835,204,159],"W":["w",1270,738,200,165],"X":["x",1564,907,206,146],"~":["tilde",791,761,198,153]};
+    var PRESSED = {"1":["1",940,684,198,151],"2":["2",1096,653,193,195],"3":["3",1227,598,206,150],"D":["d",1507,764,230,161],"Esc":["esc",685,691,195,136],"F1":["f1",979,567,214,133],"F2":["f2",1119,515,207,127],"F3":["f3",1223,520,200,91],"S":["s",1353,835,251,144],"W":["w",1243,741,258,191],"~":["tilde",779,764,223,184]};
     var KEYDIR = (img.getAttribute("src") || "").replace(/hero\.[a-z]+$/, "") + "keys/";
     function hull(P) {
       P = P.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
@@ -387,98 +387,65 @@
   if (marquee && !reduced) watch(marquee, function (v) { marquee.classList.toggle("on", v); });
 
   // ======================================= "Nasıl çalışır": sabit sahne
+  // Tek parça sinematik sahne: oda, monitördeki şema, Tux ve kamera hareketi önceden render edilmiş
+  // bir kare dizisidir (media/story-seq/<dil>/NNNN.webp). Kaydırma ilerlemesi p kareyi seçer, kare
+  // tek bir <canvas>'a cover ölçekle çizilir. Kareler aşamalı yüklenir: önce her 8. kare, sonra
+  // kalanlar; yüklenmemiş kare için en yakın yüklenmiş kare gösterilir. Dar ekranda ve azaltılmış
+  // harekette sahne kurulmaz (adımlar düz liste kalır).
   var story = $("[data-story]");
   if (story) (function () {
     var pinMQ = window.matchMedia ? matchMedia("(min-width: 1000px)") : null;
-    var rungs = $$("[data-rung]", story), layers = $$(".ss-layer", story);
-    var cmdEl = $("[data-ss-cmd]", story), getsEl = $("[data-ss-gets]", story), fill = $("[data-ss-fill]", story);
-    var items = $$("[data-sc]", story).map(function (el) {
-      var a = el.dataset.sc.split(",");
-      var pt = function (s) { var v = (s || "0,0").split(",").map(Number); return v; };
-      return { el: el, L: +a[0], a: +a[1], b: +a[2], m: a[3], f: pt(el.dataset.from), t: pt(el.dataset.to) };
-    });
-    var last = -1;
-
-    // Sinematik sahne: tek arka plan videosu; şema paneli (.story-stage) videodaki monitörün
-    // ekranına oturur. Ekranın iç köşeleri video piksel uzayında (1280x720) bilinir; video
-    // ölçeği/kaymasıyla köşeler ekrana çevrilir ve panel, birim dikdörtgeni bu dört noktaya götüren
-    // homografiyle (matrix3d) yerleştirilir. Veri tasarrufunda / azaltılmış harekette video hiç
-    // indirilmez (poster kalır); ekran dışındayken durur.
-    var stage = $(".story-stage", story), bgIn = $(".sb-in", story), media = $(".sb-media", story), vid = $("video.sb-v", story);
-    var card = $("[data-sc-in]", story);
-    var VW = 1280, VH = 720, PW = 760, PH = 520, TOP = 76;
-    var SCR = [[452, 46], [1089, 8], [1089, 466], [452, 447]];       // TL, TR, BR, BL
+    var rungs = $$("[data-rung]", story);
+    var cv = $("canvas.sb-cv", story), card = $("[data-sc-in]", story);
+    var ctx = cv && cv.getContext ? cv.getContext("2d", { alpha: false }) : null;
+    var N = cv ? +cv.dataset.frames || 0 : 0, base = cv ? cv.dataset.seq : "";
     var saveData = false;
     try { saveData = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
-    if (vid && (saveData || reduced)) { vid.removeAttribute("data-gec"); vid.remove(); vid = null; }
-    if (vid) vid.addEventListener("playing", function () { vid.classList.add("live"); });
-    // (0,0),(PW,0),(PW,PH),(0,PH) -> dst: 8 bilinmeyenli doğrusal sistem (Gauss), CSS matrix3d dizilimi
-    function homography(dst) {
-      var src = [[0, 0], [PW, 0], [PW, PH], [0, PH]], A = [], i, j, k;
-      for (i = 0; i < 4; i++) {
-        var x = src[i][0], y = src[i][1], u = dst[i][0], v = dst[i][1];
-        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u]);
-        A.push([0, 0, 0, x, y, 1, -v * x, -v * y, v]);
-      }
-      for (i = 0; i < 8; i++) {
-        var m = i;
-        for (j = i + 1; j < 8; j++) if (Math.abs(A[j][i]) > Math.abs(A[m][i])) m = j;
-        var tmp = A[i]; A[i] = A[m]; A[m] = tmp;
-        for (j = i + 1; j < 8; j++) {
-          var f = A[j][i] / A[i][i];
-          for (k = i; k < 9; k++) A[j][k] -= f * A[i][k];
-        }
-      }
-      var h = [];
-      for (i = 7; i >= 0; i--) {
-        var sum = A[i][8];
-        for (j = i + 1; j < 8; j++) sum -= A[i][j] * h[j];
-        h[i] = sum / A[i][i];
-      }
-      return "matrix3d(" + [h[0], h[3], 0, h[6], h[1], h[4], 0, h[7], 0, 0, 1, 0, h[2], h[5], 0, 1].map(function (n) { return n.toFixed(8); }).join(",") + ")";
+    var frames = [], ready = [], loading = false, last = -1, drawn = -1, cw = 0, ch = 0;
+
+    function pinned() { return !reduced && !!ctx && N > 0 && !!pinMQ && pinMQ.matches; }
+    function pad(n) { return ("000" + n).slice(-4); }
+    // yüklenmiş en yakın kare
+    function nearest(i) {
+      if (!ready.length) return -1;
+      var best = ready[0], bd = Math.abs(best - i);
+      for (var k = 1; k < ready.length; k++) { var d = Math.abs(ready[k] - i); if (d < bd) { bd = d; best = ready[k]; } }
+      return best;
     }
-    var tux = story.querySelector(".sb-tux");
-    function layoutStage() {
-      if (!stage || !bgIn || !pinned()) return;
-      var W = bgIn.clientWidth, Hh = bgIn.clientHeight;
-      if (!W || !Hh) return;
-      var A = Hh - TOP;
-      // kaplama ölçeği; geniş ekranda monitör ekranı en az ~760px olsun
-      var s = Math.max(W / VW, A / VH, W >= 1400 ? 760 / (SCR[1][0] - SCR[0][0]) : 0);
-      // monitörün sağ kenarı pencerede kalsın (video sola kayar)
-      var ox = clamp(W - Math.max(16, W * 0.03) - SCR[1][0] * s, W - VW * s, 0);
-      // üstte menünün altında kal, fazlalığı alttan kırp (Tux ayakları görünür kalsın)
-      var oy = Math.max(TOP - Math.max(0, VH * s - A) * 0.5, TOP - 6 - SCR[1][1] * s);
-      media.style.left = ox.toFixed(1) + "px"; media.style.top = oy.toFixed(1) + "px";
-      media.style.width = (VW * s).toFixed(1) + "px"; media.style.height = (VH * s).toFixed(1) + "px";
-      // Tux, videodaki yeriyle birebir hizalı kesik bir katman olarak şemanın önünde durur
-      if (tux) { tux.style.left = media.style.left; tux.style.top = media.style.top; tux.style.width = media.style.width; tux.style.height = media.style.height; }
-      // ekranın kenarlarında 2px içe pay: panel çerçevenin dışına taşmaz
-      var cx = 0, cy = 0; SCR.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
-      stage.style.transform = homography(SCR.map(function (p) {
-        var dx = cx - p[0], dy = cy - p[1], d = Math.sqrt(dx * dx + dy * dy) || 1, k = 2 / s;
-        return [ox + (p[0] + dx / d * k * 1.2) * s, oy + (p[1] + dy / d * k * 1.2) * s];
-      }));
-      stage.classList.add("ready");
+    function startLoading() {
+      if (loading || !ctx) return;
+      loading = true;
+      var order = [], i;
+      for (i = 0; i < N; i += 8) order.push(i);
+      if (order[order.length - 1] !== N - 1) order.push(N - 1);
+      if (!saveData) { for (i = 0; i < N; i++) if (order.indexOf(i) < 0) order.push(i); }
+      var pos = 0, active = 0;
+      function one(idx) {
+        var im = new Image(); frames[idx] = im; active++;
+        im.onload = function () { active--; ready.push(idx); ready.sort(function (a, b) { return a - b; }); drawn = -1; schedule(); pump(); };
+        im.onerror = function () { active--; frames[idx] = null; pump(); };
+        im.decoding = "async";
+        im.src = base + pad(idx + 1) + ".webp";
+      }
+      function pump() { while (active < 4 && pos < order.length) one(order[pos++]); }
+      pump();
     }
-    var live = false;
-    function sbPlay(on) {
-      live = on;
-      if (!vid) return;
-      if (on) {
-        if (vid.hasAttribute("data-gec")) { vid.removeAttribute("data-gec"); vid.preload = "auto"; vid.load(); }
-        var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {});
-      } else vid.pause();
+    function sizeCanvas() {
+      var w = cv.clientWidth, h = cv.clientHeight;
+      if (!w || !h) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var pw = Math.min(Math.round(w * dpr), 1920), ph = Math.round(h * pw / w);
+      if (pw !== cv.width || ph !== cv.height) { cv.width = pw; cv.height = ph; }
+      cw = cv.width; ch = cv.height; drawn = -1;
     }
-    // sayfa bölüme yaklaşınca video yüklenir
-    if (hasIO && vid) {
-      var pre = new IntersectionObserver(function (en) {
-        if (en[0].isIntersecting) {
-          if (vid.hasAttribute("data-gec")) { vid.removeAttribute("data-gec"); vid.preload = "auto"; vid.load(); }
-          pre.disconnect();
-        }
-      }, { rootMargin: "800px 0px" });
-      pre.observe(story);
+    function draw(i) {
+      var k = nearest(i);
+      if (k < 0 || !cw || k === drawn) return;
+      var im = frames[k], iw = im.naturalWidth, ih = im.naturalHeight;
+      if (!iw) return;
+      var sc = Math.max(cw / iw, ch / ih), dw = iw * sc, dh = ih * sc;
+      ctx.drawImage(im, (cw - dw) / 2, 0, dw, dh);
+      drawn = k;
     }
     // adım kartı: aktif adımın başlık + metni, değişirken yumuşak geçiş
     var cardTimer = 0;
@@ -499,50 +466,37 @@
       cardTimer = setTimeout(fill, 220);
     }
 
-    function pinned() { return !reduced && pinMQ && pinMQ.matches; }
     function setPin() {
       var on = pinned();
       H.classList.toggle("story-pin", on);
-      if (on) layoutStage(); else sbPlay(false);
+      if (on) { sizeCanvas(); startLoading(); }
       schedule();
     }
-    addEventListener("resize", layoutStage);
+    // sahneye yaklaşınca kareler yüklenmeye başlar
+    if (hasIO && ctx) {
+      var pre = new IntersectionObserver(function (en) {
+        if (en[0].isIntersecting) { if (pinned()) startLoading(); pre.disconnect(); }
+      }, { rootMargin: "1200px 0px" });
+      pre.observe(story);
+    }
+    addEventListener("resize", function () { if (pinned()) { sizeCanvas(); schedule(); } });
     setPin();
     if (pinMQ && pinMQ.addEventListener) pinMQ.addEventListener("change", setPin);
 
     tasks.push(function (vh) {
       if (!pinned()) return null;
       var r = $(".rungs", story).getBoundingClientRect();
-      if (r.top > vh || r.bottom < 0) return live ? function () { live = false; sbPlay(false); } : null;
+      if (r.top > vh || r.bottom < 0) return null;
       var p = clamp((vh / 2 - r.top) / r.height, 0, 1);
       return function () {
-        if (!live) { live = true; sbPlay(true); }
-        var t = [0, 1, 2, 3].map(function (i) { return clamp(p * 4 - i + 0.2, 0, 1); });
-        var inn = t.map(function (x) { return ss(0, 0.12, x); });
-        layers.forEach(function (l, i) { l.style.opacity = (inn[i] * (i < 3 ? 1 - inn[i + 1] : 1)).toFixed(3); });
-        items.forEach(function (it) {
-          var v = ss(it.a, it.b, t[it.L]), s = it.el.style, next = it.L < 3 ? inn[it.L + 1] : 0;
-          switch (it.m) {
-            case "o": s.opacity = v; break;
-            case "hide": s.opacity = 1 - v; break;
-            case "d": s.strokeDashoffset = (1 - v).toFixed(4); break;
-            case "x": s.opacity = v; s.transform = "translateY(" + ((1 - v) * 10).toFixed(2) + "px)"; break;
-            case "dim": case "dimtext": s.opacity = (1 - 0.72 * v * (1 - next)).toFixed(3); break;
-            case "on": it.el.style.fill = v > 0.5 ? "#3d8fd6" : ""; break;
-            case "move": s.transform = "translate(" + lerp(it.f[0], it.t[0], v).toFixed(1) + "px," + lerp(it.f[1], it.t[1], v).toFixed(1) + "px)"; break;
-            case "flash": s.opacity = v > 0 && v < 1 ? (Math.sin(v * Math.PI) * 0.8).toFixed(3) : 0; break;
-            case "ring": s.opacity = v > 0 && v < 1 ? (1 - v).toFixed(3) : 0; s.transform = "scale(" + (1 + 2.4 * v).toFixed(3) + ")"; break;
-          }
-        });
+        if (!cw) sizeCanvas();
+        draw(Math.round(p * (N - 1)));
         var idx = clamp(Math.floor(p * 4), 0, 3);
         if (idx !== last) {
           last = idx;
           rungs.forEach(function (rg, i) { rg.classList.toggle("on", i === idx); });
-          cmdEl.textContent = rungs[idx].dataset.cmd;
-          getsEl.textContent = rungs[idx].dataset.gets;
           setCard(idx);
         }
-        fill.style.transform = "scaleX(" + p.toFixed(4) + ")";
       };
     });
   })();
