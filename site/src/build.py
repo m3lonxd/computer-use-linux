@@ -911,6 +911,16 @@ def render(lang: str, st: dict[str, int]) -> str:
 
     used = set(re.findall(r"\{\{([a-z0-9_]+)\}\}", tpl))
     out = re.sub(r"\{\{([a-z0-9_]+)\}\}", sub, tpl)
+    # Medya dosyaları da içerik özetiyle adreslenir: aynı adla yenilenen bir görsel
+    # (ör. hero) tarayıcı önbelleğinden eskisiyle gelmez.
+    def media_v(m: re.Match) -> str:
+        path = os.path.join(SITE, "media", m.group(2))
+        if not os.path.isfile(path):
+            raise SystemExit(f"[{lang}] şablondaki medya yok: media/{m.group(2)}")
+        with open(path, "rb") as fh:
+            return f"{m.group(1)}{m.group(2)}?v={hashlib.sha256(fh.read()).hexdigest()[:10]}"
+    out = re.sub(r"((?:\.\./)?media/)([A-Za-z0-9_./-]+\.(?:webp|jpg|jpeg|png|mp4|webm|svg|gif))(?![?\w])",
+                 media_v, out)
     # h1a/h1b, h1_html üzerinden; mail_subject, mailto üzerinden kullanılır
     unused = set(S[lang]) - used - {"h1a", "h1b", "mail_subject", "arch_agent", "arch_agent_s",
                                      "arch_text", "arch_core", "arch_desk", "arch_alt",
