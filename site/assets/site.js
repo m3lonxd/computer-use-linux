@@ -428,6 +428,7 @@
       }
       return "matrix3d(" + [h[0], h[3], 0, h[6], h[1], h[4], 0, h[7], 0, 0, 1, 0, h[2], h[5], 0, 1].map(function (n) { return n.toFixed(8); }).join(",") + ")";
     }
+    var tux = story.querySelector(".sb-tux");
     function layoutStage() {
       if (!stage || !bgIn || !pinned()) return;
       var W = bgIn.clientWidth, Hh = bgIn.clientHeight;
@@ -441,6 +442,8 @@
       var oy = Math.max(TOP - Math.max(0, VH * s - A) * 0.5, TOP - 6 - SCR[1][1] * s);
       media.style.left = ox.toFixed(1) + "px"; media.style.top = oy.toFixed(1) + "px";
       media.style.width = (VW * s).toFixed(1) + "px"; media.style.height = (VH * s).toFixed(1) + "px";
+      // Tux, videodaki yeriyle birebir hizalı kesik bir katman olarak şemanın önünde durur
+      if (tux) { tux.style.left = media.style.left; tux.style.top = media.style.top; tux.style.width = media.style.width; tux.style.height = media.style.height; }
       // ekranın kenarlarında 2px içe pay: panel çerçevenin dışına taşmaz
       var cx = 0, cy = 0; SCR.forEach(function (p) { cx += p[0] / 4; cy += p[1] / 4; });
       stage.style.transform = homography(SCR.map(function (p) {

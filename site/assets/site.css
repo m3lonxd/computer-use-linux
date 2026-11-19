@@ -327,6 +327,8 @@ html:not(.js) .mq-dup { display: none; }
 .sc-in .rung-n { position: absolute; left: 18px; top: 18px; width: 36px; height: 36px; font-size: .95rem; background: var(--cursor); color: #12061f; }
 .sc-in h3 { font-size: 1.12rem; line-height: 1.25; letter-spacing: -.02em; margin: 2px 0 8px; }
 .sc-in p { margin: 0; font-size: .88rem; line-height: 1.55; color: var(--ink-2); }
+.sb-tux { display: none; }
+.story-pin .sb-tux { display: block; position: absolute; z-index: 3; pointer-events: none; max-width: none; max-height: none; }
 .story-stage { display: none; }
 .story-pin .story-stage { display: block; position: absolute; left: 0; top: 0; z-index: 2; width: 760px; height: 520px; transform-origin: 0 0; visibility: hidden; }
 .story-stage.ready { visibility: visible; }
