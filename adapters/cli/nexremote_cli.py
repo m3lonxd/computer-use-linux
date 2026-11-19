@@ -55,6 +55,11 @@ import socket
 import sys
 import time
 
+# Yeni ad: CUL_* ortam değişkenleri eski NEXREMOTE_* adlarına aktarılır; eski adlar da geçerli.
+for _k, _v in list(os.environ.items()):
+    if _k.startswith("CUL_"):
+        os.environ.setdefault("NEXREMOTE_" + _k[4:], _v)
+
 # çekirdeği bul
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _CORE = None
@@ -436,8 +441,8 @@ def cmd_point(nr, a) -> None:
 
 
 def cmd_skill(nr, a) -> None:
-    """LLM'e verilecek yetenek talimatı (adapters/skill/nexremote.md)."""
-    path = os.path.join(_HERE, "..", "skill", "nexremote.md")
+    """LLM'e verilecek yetenek talimatı (adapters/skill/computer-use-linux.md)."""
+    path = os.path.join(_HERE, "..", "skill", "computer-use-linux.md")
     with open(path, encoding="utf-8") as f:
         text = f.read()
     if text.startswith("---"):            # YAML ön bilgisini atla

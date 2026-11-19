@@ -155,7 +155,7 @@ ortamda çalışan AI ajanı köprüsü.
 | `mcp/server.py` | 13 MCP aracı (mcp 2.2.0 MCPServer) | ✅ bağımsız handshake |
 | `cli/agent_loop.py` | metin-protokol döngüsü (tool-calling'siz modeller) | ✅ sahte model |
 | `http/server.py` | stdlib HTTP API, Bearer token | ✅ gui+tui |
-| `skill/nexremote.md` | LLM skill talimatı | — |
+| `skill/computer-use-linux.md` | LLM skill talimatı | — |
 
 ### Altyapı
 - `install.sh` — wrapper'ları kurar + bağımlılık kontrolü.

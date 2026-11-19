@@ -58,7 +58,7 @@ ekleyip uygulamayı başlatır, açılan pencerenin ref'ini döndürür.
 | Görünür ajan imleci | katmanlı pencere (ctypes, stdlib); daemon belirteçli 127.0.0.1 TCP | — | — |
 
 Yönetici olarak çalışan pencerelere UIPI nedeniyle yalnızca yönetici olarak
-başlatılmış NexRemote giriş gönderebilir.
+başlatılmış Computer Use Linux giriş gönderebilir.
 
 ## macOS (önizleme)
 
@@ -78,7 +78,7 @@ Güvenlik altından geri alınır.
 
 - Pencere listesi: GNOME'da pencere-yönetici kanalı yok; AT-SPI penceresi olan uygulamalar listelenir.
 - Fare/klavye: varsayılan RemoteDesktop portalıdır (ilk kullanımda GNOME izin sorar).
-  Başsız/uzaktan yönetilen makinelerde `NEXREMOTE_INPUT_BACKEND=mutter` portalsız,
+  Başsız/uzaktan yönetilen makinelerde `CUL_INPUT_BACKEND=mutter` portalsız,
   izinsiz `org.gnome.Mutter.RemoteDesktop` yolunu seçer (kullanıcı onayı atlanır; bilerek kullanın).
 - ASCII dışı (ü, ğ, é...) metin Mutter'da klavye düzenine bağlı olduğundan panodan yapıştırılır: `wl-clipboard`.
 - Ekran görüntüsü: `gnome-screenshot`, yoksa Mutter yolunda `gstreamer1.0-pipewire` + `gstreamer1.0-tools`,

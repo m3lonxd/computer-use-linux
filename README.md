@@ -10,8 +10,7 @@ aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
 çalıştırabiliyorsa yeter: Claude Code, Codex, Aider, opencode, kendi betiğin ya da tool-calling'i olmayan bir
 yerel model.
 
-> Eski adı NexRemote. Komut artık `computer-use-linux`; eski `nexremote` komutu takma ad olarak çalışır.
-> Depo artık `github.com/m3lonxd/computer-use-linux`; eski `github.com/m3lonxd/nexremote` adresi buraya yönlenir. Python paket adı `nexremote` olarak kalır.
+> Eski adı NexRemote. Geriye uyum için eski `nexremote` komutu, `NEXREMOTE_*` ortam değişkenleri ve `nexremote_*` MCP araç adları çalışmaya devam eder.
 
 ```console
 $ computer-use-linux observe
@@ -50,12 +49,12 @@ $ computer-use-linux type "Merhaba dünya — ğüşıöç"
 okumaya bağlı bir ref verir:
 
 ```console
-$ nexremote tree --window win:{…} -i
+$ computer-use-linux tree --window win:{…} -i
 # anlık görüntü @s7k2m9qx — Hesap Makinesi
 [frame] Hesap Makinesi
   [button] 7  <click>  ref=@s7k2m9qx:e4
   [button] Temizle  <click>  ref=@s7k2m9qx:e11
-$ nexremote click @s7k2m9qx:e4
+$ computer-use-linux click @s7k2m9qx:e4
 ```
 
 Ref'in arkasında konum değil kimlik kanıtı durur: pencerenin süreci ve
@@ -64,7 +63,7 @@ ağaç yeniden okunur ve öğe bu kanıtla aranır. Arada bir düğme eklenip li
 kaysa da ref aynı öğeye gider. Kanıtlanamazsa hiçbir şeye basılmaz:
 `STALE_REF` (öğe gitti) ya da `AMBIGUOUS_TARGET` (artık birden çok öğe
 uyuyor) döner, ajan yeniden `tree` alır. Devre dışı düğme 5 sn'ye kadar
-beklenir (`NEXREMOTE_WAIT`), olmazsa `TIMEOUT`. Yoğun uygulamada
+beklenir (`CUL_WAIT`), olmazsa `TIMEOUT`. Yoğun uygulamada
 `tree --root @s…:e3 -i` yalnız bir bölgeyi açar.
 
 ### Hızlı: bir tık bir model turu değil
@@ -73,21 +72,21 @@ Her CLI çağrısı eskiden yeni bir Python süreci, yeni D-Bus/AT-SPI bağlant�
 pencerenin tüm ağacını yeniden okumaydı; imleç animasyonu da tıkı bekletiyordu.
 v0.7'de:
 
-- **Arka plan servisi** (Linux'ta varsayılan): ilk `nexremote` çağrısı servisi
+- **Arka plan servisi** (Linux'ta varsayılan): ilk `computer-use-linux` çağrısı servisi
   başlatır, sonrakiler bağlantıları sıcak tutan servise gider — çağrı başına
   süreç maliyeti yarıya iner. Kod değişince servis kendiliğinden yenilenir,
-  10 dk boşta kalınca kapanır. `nexremote service status|stop`, kapatmak için
-  `NEXREMOTE_SERVICE=0`.
+  10 dk boşta kalınca kapanır. `computer-use-linux service status|stop`, kapatmak için
+  `CUL_SERVICE=0`.
 - **Ref hızlı yolu:** tıklamadan önce yalnızca ref'in yolundaki düğüm ve ataları
   okunur; kimlik kanıtı tutarsa ağacın geri kalanı okunmaz (GTK test
   uygulamasında 18 ms → 3 ms). Tutmazsa tam okuma. Her eylemde tam okuma için
-  `NEXREMOTE_STRICT=1`.
-- **İmleç tıkı bekletmez:** ajan imleci ~80 ms süzülür (`NEXREMOTE_CURSOR_MS`),
+  `CUL_STRICT=1`.
+- **İmleç tıkı bekletmez:** ajan imleci ~80 ms süzülür (`CUL_CURSOR_MS`),
   gerçek tık hemen atılır; daemon yoksa arka planda başlar.
 - **Daha az model turu:**
 
 ```console
-$ nexremote do 'click-text "Yeni"' 'fill @s…:e9 "rapor.txt" --enter' 'wait --element Kaydedildi' --after
+$ computer-use-linux do 'click-text "Yeni"' 'fill @s…:e9 "rapor.txt" --enter' 'wait --element Kaydedildi' --after
 [1] ✓ click-text "Yeni"
 [2] ✓ fill @s…:e9 "rapor.txt" --enter
 [3] ✓ wait --element Kaydedildi
@@ -99,14 +98,14 @@ $ nexremote do 'click-text "Yeni"' 'fill @s…:e9 "rapor.txt" --enter' 'wait --e
 doğrulama turu gerekmez. `wait` koşulu içeride yoklar. MCP'de `nexremote_batch`,
 HTTP'de `POST /batch` aynı işi yapar.
 
-`NEXREMOTE_TRACE=1` her adımın süresini yazar; `nexremote bench` p50/p95 ölçer.
+`CUL_TRACE=1` her adımın süresini yazar; `computer-use-linux bench` p50/p95 ölçer.
 
 Birden çok ajan aynı makinede çalışıyorsa fare/klavye olayları bir **girdi
 kirasıyla** sıraya girer: bir ajanın sürüklemesinin ortasına ötekinin tuşu
 karışmaz. Kira yalnız gönderim süresince tutulur.
 
 Bu iki fikir [agent-desktop](https://github.com/vercel-labs/agent-desktop)
-(Apache-2.0) projesinden uyarlandı; kod NexRemote için Python'da yeniden
+(Apache-2.0) projesinden uyarlandı; kod Computer Use Linux için Python'da yeniden
 yazıldı.
 
 Root / yönetici gerekmez. Wayland'de fare ve klavye için masaüstü **bir kez**
@@ -118,7 +117,8 @@ Windows ve X11 ayrıca izin istemez.
 **Linux**
 
 ```bash
-cd nexremote
+git clone https://github.com/m3lonxd/computer-use-linux
+cd computer-use-linux
 ./install.sh          # ~/bin altına komutları koyar, eksik paketleri listeler
 computer-use-linux setup       # erişilebilirliği açar; Wayland izin penceresinde
                       # "Allow restoring…" işaretle → Share
@@ -131,7 +131,8 @@ görebilmesi için: `pipx install --system-site-packages .`
 **Windows** (Python 3.9+)
 
 ```powershell
-cd nexremote
+git clone https://github.com/m3lonxd/computer-use-linux
+cd computer-use-linux
 py -m pip install .[all]   # comtypes (UI Automation) otomatik gelir
 computer-use-linux caps
 ```
@@ -139,7 +140,8 @@ computer-use-linux caps
 **macOS** (Python 3.9+)
 
 ```bash
-cd nexremote
+git clone https://github.com/m3lonxd/computer-use-linux
+cd computer-use-linux
 python3 -m pip install '.[all]'
 computer-use-linux setup       # Erişilebilirlik + Ekran Kaydı izin istemlerini açar
 computer-use-linux caps
@@ -151,7 +153,7 @@ computer-use-linux caps
 |---|---|
 | Kabuk çalıştıran her harness | `computer-use-linux skill` çıktısını sistem talimatına ekle |
 | MCP istemcisi (Claude Code, Claude Desktop, Cursor) | `claude mcp add computer-use-linux -- ~/bin/computer-use-linux-mcp` — 28 araç (`nexremote_batch` dahil) + canlı kaynaklar (`nexremote://windows`, `nexremote://terminals`, `nexremote://tree/{ref}`), ekran görüntüsü görsel olarak döner |
-| HTTP konuşan uzak ajan | `NEXREMOTE_TOKEN=… computer-use-linux-http --port 8788` ya da servis olarak: `deploy/install-service.sh` |
+| HTTP konuşan uzak ajan | `CUL_TOKEN=… computer-use-linux-http --port 8788` ya da servis olarak: `deploy/install-service.sh` |
 | Tool-calling'i olmayan model | `computer-use-linux-agent --model-cmd "ollama run qwen2.5" --goal "…"` |
 
 ### Başka makineden bağlanma
@@ -174,7 +176,7 @@ karşılaştırılır, 4 MB'tan büyük ya da bozuk gövdeler 400 döner. Taray�
 gelen istekler (`Origin` / çapraz site) reddedilir — bir web sayfası localhost'taki
 servise komut gönderemez; token'sız çalışırken `Host` da yerel ad olmalıdır.
 
-Komutların tamamı: `computer-use-linux --help`. Ajan talimatı: [`adapters/skill/nexremote.md`](adapters/skill/nexremote.md).
+Komutların tamamı: `computer-use-linux --help`. Ajan talimatı: [`adapters/skill/computer-use-linux.md`](adapters/skill/computer-use-linux.md).
 
 ## Mimari
 
@@ -182,7 +184,7 @@ Komutların tamamı: `computer-use-linux --help`. Ajan talimatı: [`adapters/ski
 core/nexremote/
   nexremote.py      tek giriş noktası (facade); eylem kapsamı, after/wait/click_text
   snapshot.py       anlık görüntü ref'leri (@sid:eN), hızlı yol + katı yeniden tanıma, fark
-  trace.py          NEXREMOTE_TRACE=1 adım süreleri
+  trace.py          CUL_TRACE=1 adım süreleri
   lease.py          girdi kirası: makine genelinde tek fare/klavye yazarı
   platforms/        işletim sistemi katmanı (Desktop sözleşmesi, base.py)
     linux.py          KWin / Hyprland / Sway / X11 seçimi
@@ -249,9 +251,9 @@ erişilebilirlik okuması onaylar.
 - v0.7'nin KWin kalıcı pencere izleyicisi, Wayland giriş servisindeki tek
   komutta tık + imleci geri koyma ve servis tarafında kare kırpma gerçek KDE
   masaüstünde henüz denenmedi (sahte servisle sınandı); izleyici kendini tek
-  seferlik okumayla doğrular, tutmazsa eski yola döner (`NEXREMOTE_KWIN_WATCH=0`
+  seferlik okumayla doğrular, tutmazsa eski yola döner (`CUL_KWIN_WATCH=0`
   ile kapatılır). Arka plan servisi macOS ve Windows'ta varsayılan kapalı
-  (`NEXREMOTE_SERVICE=1`).
+  (`CUL_SERVICE=1`).
 - Görünür ajan imleci Linux'ta X11/XWayland ister (XWayland'siz saf Wayland'de görünmez, tıklama yine çalışır). Windows arka ucu Wine'da sınandı; macOS arka ucu önizleme, gerçek Mac'te denenmedi.
 
 MIT

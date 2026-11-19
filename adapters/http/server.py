@@ -70,6 +70,11 @@ for cand in (os.path.join(_HERE, "..", "..", "core"),
     if os.path.isdir(os.path.join(cand, "nexremote")) and cand not in sys.path:
         sys.path.insert(0, cand)
 
+# Yeni ad: CUL_* ortam değişkenleri eski NEXREMOTE_* adlarına aktarılır; eski adlar da geçerli.
+for _k, _v in list(os.environ.items()):
+    if _k.startswith("CUL_"):
+        os.environ.setdefault("NEXREMOTE_" + _k[4:], _v)
+
 TOKEN = None
 ALLOW_ORIGINS: set[str] = set()
 _NR = None

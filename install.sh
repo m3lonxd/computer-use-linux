@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BIN="${NEXREMOTE_BIN:-$HOME/bin}"
+BIN="${CUL_BIN:-${NEXREMOTE_BIN:-$HOME/bin}}"
 mkdir -p "$BIN"
 
 echo "NexRemote kurulumu"

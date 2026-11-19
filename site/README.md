@@ -1,7 +1,7 @@
 # Computer Use Linux — tanıtım sitesi
 
 Statik site (framework yok), iki dilli: `/` (EN) ve `/tr/` (TR). Eski adı
-NexRemote; komut artık `computer-use-linux`, eski `nexremote` takma ad; paket ve depo adı `nexremote` kalır.
+NexRemote; komut artık `computer-use-linux`, eski `nexremote` takma ad; depo `m3lonxd/computer-use-linux`, Python paket adı `nexremote` kalır.
 
 ## Yapı
 ```

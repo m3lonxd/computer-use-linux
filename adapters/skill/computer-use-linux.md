@@ -1,5 +1,5 @@
 ---
-name: nexremote
+name: computer-use-linux
 description: >
   See and control this desktop (Linux, Windows or macOS) and the terminals open on it: list every
   window, read a window's UI tree and press buttons by name, take a screenshot
@@ -10,16 +10,16 @@ description: >
   command.
 ---
 
-# NexRemote — desktop + terminal control
+# Computer Use Linux — desktop + terminal control
 
-Every command is `nexremote ...`. Add `--json` anywhere for machine output.
+Every command is `computer-use-linux ...` (the old `nexremote` name still works). Add `--json` anywhere for machine output.
 
 ## 1. Look first
 ```bash
-nexremote observe          # every window (ref win:{...}) + every open terminal
-nexremote caps             # what works on this machine (input, windows, terminals)
+computer-use-linux observe          # every window (ref win:{...}) + every open terminal
+computer-use-linux caps             # what works on this machine (input, windows, terminals)
 ```
-If `caps` says something needs approval, run `nexremote setup` once:
+If `caps` says something needs approval, run `computer-use-linux setup` once:
 - Linux Wayland: tell the user to press **Share** (with "Allow restoring"
   ticked) on the remote-control dialog. After that it never asks again.
 - macOS: tell the user to allow the terminal/Python under System Settings →
@@ -30,11 +30,11 @@ If `caps` says something needs approval, run `nexremote setup` once:
 Every separate command costs you a full model turn. Plan the steps you already
 know and send them in ONE call; check once at the end with `--after`:
 ```bash
-nexremote do 'click-text "New"' 'fill @s7k2m9qx:e9 "report.txt" --enter' \
+computer-use-linux do 'click-text "New"' 'fill @s7k2m9qx:e9 "report.txt" --enter' \
              'wait --element "Saved"' --after
-nexremote click @s7k2m9qx:e4 --after       # act + see what changed (new refs included)
-nexremote click-text "Save"                # find by name and press: one read, one call
-nexremote wait --element "Done" --timeout 15   # instead of sleep + re-read loops
+computer-use-linux click @s7k2m9qx:e4 --after       # act + see what changed (new refs included)
+computer-use-linux click-text "Save"                # find by name and press: one read, one call
+computer-use-linux wait --element "Done" --timeout 15   # instead of sleep + re-read loops
 ```
 `do` stops at the first failing step and says which one. `--after` prints
 `+` new elements (with refs), `-` gone, `~` changed values — no separate
@@ -44,12 +44,12 @@ Prefer `tree -i` over screenshots: text is faster to read than an image.
 
 ## 2. Act on GUI apps — structure first, pixels second
 ```bash
-nexremote tree --window win:{...}          # snapshot; actionable lines end in ref=@s7k2m9qx:e4
-nexremote tree --window win:{...} -i       # only actionable elements (shorter)
-nexremote tree --root @s7k2m9qx:e3 -i      # drill into one region of a dense app
-nexremote click @s7k2m9qx:e4               # press it; the user's mouse does not move
-nexremote find "Save" --window win:{...}   # search by name/value → refs
-nexremote set-text @s7k2m9qx:e9 "text"     # replace a field's content
+computer-use-linux tree --window win:{...}          # snapshot; actionable lines end in ref=@s7k2m9qx:e4
+computer-use-linux tree --window win:{...} -i       # only actionable elements (shorter)
+computer-use-linux tree --root @s7k2m9qx:e3 -i      # drill into one region of a dense app
+computer-use-linux click @s7k2m9qx:e4               # press it; the user's mouse does not move
+computer-use-linux find "Save" --window win:{...}   # search by name/value → refs
+computer-use-linux set-text @s7k2m9qx:e9 "text"     # replace a field's content
 ```
 `tree` leaves out closed menus and folds unnamed layout boxes, so what you
 read is what is on screen. Content scrolled out of view may be missing:
@@ -61,60 +61,60 @@ by position — so a ref keeps hitting the same button after the UI shifts.
 If it cannot be proven, the action is refused and nothing is pressed:
 `STALE_REF` (element gone / changed) or `AMBIGUOUS_TARGET` (now matches
 several) → take a new `tree` and use its refs. A disabled element is waited
-for up to 5 s (`NEXREMOTE_WAIT`), then `TIMEOUT`. Loop: tree → act → tree
+for up to 5 s (`CUL_WAIT`), then `TIMEOUT`. Loop: tree → act → tree
 to verify.
 
 Electron/Chromium apps (Discord, Vesktop, VS Code, Slack, Chrome) publish an
 empty tree unless started with a flag; `tree` then ends with a `#` hint line.
 ```bash
-nexremote launch vesktop                   # starts it with the flag → win:{...}
-nexremote launch code ~/project            # arguments pass through
+computer-use-linux launch vesktop                   # starts it with the flag → win:{...}
+computer-use-linux launch code ~/project            # arguments pass through
 ```
 A running single-instance app ignores the flag. Ask the user before closing
 their app to relaunch it.
 
 When the app still publishes no tree (games, canvas apps):
 ```bash
-nexremote screenshot --window win:{...} --max-width 1568   # then look at the image
-nexremote click 412 230 --from-shot        # pixel coords from THAT image
-nexremote click 412 230 --from-shot --right | --double
-nexremote scroll 5 --at 600 400            # + down / - up (screen coords)
-nexremote drag 100 200 400 200             # screen coords
+computer-use-linux screenshot --window win:{...} --max-width 1568   # then look at the image
+computer-use-linux click 412 230 --from-shot        # pixel coords from THAT image
+computer-use-linux click 412 230 --from-shot --right | --double
+computer-use-linux scroll 5 --at 600 400            # + down / - up (screen coords)
+computer-use-linux drag 100 200 400 200             # screen coords
 ```
 The user's pointer is moved back where it was right after each click.
 
 Show the user where you are working with your OWN visible pointer (a second
 arrow; it never moves their mouse or takes clicks):
 ```bash
-nexremote point <ref>                      # glide to the element, ring, then press it
-nexremote cursor 412 230 [--click]         # screen coords; --click only shows a ring
-nexremote cursor-hide
+computer-use-linux point <ref>                      # glide to the element, ring, then press it
+computer-use-linux cursor 412 230 [--click]         # screen coords; --click only shows a ring
+computer-use-linux cursor-hide
 ```
 
 ## 3. Keyboard
 ```bash
-nexremote window win:{...} activate        # focus the target window first
-nexremote type "Merhaba dünya"             # any language, newlines ok
-nexremote key ctrl+s | Return | alt+F4 | ctrl+shift+t
+computer-use-linux window win:{...} activate        # focus the target window first
+computer-use-linux type "Merhaba dünya"             # any language, newlines ok
+computer-use-linux key ctrl+s | Return | alt+F4 | ctrl+shift+t
 ```
 On macOS use `cmd` for the Command key (`cmd+s`, `cmd+v`); `ctrl` is Control.
 
 ## 4. Terminals already open on the desktop
 ```bash
-nexremote terms                            # refs: konsole:… tmux:… wincon:PID terminal:… iterm:…
-nexremote term-read konsole:7891:2         # what that terminal shows right now
-nexremote term-send konsole:7891:2 "git status" --enter
-nexremote term-send konsole:7891:2 --key C-c          # Enter, C-c, C-d, Esc, Up, Tab...
+computer-use-linux terms                            # refs: konsole:… tmux:… wincon:PID terminal:… iterm:…
+computer-use-linux term-read konsole:7891:2         # what that terminal shows right now
+computer-use-linux term-send konsole:7891:2 "git status" --enter
+computer-use-linux term-send konsole:7891:2 --key C-c          # Enter, C-c, C-d, Esc, Up, Tab...
 ```
 `program` tells you what runs in the foreground (claude, vim, ssh, bash).
 Read again after sending: output takes time; poll `term-read` until it settles.
 
 ## 5. Your own scratch terminal
 ```bash
-nexremote run "pytest -q" --session build  # runs, waits, returns output + exit code
-nexremote screen --session build           # read it later (sessions persist)
-nexremote keys C-c --session build
-nexremote cleanup                          # close only the sessions you created
+computer-use-linux run "pytest -q" --session build  # runs, waits, returns output + exit code
+computer-use-linux screen --session build           # read it later (sessions persist)
+computer-use-linux keys C-c --session build
+computer-use-linux cleanup                          # close only the sessions you created
 ```
 
 ## Rules
