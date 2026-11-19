@@ -192,11 +192,11 @@ video.dongu { background: transparent; pointer-events: none; }
 .keys { display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
 @media (hover: hover) and (pointer: fine) { .keys { display: block; } }
 /* Kapak ve arka katman dinlenirken gizli: alttaki video kendi karesini gösterir. Basınca
-   anında belirir ve iner; bırakınca yay gibi geri kalkar, kalkış bitince yeniden gizlenir. */
-.keys .kp-cap, .keys .kp-bk { opacity: 0; transition: transform .34s cubic-bezier(.3, 1.3, .5, 1), filter .3s ease-out, opacity 0s linear .36s; }
+   anında belirir ve yavaşça iner; bırakınca yumuşakça geri kalkar, kalkış bitince gizlenir. */
+.keys .kp-cap, .keys .kp-bk { opacity: 0; transition: transform .42s cubic-bezier(.33, 0, .2, 1), filter .42s ease, opacity 0s linear .44s; }
 .keys .kp-bk { filter: brightness(.9); }
-.keys .kp.on .kp-cap, .keys .kp.on .kp-bk { opacity: 1; transform: translateY(22px); /* site.js TRAVEL */ transition: transform .18s cubic-bezier(.25, .7, .3, 1), filter .18s ease-out, opacity 0s; }
-.keys .kp.on .kp-cap { filter: brightness(.8); }
+.keys .kp.on .kp-cap, .keys .kp.on .kp-bk { opacity: 1; transform: translateY(32px); /* site.js TRAVEL */ transition: transform .32s cubic-bezier(.45, 0, .25, 1), filter .32s ease, opacity 0s; }
+.keys .kp.on .kp-cap { filter: brightness(.78); }
 @media (prefers-reduced-motion: reduce) { .keys .kp-cap, .keys .kp-bk { transition: none; } }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 26px; padding: 7px 14px 7px 12px; border: 1px solid var(--rule-2); border-radius: 999px; font: 500 .78rem var(--mono); color: var(--ink-2); letter-spacing: .02em; }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgb(242 146 43 / .18); }

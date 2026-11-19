@@ -299,7 +299,7 @@
       for (i = P.length - 1; i >= 0; i--) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0) up.pop(); up.push(P[i]); }
       return lo.slice(0, -1).concat(up.slice(0, -1));
     }
-    var TRAVEL = 22;  // üst yüzün inişi (WALL'dan küçük); site.css'teki .kp.on translateY ile aynı olmalı
+    var TRAVEL = 32;  // üst yüzün inişi (WALL'dan küçük); site.css'teki .kp.on translateY ile aynı olmalı
     function sweep(pts, cx, cy, f, h) {
       var b = pts.map(function (q) { return [cx + (q[0] - cx) * f, cy + (q[1] - cy) * f]; });
       return hull(b.concat(b.map(function (q) { return [q[0], q[1] + h]; })))
