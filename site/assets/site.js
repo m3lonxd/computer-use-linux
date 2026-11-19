@@ -291,6 +291,10 @@
       parent.appendChild(el); return el;
     }
     var WALL = 34;
+    // Basılı hali Higgsfield ile tek tek üretilmiş tuşlar: [dosya, x, y, g, y] (1920x1072 uzayı).
+    // Bu tuşlarda kaydırma efekti yerine gerçek basılı fotoğraf yaması gösterilir.
+    var PRESSED = {"1":["1",952,703,192,161],"2":["2",1105,651,182,162],"3":["3",1252,600,167,143],"C":["c",1709,849,202,139],"D":["d",1536,763,206,165],"E":["e",1414,676,203,152],"Esc":["esc",692,671,186,145],"F1":["f1",983,568,182,137],"F2":["f2",1120,517,179,144],"F3":["f3",1250,467,185,140],"S":["s",1382,835,204,159],"W":["w",1270,738,200,165],"X":["x",1564,907,206,146],"~":["tilde",791,761,198,153]};
+    var KEYDIR = (img.getAttribute("src") || "").replace(/hero\.[a-z]+$/, "") + "keys/";
     function hull(P) {
       P = P.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
       function cr(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
@@ -315,6 +319,11 @@
       mk("polygon", { "class": "kp-sh", points: rstr }, kp);
       var cap = mk("g", { "class": "kp-cap" }, kp);
       pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" }, cap));
+      var ph = PRESSED[k[0]];
+      if (ph) {
+        kp.setAttribute("class", "kp ph");
+        mk("image", { "class": "kp-ph", href: KEYDIR + ph[0] + ".webp", x: ph[1], y: ph[2], width: ph[3], height: ph[4], preserveAspectRatio: "none" }, kp);
+      }
       polys.push({ el: kp, pts: pts, name: k[0] });
     });
     bg.insertBefore(svg, null);
