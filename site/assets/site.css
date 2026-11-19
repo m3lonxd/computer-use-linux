@@ -198,6 +198,8 @@ video.dongu { background: transparent; pointer-events: none; }
 .keys .kp-ph { opacity: 0; transition: opacity .07s ease-out; }
 .keys .kp.ph.on .kp-ph { opacity: 1; }
 .keys .kp.ph .kp-cap, .keys .kp.ph .kp-sh { display: none; }
+/* Basılı fotoğrafı olmayan tuşlarda efekt yok (kaydırma yaması çift görüntü yapıyordu). */
+.keys .kp:not(.ph) { display: none; }
 @media (prefers-reduced-motion: reduce) { .keys .kp-cap, .keys .kp-sh { transition: none; } }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 26px; padding: 7px 14px 7px 12px; border: 1px solid var(--rule-2); border-radius: 999px; font: 500 .78rem var(--mono); color: var(--ink-2); letter-spacing: .02em; }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cursor); box-shadow: 0 0 0 4px rgb(177 140 255 / .18); }
