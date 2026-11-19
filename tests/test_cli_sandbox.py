@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""`nexremote` CLI'ın uçtan uca testi — İZOLE sandbox'ta, gerçek alt süreçlerle.
+"""`computer-use-linux` CLI'ın uçtan uca testi — İZOLE sandbox'ta, gerçek alt süreçlerle.
 
     tests/sandbox.sh python3 tests/test_cli_sandbox.py
 
@@ -17,25 +17,25 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, os.path.join(ROOT, "core"))
 
-if os.environ.get("NEXR_SANDBOX") != "1":
+if os.environ.get("CUL_SANDBOX") != "1":
     sys.exit("bu test yalnızca tests/sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
-from nexremote import kwin, portal_input as pi   # noqa: E402
-from nexremote.backends.gui import GuiBackend    # noqa: E402
+from computer_use_linux import kwin, portal_input as pi   # noqa: E402
+from computer_use_linux.backends.gui import GuiBackend    # noqa: E402
 from test_input_sandbox import approve_dialog, check, events, results, wait_for, LOG  # noqa: E402
 
-ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "NEXREMOTE_CURSOR": "0"}
+ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "CUL_CURSOR": "0"}
 
 
 def nx(*args: str, timeout: float = 30) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
+    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/computer_use_linux_cli.py", *args],
                           capture_output=True, text=True, timeout=timeout, env=ENV)
 
 
 def nxj(*args: str):
     r = nx(*args, "--json")
     if r.returncode != 0:
-        raise RuntimeError(f"nexremote {' '.join(args)} → {r.returncode}: {r.stderr or r.stdout}")
+        raise RuntimeError(f"computer-use-linux {' '.join(args)} → {r.returncode}: {r.stderr or r.stdout}")
     return json.loads(r.stdout)
 
 
@@ -58,7 +58,7 @@ def main() -> int:
 
         print("\n2. Pencereler")
         ws = nxj("windows")
-        probe = [w for w in ws if w.get("title") == "nexremote-probe"]
+        probe = [w for w in ws if w.get("title") == "computer-use-linux-probe"]
         check("windows: sonda penceresi KWin ref'iyle listelendi",
               bool(probe) and probe[0]["ref"].startswith("win:"), str(ws)[:120])
         ref = probe[0]["ref"]
@@ -116,8 +116,8 @@ def main() -> int:
         terms = wait_for(lambda: [t for t in nxj("terms") if t["kind"] == "konsole"], 10)
         check("terms: Konsole oturumu bulundu", bool(terms), str(terms)[:120])
         tref = terms[0]["ref"]
-        nxj("term-send", tref, "echo NEXR_$((6*7))", "--enter")
-        out = wait_for(lambda: "NEXR_42" in nxj("term-read", tref)["screen"], 5)
+        nxj("term-send", tref, "echo CUL_$((6*7))", "--enter")
+        out = wait_for(lambda: "CUL_42" in nxj("term-read", tref)["screen"], 5)
         check("term-send + term-read (komut çıktısı okundu)", bool(out))
         nxj("term-send", tref, "sleep 60", "--enter")
         busy = wait_for(lambda: [t for t in nxj("terms") if t["ref"] == tref and t["program"] == "sleep"], 5)

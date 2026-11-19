@@ -1,7 +1,5 @@
 # Computer Use Linux — Harness Kurulum Matrisi
 
-> Eski `nexremote` komutu ve `NEXREMOTE_*` değişkenleri geriye uyum için çalışır.
-
 Her harness bir yetenek seviyesine göre en uygun adaptörü kullanır.
 Hiçbiri diğerine bağımlı değildir — biri çalışmıyorsa diğeri devrede.
 

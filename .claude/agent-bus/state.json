@@ -5,7 +5,7 @@
     "updated_at": "2026-10-13T15:02:20.818772"
   },
   "core_contract": {
-    "value": "TAMAM: models.py+base.py+nexremote.py+input.py yazildi",
+    "value": "TAMAM: models.py+base.py+computer_use_linux.py+input.py yazildi",
     "updated_by": "orkestra",
     "updated_at": "2026-10-13T15:02:20.843961"
   },
@@ -39,7 +39,7 @@
     "updated_by": "orkestra",
     "updated_at": "2026-10-13T15:34:23.318170"
   },
-  "nexremote_status": {
+  "cul_status": {
     "value": "TAMAM: 5/5 kabul testi, 9/9 duman testi gecti",
     "updated_by": "orkestra",
     "updated_at": "2026-10-13T15:51:30.517812"

@@ -6,7 +6,7 @@
 Sayfadaki her sayı ölçülmüş bir değerdir:
   - sürüm               pyproject.toml [project] version (paketin sürümü)
   - MCP aracı           adapters/mcp/server.py içindeki @mcp.tool() sayısı
-  - CLI komutu          adapters/cli/nexremote_cli.py içindeki sub.add_parser( sayısı
+  - CLI komutu          adapters/cli/computer_use_linux_cli.py içindeki sub.add_parser( sayısı
   - giriş komutu        install.sh'ın ~/bin'e yazdığı sarmalayıcı sayısı
   - yüzey               README.md "Ne yapabilir" tablosunun satırları
   - platform            aynı tablonun başlık sütunları (Linux, Windows, macOS);
@@ -51,9 +51,9 @@ def read(rel: str) -> str:
 def version() -> str:
     """Paketin sürümü pyproject.toml'dan; __init__.py geride kalmışsa uyarır."""
     ver = re.search(r'^version\s*=\s*"([^"]+)"', read("pyproject.toml"), re.M).group(1)
-    m = re.search(r'__version__\s*=\s*"([^"]+)"', read("core/nexremote/__init__.py"))
+    m = re.search(r'__version__\s*=\s*"([^"]+)"', read("core/computer_use_linux/__init__.py"))
     if m and m.group(1) != ver:
-        print(f"uyarı: pyproject.toml {ver}, core/nexremote/__init__.py {m.group(1)}", file=sys.stderr)
+        print(f"uyarı: pyproject.toml {ver}, core/computer_use_linux/__init__.py {m.group(1)}", file=sys.stderr)
     return ver
 
 
@@ -145,7 +145,7 @@ def stats() -> dict[str, int]:
                         py_lines += sum(1 for _ in f)
     st = {
         "mcp_tools": len(re.findall(r"^@mcp\.tool\(\)", read("adapters/mcp/server.py"), re.M)),
-        "cli_cmds": len(re.findall(r"\bsub\.add_parser\(", read("adapters/cli/nexremote_cli.py"))),
+        "cli_cmds": len(re.findall(r"\bsub\.add_parser\(", read("adapters/cli/computer_use_linux_cli.py"))),
         "entry_cmds": len(re.findall(r'^cat > "\$BIN/', read("install.sh"), re.M)),
         "surfaces": len(md_table_rows(read("README.md"), after="## Ne yapabilir")),
         "platforms": len(readme_matrix()[0]),
@@ -406,7 +406,7 @@ S = {
         "spd_h": "A click takes milliseconds, not a model turn.",
         "spd_p": "Since v0.7 an agent no longer waits seconds between clicks. The slow parts were a fresh process for every command, rereading the whole window before each click, a cursor animation that held the click, and a separate model turn to check every step.",
         "spd1_t": "A warm service",
-        "spd1_d": "The first <code>nexremote</code> call starts a background service; later calls reuse its open connections instead of rebuilding them. It restarts itself when the code changes and quits when idle.",
+        "spd1_d": "The first <code>computer-use-linux</code> call starts a background service; later calls reuse its open connections instead of rebuilding them. It restarts itself when the code changes and quits when idle.",
         "spd1_m": "CLI call 120 → 55–70 ms",
         "spd2_t": "No rereading the window",
         "spd2_d": "Before a click only the path to the element is read. If its identity still matches, the rest of the tree is skipped; if anything moved, a full read finds it by identity, never by position.",
@@ -416,7 +416,7 @@ S = {
         "spd3_m": "N actions + check = 1 call",
         "spd_measured": "Measured",
         "spd_cap": "Real output from a GTK test app on Xvfb; the numbers come from <code>computer-use-linux bench</code> and <code>CUL_TRACE=1</code> there. Not yet measured on a real KDE desktop.",
-        "sh15": "v0.7 speed: a background service for the CLI, a ref fast path, batches with <code>do</code> and <code>nexremote_batch</code>, <code>--after</code> change reports, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> and per-step timing",
+        "sh15": "v0.7 speed: a background service for the CLI, a ref fast path, batches with <code>do</code> and <code>cul_batch</code>, <code>--after</code> change reports, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> and per-step timing",
         "rm6_t": "Event-driven refresh.",
         "rm6_d": "Listen to accessibility change events so an unchanged window is not read at all, and measure v0.7 on a real KDE desktop.",
 
@@ -426,14 +426,14 @@ S = {
         "t_shell": "Shell", "t_text": "Text-only model",
         "p_shell": "Any harness that can run a command: Claude Code, Codex, Aider, opencode, a cron job. Give the agent the skill text and it knows the rest.",
         "p_shell_c": "# paste into your agent's instructions",
-        "p_mcp": "{{mcp_tools}} tools over stdio for Claude Code, Claude Desktop, Cursor and other MCP clients. Screenshots come back as images the model can look at; <code>nexremote_batch</code> runs several steps in one call.",
+        "p_mcp": "{{mcp_tools}} tools over stdio for Claude Code, Claude Desktop, Cursor and other MCP clients. Screenshots come back as images the model can look at; <code>cul_batch</code> runs several steps in one call.",
         "p_http": "For agents on another machine. Listens on localhost by default and refuses any other address without a token.",
         "p_text": "For local models without tool calling. The model writes <code>computer-use-linux</code> lines; the loop runs them and feeds the output back until it writes <code>DONE</code>.",
         "p_text_goal": "Open the calculator, compute 7×8, read the result",
 
         "trust_kicker": "Safety",
         "trust_h": "What it does to your machine",
-        "f1_t": "Asks once", "f1_d": "On Wayland the desktop shows a remote-control dialog the first time; tick <em>Allow restoring</em> and it won't ask again (delete <code>~/.config/nexremote/portal.json</code> to take it back). On macOS you allow Accessibility and Screen Recording once. Windows and X11 don't ask.",
+        "f1_t": "Asks once", "f1_d": "On Wayland the desktop shows a remote-control dialog the first time; tick <em>Allow restoring</em> and it won't ask again (delete <code>~/.config/computer-use-linux/portal.json</code> to take it back). On macOS you allow Accessibility and Screen Recording once. Windows and X11 don't ask.",
         "f2_t": "Gives your pointer back", "f2_d": "There is one pointer. A click borrows it and puts it back where it was.",
         "f3_t": "No root, no admin", "f3_d": "No <code>/dev/uinput</code>, no driver, no service running as another user. On Windows it runs as you; windows running as administrator stay out of reach unless Computer Use Linux is elevated too.",
         "f4_t": "Closed to the network", "f4_d": "The HTTP adapter will not listen beyond localhost without a token of at least 24 characters. The token can live in a file instead of the command line, and traffic can run over TLS. Requests from a browser are refused, so a web page cannot drive your desktop through localhost.",
@@ -468,7 +468,7 @@ S = {
 
         "cta_h": "Give your agent the desktop.",
         "cta_p": "Unpack, install, approve once. For questions about the project, a partnership or an investment, write to us.",
-        "talk": "Talk to us", "foot_former": "Formerly NexRemote. The old nexremote command still works as an alias. Tux by Larry Ewing, drawn with The GIMP.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
+        "talk": "Talk to us", "foot_former": "Tux by Larry Ewing, drawn with The GIMP.", "mail_subject": "Computer Use Linux", "foot_contact": "Contact",
 
         "other_lang": "tr", "other_lang_label": "TR", "other_lang_name": "Türkçe", "other_lang_href": "/tr/",
         "home": "/", "path": "/", "media": "media/", "lang": "en", "og_locale": "en_US",
@@ -685,7 +685,7 @@ S = {
         "spd_h": "Bir tık bir model turu değil, milisaniye.",
         "spd_p": "v0.7'den beri ajan tıklar arasında saniyelerce beklemiyor. Yavaşlık dört yerdeydi: her komut için yeni süreç, her tıktan önce pencerenin baştan okunması, tıkı bekleten imleç animasyonu ve her adımı doğrulamak için ayrı bir model turu.",
         "spd1_t": "Sıcak servis",
-        "spd1_d": "İlk <code>nexremote</code> çağrısı arka planda bir servis başlatır; sonraki çağrılar bağlantıları yeniden kurmak yerine onunkileri kullanır. Kod değişince kendini yeniler, boşta kalınca kapanır.",
+        "spd1_d": "İlk <code>computer-use-linux</code> çağrısı arka planda bir servis başlatır; sonraki çağrılar bağlantıları yeniden kurmak yerine onunkileri kullanır. Kod değişince kendini yeniler, boşta kalınca kapanır.",
         "spd1_m": "CLI çağrısı 120 → 55–70 ms",
         "spd2_t": "Pencere baştan okunmaz",
         "spd2_d": "Tıktan önce yalnızca öğeye giden yol okunur. Kimliği hâlâ tutuyorsa ağacın geri kalanı atlanır; bir şey kaydıysa tam okuma öğeyi konumla değil kimlikle bulur.",
@@ -695,7 +695,7 @@ S = {
         "spd3_m": "N eylem + doğrulama = 1 çağrı",
         "spd_measured": "Ölçülen",
         "spd_cap": "Xvfb'de bir GTK test uygulamasının gerçek çıktısı; değerler orada <code>computer-use-linux bench</code> ve <code>CUL_TRACE=1</code> ile ölçüldü. Gerçek KDE masaüstünde henüz ölçülmedi.",
-        "sh15": "v0.7 hız: CLI için arka plan servisi, ref hızlı yolu, <code>do</code> ve <code>nexremote_batch</code> ile toplu adımlar, <code>--after</code> değişiklik raporu, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> ve adım adım süre",
+        "sh15": "v0.7 hız: CLI için arka plan servisi, ref hızlı yolu, <code>do</code> ve <code>cul_batch</code> ile toplu adımlar, <code>--after</code> değişiklik raporu, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> ve adım adım süre",
         "rm6_t": "Olay güdümlü yenileme.",
         "rm6_d": "Erişilebilirlik değişiklik olaylarını dinleyip değişmemiş pencereyi hiç okumamak; v0.7'yi gerçek KDE masaüstünde ölçmek.",
 
@@ -705,14 +705,14 @@ S = {
         "t_shell": "Kabuk", "t_text": "Yalnız metin modeli",
         "p_shell": "Komut çalıştırabilen her harness: Claude Code, Codex, Aider, opencode, bir cron işi. Ajana skill metnini ver, gerisini bilir.",
         "p_shell_c": "# ajanının talimatlarına yapıştır",
-        "p_mcp": "Claude Code, Claude Desktop, Cursor ve diğer MCP istemcileri için stdio üzerinden {{mcp_tools}} araç. Ekran görüntüleri, modelin bakabildiği görsel olarak döner; <code>nexremote_batch</code> birden çok adımı tek çağrıda yapar.",
+        "p_mcp": "Claude Code, Claude Desktop, Cursor ve diğer MCP istemcileri için stdio üzerinden {{mcp_tools}} araç. Ekran görüntüleri, modelin bakabildiği görsel olarak döner; <code>cul_batch</code> birden çok adımı tek çağrıda yapar.",
         "p_http": "Başka makinedeki ajanlar için. Varsayılan olarak yalnızca localhost'u dinler; başka bir adrese token olmadan açılmayı reddeder.",
         "p_text": "Tool calling'i olmayan yerel modeller için. Model <code>computer-use-linux</code> satırları yazar; döngü onları çalıştırır ve çıktıyı geri besler, ta ki model <code>DONE</code> yazana dek.",
         "p_text_goal": "Hesap makinesini aç, 7×8 hesapla, sonucu oku",
 
         "trust_kicker": "Güvenlik",
         "trust_h": "Makinene ne yapar",
-        "f1_t": "Bir kez sorar", "f1_d": "Wayland'de masaüstü ilk seferde bir uzaktan kontrol penceresi açar; <em>Allow restoring</em> kutusunu işaretleyin, bir daha sormaz (geri almak için <code>~/.config/nexremote/portal.json</code> dosyasını silin). macOS'ta Erişilebilirlik ve Ekran Kaydı izni bir kez verilir. Windows ve X11 sormaz.",
+        "f1_t": "Bir kez sorar", "f1_d": "Wayland'de masaüstü ilk seferde bir uzaktan kontrol penceresi açar; <em>Allow restoring</em> kutusunu işaretleyin, bir daha sormaz (geri almak için <code>~/.config/computer-use-linux/portal.json</code> dosyasını silin). macOS'ta Erişilebilirlik ve Ekran Kaydı izni bir kez verilir. Windows ve X11 sormaz.",
         "f2_t": "İmlecini geri verir", "f2_d": "Ekranda tek imleç vardır. Tık onu ödünç alır ve eski yerine geri koyar.",
         "f3_t": "Root yok, yönetici yok", "f3_d": "<code>/dev/uinput</code> yok, sürücü yok, başka kullanıcı olarak çalışan servis yok. Windows'ta sizin hesabınızla çalışır; yönetici olarak çalışan pencerelere ancak Computer Use Linux da yönetici olarak çalışırsa ulaşır.",
         "f4_t": "Ağa kapalı", "f4_d": "HTTP adaptörü en az 24 karakterlik bir token olmadan localhost dışını dinlemez. Token komut satırı yerine bir dosyada durabilir, trafik TLS üzerinden akabilir. Tarayıcıdan gelen istekler reddedilir; bir web sayfası localhost üzerinden masaüstünüzü süremez.",
@@ -747,7 +747,7 @@ S = {
 
         "cta_h": "Ajanına masaüstünü ver.",
         "cta_p": "Aç, kur, bir kez onayla. Proje, iş birliği ya da yatırım hakkında sorularınız için bize yazın.",
-        "talk": "Bizimle konuşun", "foot_former": "Eski adıyla NexRemote. Eski nexremote komutu takma ad olarak çalışmaya devam eder. Tux: Larry Ewing, The GIMP ile çizildi.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
+        "talk": "Bizimle konuşun", "foot_former": "Tux: Larry Ewing, The GIMP ile çizildi.", "mail_subject": "Computer Use Linux hakkında", "foot_contact": "İletişim",
 
         "other_lang": "en", "other_lang_label": "EN", "other_lang_name": "English", "other_lang_href": "/",
         "home": "/tr/", "path": "/tr/", "media": "../media/", "lang": "tr", "og_locale": "tr_TR",
@@ -823,7 +823,7 @@ def arch_svgs(t: dict) -> tuple[str, str]:
     agent = (t["arch_agent"], t["arch_agent_s"])
     adapters = [("Shell CLI", "computer-use-linux"), ("MCP", "computer-use-linux-mcp"),
                 ("HTTP", "computer-use-linux-http"), (t["arch_text"], "computer-use-linux-agent")]
-    core = (t["arch_core"], "nexremote.py")
+    core = (t["arch_core"], "computer_use_linux.py")
     # başlık: yetenek; alt satır: Linux · Windows · macOS'taki kanal
     channels = [(t["a_win"], "KWin · Win32 · CGWindowList"), (t["a_ctl"], "AT-SPI · UIA · AX"),
                 (t["a_in"], "portal · SendInput · CGEvent"), (t["a_term"], "Konsole · wincon · Terminal"),
@@ -926,7 +926,7 @@ def render(lang: str, st: dict[str, int]) -> str:
     t = {k: fill(v) for k, v in S[lang].items()}
     vals = dict(t)
     vals.update({k: str(v) for k, v in nums.items()})
-    vals.update(lang=lang, version=ver, zip_size=size("nexremote.zip"), tgz_size=size("nexremote.tar.gz"),
+    vals.update(lang=lang, version=ver, zip_size=size("computer-use-linux.zip"), tgz_size=size("computer-use-linux.tar.gz"),
                 email=CONTACT_EMAIL,
                 mailto=f"mailto:{CONTACT_EMAIL}?subject={quote(t['mail_subject'])}",
                 replay_static=REPLAY_CAPTIONS[lang][0])

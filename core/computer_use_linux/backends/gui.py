@@ -1,0 +1,545 @@
+"""GUI backend — AT-SPI (Linux erişilebilirlik ağacı) ile masaüstü görme + kontrol.
+
+Piksel tahmini yapmaz: her buton/menü/alan yapısal olarak okunur, isimle
+tıklanır. KDE/GNOME/GTK/Qt uygulamalarında çalışır. Electron uygulamaları
+(Discord/VSCode) iç butonlar için --force-renderer-accessibility ister.
+"""
+from __future__ import annotations
+
+import os
+import shutil
+import struct
+import subprocess
+import time
+from typing import Optional
+
+from ..base import Backend
+from ..models import Capability, Element, Role, Screenshot, Window
+from .. import input as inp
+
+# AT-SPI rol adı -> normalize Role
+_ROLE_MAP = {
+    "push button": Role.BUTTON, "button": Role.BUTTON,
+    "entry": Role.ENTRY, "text": Role.ENTRY, "password text": Role.ENTRY,
+    "frame": Role.FRAME, "window": Role.WINDOW, "dialog": Role.DIALOG,
+    "menu": Role.MENU, "menu item": Role.MENU_ITEM, "menu bar": Role.MENU,
+    "check box": Role.CHECKBOX, "check menu item": Role.CHECKBOX,
+    "radio button": Role.RADIO, "radio menu item": Role.RADIO,
+    "combo box": Role.COMBOBOX, "page tab": Role.TAB, "page tab list": Role.TAB,
+    "list": Role.LIST, "list item": Role.LIST_ITEM,
+    "tree": Role.TREE, "tree item": Role.TREE_ITEM, "table cell": Role.TREE_ITEM,
+    "link": Role.LINK, "image": Role.IMAGE, "icon": Role.IMAGE,
+    "slider": Role.SLIDER, "panel": Role.PANEL, "filler": Role.PANEL,
+    "label": Role.TEXT, "terminal": Role.TERMINAL,
+    "scroll bar": Role.SLIDER, "separator": Role.PANEL, "tool bar": Role.PANEL,
+}
+
+# AT-SPI eylem adı -> normalize
+_ACTION_MAP = {
+    "click": "click", "press": "click", "activate": "click",
+    "dodefault": "click", "do default": "click", "jump": "click",
+    "toggle": "toggle", "check": "toggle",
+    "settext": "set_text", "set text": "set_text",
+    "expand": "expand", "collapse": "expand",
+    "grab focus": "focus", "focus": "focus", "select": "select",
+}
+
+_INTERACTIVE = {Role.BUTTON, Role.ENTRY, Role.CHECKBOX, Role.RADIO,
+                Role.COMBOBOX, Role.MENU_ITEM, Role.TAB, Role.LINK,
+                Role.LIST_ITEM, Role.TREE_ITEM, Role.SLIDER}
+# Adı değeriyle değişebilen roller (snapshot.VOLATILE_NAME ile aynı): kimlik için
+# değerleri hafif okumada da gerekir.
+_VOLATILE = {Role.ENTRY, Role.TEXT, Role.COMBOBOX, Role.SLIDER, Role.TERMINAL}
+_MAX_CHILDREN = 400
+
+
+def _budget() -> list:
+    """[kalan düğüm, son an] — CUL_TREE_NODES / CUL_TREE_MS."""
+    try:
+        nodes = int(os.environ.get("CUL_TREE_NODES", "5000"))
+    except ValueError:
+        nodes = 5000
+    try:
+        ms = float(os.environ.get("CUL_TREE_MS", "10000"))
+    except ValueError:
+        ms = 10000.0
+    return [nodes if nodes > 0 else 10 ** 9,
+            time.monotonic() + ms / 1000 if ms > 0 else float("inf"), False]
+
+
+def _atspi():
+    """Atspi modülünü tembel yükle; yoksa None."""
+    try:
+        import gi
+        gi.require_version("Atspi", "2.0")
+        from gi.repository import Atspi
+        return Atspi
+    except Exception:
+        return None
+
+
+def _normalize_action(name: str) -> str:
+    return _ACTION_MAP.get((name or "").lower().replace("_", " ").strip(), "")
+
+
+class GuiBackend(Backend):
+    name = "gui"
+    kind = "gui"
+
+    def __init__(self) -> None:
+        self._Atspi = _atspi()
+        self._max_depth = 12
+
+    # ------------------------------------------------------------ capability
+    def capability(self) -> Capability:
+        needs: list[str] = []
+        if self._Atspi is None:
+            needs.append("python3-gi + gir1.2-atspi-2.0")
+        ok = self._Atspi is not None
+        detail = ("AT-SPI: isimle bul/tıkla (erişilebilirlik yayınlayan uygulamalar)"
+                  if ok else "AT-SPI yok — öğe ağacı devre dışı")
+        return Capability(name=self.name, available=ok, detail=detail, needs=needs)
+
+    # ------------------------------------------------------------ ref yardım
+    @staticmethod
+    def _parse_ref(ref: str) -> Optional[list[int]]:
+        if not ref.startswith("atspi:"):
+            return None
+        try:
+            body = ref[len("atspi:"):]           # "0:1/2/3"
+            app_part, _, rest = body.partition(":")  # "0", "1/2/3"
+            parts = [int(app_part)]
+            if rest:
+                parts += [int(x) for x in rest.split("/") if x != ""]
+            return parts
+        except Exception:
+            return None
+
+    def _resolve(self, ref: str):
+        """'atspi:<app>:<win>/<c>/<c>' -> Atspi düğümü."""
+        if self._Atspi is None:
+            return None
+        path = self._parse_ref(ref)
+        if not path:
+            return None
+        node = self._Atspi.get_desktop(0).get_child_at_index(path[0])
+        for idx in path[1:]:
+            if node is None:
+                return None
+            node = node.get_child_at_index(idx)
+        return node
+
+    def _make_ref(self, path: list[int]) -> str:
+        return "atspi:" + f"{path[0]}:{path[1]}" + "".join(f"/{p}" for p in path[2:])
+
+    # ------------------------------------------------------------ pencere
+    def windows(self) -> list[Window]:
+        A = self._Atspi
+        if A is None:
+            return []
+        out: list[Window] = []
+        desktop = A.get_desktop(0)
+        for ai in range(desktop.get_child_count()):
+            app = desktop.get_child_at_index(ai)
+            if app is None:
+                continue
+            aname = app.get_name() or ""
+            try:
+                pid = app.get_process_id()
+            except Exception:
+                pid = None
+            for wi in range(app.get_child_count()):
+                win = app.get_child_at_index(wi)
+                if win is None:
+                    continue
+                try:
+                    role = win.get_role_name() or ""
+                except Exception:
+                    role = ""
+                if role not in ("frame", "window", "dialog", "alert"):
+                    continue
+                bounds = self._extents(win)
+                fl = self._flags(win)
+                focused = bool(fl and (fl["active"] or fl["focused"]))
+                out.append(Window(
+                    ref=self._make_ref([ai, wi]),
+                    title=(win.get_name() or "").strip(),
+                    app=aname, pid=pid, focused=focused, bounds=bounds,
+                ))
+        return out
+
+    # ------------------------------------------------------------ ağaç
+    def tree(self, window_ref: str, light: bool = False) -> Element:
+        A = self._Atspi
+        if A is None:
+            return Element(ref="atspi:0:0", role=Role.FRAME, name="AT-SPI yok")
+        if not window_ref:
+            ws = self.windows()
+            if not ws:
+                raise RuntimeError("erişilebilirlik ağacında pencere yok")
+            focused = [w for w in ws if w.focused]
+            window_ref = (focused or ws)[0].ref
+        path = self._parse_ref(window_ref)
+        if not path:
+            raise ValueError(f"geçersiz pencere ref'i: {window_ref!r} "
+                             "(win:… `windows` çıktısından ya da atspi:…)")
+        node = A.get_desktop(0).get_child_at_index(path[0])
+        for idx in path[1:]:
+            node = node.get_child_at_index(idx) if node else None
+        if node is None:
+            raise RuntimeError(f"pencere bulunamadı: {window_ref}")
+        # Kapalı menüler, gizli sekmeler ağaçta durur ama ekranda yoktur; onları
+        # göstermek modeli görünmeyen öğeye tıklamaya iter. Pencerenin kendisi
+        # SHOWING değilse (simge durumu) süzgeç kapatılır, yoksa ağaç boşalır.
+        fl = self._flags(node)
+        only_showing = bool(fl and fl["showing"])
+        budget = _budget()
+        root = self._walk(node, path, 0, only_showing, light, budget, fl)
+        root.truncated = budget[2]
+        return root
+
+    def _walk(self, node, path: list[int], depth: int, only_showing: bool = False,
+              light: bool = False, budget: Optional[list] = None,
+              flags: Optional[dict] = None) -> Optional[Element]:
+        """Düğüm ve altı. light: konum ve kimlikte kullanılmayan değerler okunmaz
+        (her biri ayrı D-Bus gidiş-dönüşü). Gizli düğümde (only_showing) None."""
+        fl = flags if flags is not None else self._flags(node)
+        if depth and only_showing and fl is not None and not fl["showing"]:
+            return None
+        role = self._role(node)
+        name = (self._safe(node, "get_name") or "").strip()
+        need_value = (not light or role in _VOLATILE
+                      or (role in (Role.PANEL, Role.UNKNOWN) and not name))
+        el = Element(
+            ref=self._make_ref(path),
+            role=role,
+            name=name,
+            value=self._value(node) if need_value else "",
+            actions=self._actions(node),
+            bounds=None if light else self._extents(node),
+            focused=bool(fl and fl["focused"]),
+            enabled=not (fl is not None and not fl["enabled"]),
+            depth=depth,
+        )
+        if budget is not None:
+            budget[0] -= 1
+        if depth < self._max_depth:
+            try:
+                n = node.get_child_count()
+            except Exception:
+                n = 0
+            for i in range(min(n, _MAX_CHILDREN)):  # tek düğümde patlamayı önle
+                if budget is not None and (budget[0] <= 0 or time.monotonic() > budget[1]):
+                    budget[2] = True
+                    break
+                try:
+                    ch = node.get_child_at_index(i)
+                except Exception:
+                    ch = None
+                if ch is None:
+                    continue
+                child = self._walk(ch, path + [i], depth + 1, only_showing, light, budget)
+                if child is not None and self._keep(child):
+                    el.children.append(child)
+        return el
+
+    @staticmethod
+    def _keep(e: Element) -> bool:
+        """Boş dekoratif düğüm mü? Adsız ve eylemsiz bir giriş alanı da tutulur
+        (yazılabilir alanın adı olmayabilir). Değer burada ölçüt DEĞİL: hafif
+        okumada çoğu değer okunmaz ve iki okuma aynı ağacı vermeli."""
+        return bool(e.name or e.actions or e.children or e.role in _INTERACTIVE)
+
+    # ---------------------------------------------- anlık görüntü hızlı yolu
+    def probe(self, ref: str) -> Optional[dict]:
+        """Ref'in yolundaki düğümü ve kimlik kanıtını, ağacın geri kalanını
+        okumadan döndür: {"element", "ancestors", "pid", "title"} ya da None
+        (yol artık geçerli değil / gizli / ağaçta yer almazdı).
+
+        snapshot.resolve bunu tam okumadan önce dener; kanıt saklı olanla
+        birebir tutarsa öğe odur. Yol + kimlik birlikte doğrulanır."""
+        from ..snapshot import _ANCESTORS, stable_name
+        A = self._Atspi
+        path = self._parse_ref(ref)
+        if A is None or not path or len(path) < 3 or len(path) - 2 > self._max_depth:
+            return None
+        if any(i >= _MAX_CHILDREN for i in path[2:]):
+            return None
+        try:
+            app = A.get_desktop(0).get_child_at_index(path[0])
+            if app is None:
+                return None
+            pid = app.get_process_id()
+            win = app.get_child_at_index(path[1])
+            if win is None:
+                return None
+            title = (win.get_name() or "").strip()
+            wfl = self._flags(win)
+            only_showing = bool(wfl and wfl["showing"])
+            node, anc = win, ()
+            for depth, idx in enumerate(path[2:], start=1):
+                node = node.get_child_at_index(idx)
+                if node is None:
+                    return None
+                fl = self._flags(node)
+                if only_showing and fl is not None and not fl["showing"]:
+                    return None
+                if depth == len(path) - 2:
+                    break
+                role = self._role(node)
+                name = (self._safe(node, "get_name") or "").strip()
+                value = self._value(node) if role in _VOLATILE else ""
+                nm = stable_name(Element(ref="", role=role, name=name, value=value))
+                if nm:
+                    anc = (anc + ((role.value, nm),))[-_ANCESTORS:]
+            role = self._role(node)
+            name = (self._safe(node, "get_name") or "").strip()
+            el = Element(ref=self._make_ref(path), role=role, name=name,
+                         value=self._value(node), actions=self._actions(node),
+                         bounds=self._extents(node), focused=bool(fl and fl["focused"]),
+                         enabled=not (fl is not None and not fl["enabled"]),
+                         depth=len(path) - 2)
+            try:
+                kids = node.get_child_count()
+            except Exception:
+                kids = 0
+            if not (self._keep(el) or kids):
+                return None
+        except Exception:
+            return None
+        return {"element": el, "ancestors": anc, "pid": pid, "title": title}
+
+    # ------------------------------------------------------------ bul
+    def find(self, query: str, window_ref: Optional[str] = None) -> list[Element]:
+        q = (query or "").lower()
+        if not q:
+            return []
+        trees: list[Element] = []
+        if window_ref:
+            trees.append(self.tree(window_ref))
+        else:
+            for w in self.windows():
+                trees.append(self.tree(w.ref))
+        hits: list[Element] = []
+
+        def visit(e: Element) -> None:
+            if q in e.name.lower() or q in (e.value or "").lower():
+                if e.actions or e.role in _INTERACTIVE:
+                    hits.append(e)
+            for c in e.children:
+                visit(c)
+
+        for t in trees:
+            visit(t)
+        return hits
+
+    # ------------------------------------------------------------ eylemler
+    def click(self, ref: str) -> bool:
+        node = self._resolve(ref)
+        if node is None:
+            return False
+        a = self._iface(node, "get_action_iface")
+        if a is not None:
+            try:
+                n = a.get_n_actions()
+            except Exception:
+                n = 0
+            for i in range(n):
+                try:
+                    an = _normalize_action(a.get_action_name(i))
+                except Exception:
+                    an = ""
+                if an == "click":
+                    try:
+                        a.do_action(i)
+                        return True
+                    except Exception:
+                        pass
+            if n > 0:
+                try:
+                    a.do_action(0)
+                    return True
+                except Exception:
+                    pass
+        # son çare: koordinata fiziksel tıkla. Wayland'de konum pencereye
+        # görelidir; çevirisini yapan ComputerUseLinux.click tıklar.
+        if os.environ.get("WAYLAND_DISPLAY"):
+            return False
+        b = self._extents(node)
+        if b:
+            return inp.click_at(b[0] + b[2] // 2, b[1] + b[3] // 2)
+        return False
+
+    def set_text(self, ref: str, text: str) -> bool:
+        node = self._resolve(ref)
+        if node is None:
+            return False
+        et = self._iface(node, "get_editable_text_iface")
+        if et is not None:
+            try:
+                if et.set_text_contents(text) is not False:
+                    return True
+            except Exception:
+                pass
+        # Düzenlenebilir metin arayüzü yok: odaklayıp yazmayı facade yapar (doğru
+        # giriş kanalıyla ve önce tümünü seçerek). Burada yazmak, odak alınamazsa
+        # metni o an odaktaki başka bir alana gönderirdi.
+        return False
+
+    def focus(self, ref: str) -> bool:
+        node = self._resolve(ref)
+        if node is None:
+            return False
+        c = self._iface(node, "get_component_iface")
+        if c is not None:
+            try:
+                return bool(c.grab_focus())
+            except Exception:
+                pass
+        a = self._iface(node, "get_action_iface")
+        if a is not None:
+            for i in range(self._safe_n(a)):
+                try:
+                    if _normalize_action(a.get_action_name(i)) == "focus":
+                        a.do_action(i)
+                        return True
+                except Exception:
+                    pass
+        return False
+
+    def bounds(self, ref: str) -> Optional[tuple[int, int, int, int]]:
+        node = self._resolve(ref)
+        return self._extents(node) if node is not None else None
+
+    def key(self, combo: str) -> bool:
+        return inp.key(combo)
+
+    def type_text(self, text: str) -> bool:
+        return inp.type_text(text)
+
+    # ------------------------------------------------------------ ekran
+    def screenshot(self, path: str) -> Screenshot:
+        path = os.path.abspath(path)
+        tools = [
+            (["spectacle", "-b", "-n", "-o", path], "spectacle"),   # KDE
+            (["grim", path], "grim"),                               # wlroots
+            (["gnome-screenshot", "-f", path], "gnome-screenshot"),
+            (["scrot", path], "scrot"),                             # X11
+        ]
+        used = ""
+        for cmd, nm in tools:
+            if shutil.which(nm) and not used:
+                try:
+                    subprocess.run(cmd, timeout=15,
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL, check=True)
+                    if os.path.exists(path) and os.path.getsize(path) > 0:
+                        used = nm
+                        break
+                except Exception:
+                    continue
+        w, h = self._png_size(path)
+        return Screenshot(path=path, width=w, height=h,
+                          display=os.environ.get("WAYLAND_DISPLAY")
+                          or os.environ.get("DISPLAY"), backend=used)
+
+    # ------------------------------------------------------------ yardımcı
+    def _iface(self, node, getter: str):
+        try:
+            return getattr(node, getter)()
+        except Exception:
+            return None
+
+    def _role(self, node) -> Role:
+        try:
+            return _ROLE_MAP.get((node.get_role_name() or "").lower(), Role.UNKNOWN)
+        except Exception:
+            return Role.UNKNOWN
+
+    def _safe(self, node, meth: str):
+        try:
+            return getattr(node, meth)()
+        except Exception:
+            return None
+
+    def _safe_n(self, a) -> int:
+        try:
+            return a.get_n_actions()
+        except Exception:
+            return 0
+
+    def _value(self, node) -> str:
+        t = self._iface(node, "get_text_iface")
+        if t is not None:
+            try:
+                n = t.get_character_count()
+                if 0 < n <= 200:
+                    return t.get_text(0, n)
+            except Exception:
+                pass
+        v = self._iface(node, "get_value_iface")
+        if v is not None:
+            try:
+                return str(v.get_current_value())
+            except Exception:
+                pass
+        return ""
+
+    def _actions(self, node) -> list[str]:
+        a = self._iface(node, "get_action_iface")
+        if a is None:
+            return []
+        out: list[str] = []
+        for i in range(self._safe_n(a)):
+            try:
+                nm = _normalize_action(a.get_action_name(i))
+            except Exception:
+                nm = ""
+            if nm and nm not in out:
+                out.append(nm)
+        return out
+
+    def _extents(self, node):
+        c = self._iface(node, "get_component_iface")
+        if c is None:
+            return None
+        try:
+            A = self._Atspi
+            e = c.get_extents(A.CoordType.SCREEN)
+            if e.width > 0 and e.height > 0:
+                return (e.x, e.y, e.width, e.height)
+        except Exception:
+            pass
+        return None
+
+    def _flags(self, node) -> Optional[dict]:
+        """Durum kümesini BİR kez oku (her `_state` ayrı çağrıdır)."""
+        try:
+            A = self._Atspi
+            st = node.get_state_set()
+            T = A.StateType
+            return {"showing": st.contains(T.SHOWING), "focused": st.contains(T.FOCUSED),
+                    "enabled": st.contains(T.ENABLED), "active": st.contains(T.ACTIVE)}
+        except Exception:
+            return None
+
+    def _state(self, node, name: str) -> Optional[bool]:
+        try:
+            A = self._Atspi
+            st = node.get_state_set()
+            return st.contains(getattr(A.StateType, name))
+        except Exception:
+            return None
+
+    @staticmethod
+    def _png_size(path: str) -> tuple[int, int]:
+        """PNG IHDR'den genişlik/yükseklik (PIL'siz)."""
+        try:
+            with open(path, "rb") as f:
+                head = f.read(26)
+            if head[:8] == b"\x89PNG\r\n\x1a\n":
+                w, h = struct.unpack(">II", head[16:24])
+                return w, h
+        except Exception:
+            pass
+        return 0, 0

@@ -10,18 +10,18 @@ import urllib.parse
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-EXPECTED = {"nexremote_observe", "nexremote_windows", "nexremote_window_action",
-            "nexremote_click", "nexremote_click_at", "nexremote_scroll", "nexremote_drag",
-            "nexremote_key", "nexremote_type", "nexremote_screenshot", "nexremote_terminals",
-            "nexremote_terminal_read", "nexremote_terminal_send", "nexremote_run",
-            "nexremote_launch", "nexremote_tree", "nexremote_cursor"}
+EXPECTED = {"cul_observe", "cul_windows", "cul_window_action",
+            "computer_use_linux_click", "computer_use_linux_click_at", "cul_scroll", "cul_drag",
+            "cul_key", "cul_type", "cul_screenshot", "cul_terminals",
+            "cul_terminal_read", "cul_terminal_send", "cul_run",
+            "cul_launch", "cul_tree", "cul_cursor"}
 
 
 def main() -> int:
     p = subprocess.Popen([sys.executable, f"{ROOT}/adapters/mcp/server.py"],
                          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL, text=True,
-                         env={**os.environ, "NEXREMOTE_CURSOR": "0"})
+                         env={**os.environ, "CUL_CURSOR": "0"})
     seq = iter(range(1, 100))
 
     def rpc(method, params=None, notify=False):
@@ -52,49 +52,49 @@ def main() -> int:
     try:
         init = rpc("initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
                                   "clientInfo": {"name": "test", "version": "0"}})
-        check("initialize", init["serverInfo"]["name"] == "nexremote")
+        check("initialize", init["serverInfo"]["name"] == "computer-use-linux")
         rpc("notifications/initialized", notify=True)
         tools = {t["name"] for t in rpc("tools/list")["tools"]}
         check(f"tools/list ({len(tools)} araç)", EXPECTED <= tools, str(EXPECTED - tools))
-        obs = rpc("tools/call", {"name": "nexremote_observe", "arguments": {}})
+        obs = rpc("tools/call", {"name": "cul_observe", "arguments": {}})
         data = json.loads(obs["content"][0]["text"]) if obs["content"][0]["type"] == "text" else {}
         if "structuredContent" in obs:
             data = obs["structuredContent"].get("result", obs["structuredContent"])
         check("observe pencere+terminal döndü",
               bool(data.get("windows")) and "terminals" in data,
               f"{len(data.get('windows', []))} pencere, {len(data.get('terminals', []))} terminal")
-        shot = rpc("tools/call", {"name": "nexremote_screenshot", "arguments": {"max_width": 640}})
+        shot = rpc("tools/call", {"name": "cul_screenshot", "arguments": {"max_width": 640}})
         kinds = [c["type"] for c in shot["content"]]
         check("screenshot görüntü + açıklama döndü", kinds == ["image", "text"], str(kinds))
         res = {r["uri"] for r in rpc("resources/list")["resources"]}
-        check("resources/list", {"nexremote://windows", "nexremote://terminals"} <= res, str(res))
+        check("resources/list", {"cul://windows", "cul://terminals"} <= res, str(res))
         tpl = {t["uriTemplate"] for t in rpc("resources/templates/list")["resourceTemplates"]}
-        check("resources/templates/list", "nexremote://tree/{ref}" in tpl, str(tpl))
-        wins = json.loads(rpc("resources/read", {"uri": "nexremote://windows"})["contents"][0]["text"])
+        check("resources/templates/list", "cul://tree/{ref}" in tpl, str(tpl))
+        wins = json.loads(rpc("resources/read", {"uri": "cul://windows"})["contents"][0]["text"])
         check("windows kaynağı canlı liste", bool(wins) and all("ref" in w for w in wins),
               f"{len(wins)} pencere")
-        terms = json.loads(rpc("resources/read", {"uri": "nexremote://terminals"})["contents"][0]["text"])
+        terms = json.loads(rpc("resources/read", {"uri": "cul://terminals"})["contents"][0]["text"])
         check("terminals kaynağı liste", isinstance(terms, list), f"{len(terms)} terminal")
         if wins:
             enc = urllib.parse.quote(wins[0]["ref"], safe="")
-            tree = rpc("resources/read", {"uri": f"nexremote://tree/{enc}"})["contents"][0]
+            tree = rpc("resources/read", {"uri": f"cul://tree/{enc}"})["contents"][0]
             check("tree kaynağı (yüzde kodlu win ref)", tree["text"].startswith("["),
                   tree["text"].splitlines()[0][:60])
-            foc = rpc("resources/read", {"uri": "nexremote://tree/focused"})["contents"][0]
+            foc = rpc("resources/read", {"uri": "cul://tree/focused"})["contents"][0]
             check("tree/focused etkin pencereyi verir", foc["text"].startswith("["))
         try:
-            rpc("resources/read", {"uri": "nexremote://tree/win%3A%7Byok%7D"})
+            rpc("resources/read", {"uri": "cul://tree/win%3A%7Byok%7D"})
             check("olmayan pencere → hata", False)
         except RuntimeError as e:
             check("olmayan pencere → hata", True, str(e)[:70])
-        bad = rpc("tools/call", {"name": "nexremote_terminal_read", "arguments": {"ref": "x"}})
+        bad = rpc("tools/call", {"name": "cul_terminal_read", "arguments": {"ref": "x"}})
         check("geçersiz ref → okunur araç hatası", bad.get("isError") is True,
               bad["content"][0]["text"][:80])
-        nox = rpc("tools/call", {"name": "nexremote_cursor", "arguments": {}})
-        check("nexremote_cursor koordinatsız → okunur hata", nox.get("isError") is True
+        nox = rpc("tools/call", {"name": "cul_cursor", "arguments": {}})
+        check("cul_cursor koordinatsız → okunur hata", nox.get("isError") is True
               and "x and y" in nox["content"][0]["text"], nox["content"][0]["text"][:80])
-        hid = rpc("tools/call", {"name": "nexremote_cursor", "arguments": {"hide": True}})
-        check("nexremote_cursor hide=True çağrılabilir", not hid.get("isError"),
+        hid = rpc("tools/call", {"name": "cul_cursor", "arguments": {"hide": True}})
+        check("cul_cursor hide=True çağrılabilir", not hid.get("isError"),
               hid["content"][0]["text"][:80])
     finally:
         p.terminate()

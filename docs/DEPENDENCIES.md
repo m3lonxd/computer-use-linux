@@ -32,7 +32,7 @@ fare protokolüyle gönderilir. Ekran görüntüsü wlroots'ta grim ile alınır
   Root veya udev kuralı gerektirir.
 - **RemoteDesktop portalı** root istemez. Kullanıcı bir kez onaylar
   ("Allow restoring on future sessions" işaretli). Verilen `restore_token`
-  `~/.config/nexremote/portal.json` dosyasına yazılır ve sonraki oturumlar
+  `~/.config/computer-use-linux/portal.json` dosyasına yazılır ve sonraki oturumlar
   diyalog açmadan başlar. İzni geri almak için bu dosyayı silmek yeterli.
 
 ## Erişilebilirlik ağacı

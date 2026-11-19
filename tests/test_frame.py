@@ -10,7 +10,7 @@ from unittest import mock
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote import portal_input as pi  # noqa: E402
+from computer_use_linux import portal_input as pi  # noqa: E402
 
 results: list[tuple[str, bool]] = []
 
@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check("renkler doğru (BGRx → RGB, dolgu atlanır)",
           px == [(255, 0, 0), (0, 255, 0), (0, 0, 255)] and img.size == (W, H), str(px))
     check("ekran orijini ve HiDPI ölçeği", origin == (100, 0) and scale == 2.0, f"{origin} {scale}")
-    check("ham dosya silinir", not os.path.exists(os.path.join(tmp, "nexremote-frame.raw")))
+    check("ham dosya silinir", not os.path.exists(os.path.join(tmp, "computer-use-linux-frame.raw")))
 
     with mock.patch.object(pi, "running", lambda: False), \
             mock.patch.object(pi, "_load_token", lambda: None), \

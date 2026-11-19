@@ -12,7 +12,7 @@ description: >
 
 # Computer Use Linux — desktop + terminal control
 
-Every command is `computer-use-linux ...` (the old `nexremote` name still works). Add `--json` anywhere for machine output.
+Every command is `computer-use-linux ...`. Add `--json` anywhere for machine output.
 
 ## 1. Look first
 ```bash

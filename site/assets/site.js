@@ -747,7 +747,7 @@
         { fx: function () { untagAll(); lit("set", false); lit("web", true); tag("web"); } },
         { cmd: "computer-use-linux screenshot --window win:{a41f…} --max-width 1568 --json" },
         { fx: function () { flash($("[data-shutter]", desk)); } },
-        { out: '{\n  "path": "/run/user/1000/nexremote-shot.png",\n  "width": 880,\n  "height": 560,\n  …\n  "scale": 1.0,\n  "origin": [1060, 520]\n}' },
+        { out: '{\n  "path": "/run/user/1000/computer-use-linux-shot.png",\n  "width": 880,\n  "height": 560,\n  …\n  "scale": 1.0,\n  "origin": [1060, 520]\n}' },
         { cmd: "computer-use-linux click 440 190 --from-shot --json" },
         { cursorTo: "[data-play]" },
         { fx: function () { $("[data-play]", desk).classList.add("on"); $("[data-progress]", desk).classList.add("run"); } },

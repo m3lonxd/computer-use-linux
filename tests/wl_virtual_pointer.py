@@ -12,7 +12,7 @@ import signal
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "core"))
-from nexremote.wl_vpointer import VirtualPointer  # noqa: E402
+from computer_use_linux.wl_vpointer import VirtualPointer  # noqa: E402
 
 vp = VirtualPointer()
 vp._sock.settimeout(None)

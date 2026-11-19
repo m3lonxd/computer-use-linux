@@ -10,8 +10,6 @@ aynı komutlar Windows ve macOS'ta da çalışır. Ajan kabuk komutu
 çalıştırabiliyorsa yeter: Claude Code, Codex, Aider, opencode, kendi betiğin ya da tool-calling'i olmayan bir
 yerel model.
 
-> Eski adı NexRemote. Geriye uyum için eski `nexremote` komutu, `NEXREMOTE_*` ortam değişkenleri ve `nexremote_*` MCP araç adları çalışmaya devam eder.
-
 ```console
 $ computer-use-linux observe
 Pencereler (6) — * etkin:
@@ -95,7 +93,7 @@ $ computer-use-linux do 'click-text "Yeni"' 'fill @s…:e9 "rapor.txt" --enter' 
 ```
 
 `--after` eylemden sonra neyin değiştiğini yazar (yeni öğeler ref'leriyle), ayrı
-doğrulama turu gerekmez. `wait` koşulu içeride yoklar. MCP'de `nexremote_batch`,
+doğrulama turu gerekmez. `wait` koşulu içeride yoklar. MCP'de `cul_batch`,
 HTTP'de `POST /batch` aynı işi yapar.
 
 `CUL_TRACE=1` her adımın süresini yazar; `computer-use-linux bench` p50/p95 ölçer.
@@ -152,7 +150,7 @@ computer-use-linux caps
 | Ajan | Bağlantı |
 |---|---|
 | Kabuk çalıştıran her harness | `computer-use-linux skill` çıktısını sistem talimatına ekle |
-| MCP istemcisi (Claude Code, Claude Desktop, Cursor) | `claude mcp add computer-use-linux -- ~/bin/computer-use-linux-mcp` — 28 araç (`nexremote_batch` dahil) + canlı kaynaklar (`nexremote://windows`, `nexremote://terminals`, `nexremote://tree/{ref}`), ekran görüntüsü görsel olarak döner |
+| MCP istemcisi (Claude Code, Claude Desktop, Cursor) | `claude mcp add computer-use-linux -- ~/bin/computer-use-linux-mcp` — 28 araç (`cul_batch` dahil) + canlı kaynaklar (`cul://windows`, `cul://terminals`, `cul://tree/{ref}`), ekran görüntüsü görsel olarak döner |
 | HTTP konuşan uzak ajan | `CUL_TOKEN=… computer-use-linux-http --port 8788` ya da servis olarak: `deploy/install-service.sh` |
 | Tool-calling'i olmayan model | `computer-use-linux-agent --model-cmd "ollama run qwen2.5" --goal "…"` |
 
@@ -160,7 +158,7 @@ computer-use-linux caps
 
 `deploy/install-service.sh` HTTP adaptörünü systemd kullanıcı servisi olarak
 kurar: grafik oturumla başlar, onunla kapanır. Token
-`~/.config/nexremote/http.token` içinde 600 izniyle üretilir, komut satırında
+`~/.config/computer-use-linux/http.token` içinde 600 izniyle üretilir, komut satırında
 görünmez. Varsayılan olarak yalnızca `127.0.0.1` dinlenir; uzaktan en güvenli
 yol SSH tünelidir:
 
@@ -181,8 +179,8 @@ Komutların tamamı: `computer-use-linux --help`. Ajan talimatı: [`adapters/ski
 ## Mimari
 
 ```
-core/nexremote/
-  nexremote.py      tek giriş noktası (facade); eylem kapsamı, after/wait/click_text
+core/computer_use_linux/
+  computer_use_linux.py      tek giriş noktası (facade); eylem kapsamı, after/wait/click_text
   snapshot.py       anlık görüntü ref'leri (@sid:eN), hızlı yol + katı yeniden tanıma, fark
   trace.py          CUL_TRACE=1 adım süreleri
   lease.py          girdi kirası: makine genelinde tek fare/klavye yazarı
@@ -227,7 +225,7 @@ erişilebilirlik okuması onaylar.
   (`tests/test_snapshot.py`).
 - macOS: Quartz/AX çağrıları sahte kütüphaneyle sınanır (`tests/test_macos_logic.py`).
 - Electron: sandbox'ta gerçek bir Electron penceresi açılır, butonu ağaçtaki
-  ref'iyle tıklanır (`NEXR_ELECTRON=/yol/electron`; yoksa test atlanır).
+  ref'iyle tıklanır (`CUL_ELECTRON=/yol/electron`; yoksa test atlanır).
 - AT-SPI hızlı yol: Xvfb içinde gerçek bir GTK uygulamasıyla yol kayması,
   kaybolan/ikiz öğe, katı kip, `after`, `wait`, `fill` (`tests/test_atspi_fast.py`).
 - Hız: servis, `do`, gecikme bütçesi, tmux düzeltmeleri, ajan döngüsü (`tests/test_speed.py`).

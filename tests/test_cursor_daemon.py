@@ -2,7 +2,7 @@
 """Ajan imleci daemon'ı — taşıma ve iş kuyruğu (pencere yok, sahte imleç).
 
 Unix soketi (Linux/macOS) ve TCP + belirteç (Windows'un yolu; burada
-NEXREMOTE_CURSOR_TCP=1 ile zorlanır) aynı testten geçer: komutlar pencere
+CUL_CURSOR_TCP=1 ile zorlanır) aynı testten geçer: komutlar pencere
 iş parçacığında sırayla çalışır, PING kuyruğu beklemez, yanlış belirteç
 reddedilir, QUIT temizler.
 """
@@ -18,7 +18,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote import agent_cursor as ac  # noqa: E402
+from computer_use_linux import agent_cursor as ac  # noqa: E402
 
 results: list[bool] = []
 
@@ -63,9 +63,9 @@ class Dummy(ac.AgentCursorBase):
 def run(kind: str) -> None:
     print(f"— {kind}")
     tmp = tempfile.mkdtemp()
-    os.environ["NEXREMOTE_CURSOR_SOCK"] = os.path.join(tmp, "c.sock")
-    os.environ["NEXREMOTE_CURSOR_ENDPOINT"] = os.path.join(tmp, "c.json")
-    os.environ["NEXREMOTE_CURSOR_TCP"] = "1" if kind == "tcp" else "0"
+    os.environ["CUL_CURSOR_SOCK"] = os.path.join(tmp, "c.sock")
+    os.environ["CUL_CURSOR_ENDPOINT"] = os.path.join(tmp, "c.json")
+    os.environ["CUL_CURSOR_TCP"] = "1" if kind == "tcp" else "0"
     cur = Dummy()
     ready = threading.Event()
     th = threading.Thread(target=ac.serve, args=(cur,), kwargs={"ready": ready}, daemon=True)

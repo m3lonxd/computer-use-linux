@@ -7,7 +7,7 @@
 #
 # Betik yolu Linux yolu olarak verilebilir; Z:\ yoluna çevrilir.
 set -euo pipefail
-BASE="$HOME/.cache/nexremote-wine"
+BASE="$HOME/.cache/computer-use-linux-wine"
 PY="$BASE/python/python.exe"
 [[ -f "$PY" ]] || { echo "önce tests/wine/setup.sh çalıştırın" >&2; exit 1; }
 export WINEPREFIX="$BASE/prefix" WINEDEBUG=-all WINEARCH=win64 \
@@ -15,7 +15,7 @@ export WINEPREFIX="$BASE/prefix" WINEDEBUG=-all WINEARCH=win64 \
 unset DISPLAY WAYLAND_DISPLAY
 # UIA tür kitaplığı (setup.sh 6. adım) — Wine ortam değişkenlerini Windows sürecine geçirir
 if [[ -s "$BASE/uiautomationclient.tlb" ]]; then
-    export NEXREMOTE_UIA_TLB="Z:$(echo "$BASE/uiautomationclient.tlb" | tr / '\\')"
+    export CUL_UIA_TLB="Z:$(echo "$BASE/uiautomationclient.tlb" | tr / '\\')"
 fi
 
 args=()

@@ -16,19 +16,19 @@ done
 [[ -x /usr/libexec/xdg-desktop-portal ]] || { echo "xdg-desktop-portal yok — atlandı"; exit 77; }
 [[ -x /usr/libexec/xdg-desktop-portal-gnome ]] || { echo "xdg-desktop-portal-gnome yok — atlandı"; exit 77; }
 
-if [[ "${NEXR_GNOME_INNER:-}" != 1 ]]; then
-    export NEXR_GNOME_INNER=1
+if [[ "${CUL_GNOME_INNER:-}" != 1 ]]; then
+    export CUL_GNOME_INNER=1
     exec dbus-run-session -- "$0" "$@"
 fi
 
-ROOT="$(mktemp -d /tmp/nexr-gnome.XXXXXX)"
+ROOT="$(mktemp -d /tmp/cul-gnome.XXXXXX)"
 chmod 700 "$ROOT"
 mkdir -p "$ROOT"/{run,config,data,cache}
 export XDG_RUNTIME_DIR="$ROOT/run" XDG_CONFIG_HOME="$ROOT/config" \
        XDG_DATA_HOME="$ROOT/data" XDG_CACHE_HOME="$ROOT/cache"
-export XDG_CURRENT_DESKTOP=GNOME XDG_SESSION_TYPE=wayland NEXR_SANDBOX=1 NEXR_GNOME=1
-export NEXREMOTE_INPUT_BACKEND=${NEXREMOTE_INPUT_BACKEND-mutter}
-export GTK_A11Y=atspi NO_AT_BRIDGE=0 WAYLAND_DISPLAY="nexr-gnome-$$"
+export XDG_CURRENT_DESKTOP=GNOME XDG_SESSION_TYPE=wayland CUL_SANDBOX=1 CUL_GNOME=1
+export CUL_INPUT_BACKEND=${CUL_INPUT_BACKEND-mutter}
+export GTK_A11Y=atspi NO_AT_BRIDGE=0 WAYLAND_DISPLAY="cul-gnome-$$"
 unset DISPLAY SWAYSOCK HYPRLAND_INSTANCE_SIGNATURE KDE_FULL_SESSION
 dbus-update-activation-environment XDG_RUNTIME_DIR XDG_CONFIG_HOME XDG_DATA_HOME \
     XDG_CACHE_HOME XDG_CURRENT_DESKTOP XDG_SESSION_TYPE WAYLAND_DISPLAY GTK_A11Y NO_AT_BRIDGE
@@ -66,5 +66,5 @@ for _ in $(seq 100); do
     busctl --user status org.freedesktop.portal.Desktop >/dev/null 2>&1 && break; sleep 0.1
 done
 
-export NEXR_SANDBOX_LOGS="$ROOT"
+export CUL_SANDBOX_LOGS="$ROOT"
 "$@"

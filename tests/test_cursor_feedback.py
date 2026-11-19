@@ -10,8 +10,8 @@ from unittest import mock
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote.nexremote import NexRemote  # noqa: E402
-from nexremote import agent_cursor as ac  # noqa: E402
+from computer_use_linux.desktop import ComputerUseLinux  # noqa: E402
+from computer_use_linux import agent_cursor as ac  # noqa: E402
 
 results: list[tuple[str, bool]] = []
 
@@ -50,7 +50,7 @@ waits: list[int] = []
 
 def make(gui, sent, available=True, send_error=False, missing=0):
     """missing: daemon'ın ilk kaç bağlantıda yok sayılacağı (başlatma yolu)."""
-    nr = NexRemote.__new__(NexRemote)
+    nr = ComputerUseLinux.__new__(ComputerUseLinux)
     nr._gui = lambda: gui
     nr.pointer_available = lambda: (available, "")
     state = {"missing": missing, "started": 0}
@@ -96,10 +96,10 @@ nr.click("r")
 check("daemon yoksa arka planda başlatılır, komutları o çalıştırır",
       nr._fake["started"] == 1 and sent == FULL and "click" in gui.calls, str(sent))
 
-with mock.patch.dict(os.environ, {"NEXREMOTE_CURSOR_MS": "0"}):
+with mock.patch.dict(os.environ, {"CUL_CURSOR_MS": "0"}):
     gui, sent = FakeGui(), []
     make(gui, sent).click("r")
-    check("NEXREMOTE_CURSOR_MS=0 → anında (sıfır değil, en küçük süre)",
+    check("CUL_CURSOR_MS=0 → anında (sıfır değil, en küçük süre)",
           sent[1] == "MOVE 120 210 0.001", str(sent))
 
 gui, sent = FakeGui(), []
@@ -121,10 +121,10 @@ for label, box in (("konumsuz", None), ("sıfır boyut", (5, 5, 0, 0)),
     make(gui, sent).focus("r")
     check(f"{label} öğede imleç atlanır, eylem çalışır", sent == [] and "focus" in gui.calls)
 
-with mock.patch.dict(os.environ, {"NEXREMOTE_CURSOR": "0"}):
+with mock.patch.dict(os.environ, {"CUL_CURSOR": "0"}):
     gui, sent = FakeGui(), []
     make(gui, sent).click("r")
-    check("NEXREMOTE_CURSOR=0 imleci kapatır", sent == [] and "click" in gui.calls)
+    check("CUL_CURSOR=0 imleci kapatır", sent == [] and "click" in gui.calls)
 
 
 
@@ -179,7 +179,7 @@ check("kanıtsız konumda imleç gösterilmez, eylem çalışır",
 import tempfile  # noqa: E402
 import threading  # noqa: E402
 import time  # noqa: E402
-from nexremote import agent_cursor as ac  # noqa: E402
+from computer_use_linux import agent_cursor as ac  # noqa: E402
 
 
 class FakeCursor:
@@ -194,7 +194,7 @@ class FakeCursor:
 
 
 check("varsayılan süre", ac.idle_limit() == ac.IDLE_SEC)
-with mock.patch.dict(os.environ, {"NEXREMOTE_CURSOR_IDLE": "x"}):
+with mock.patch.dict(os.environ, {"CUL_CURSOR_IDLE": "x"}):
     check("bozuk süre varsayılana düşer", ac.idle_limit() == ac.IDLE_SEC)
 if os.name != "nt":
     with tempfile.TemporaryDirectory() as tmp, \

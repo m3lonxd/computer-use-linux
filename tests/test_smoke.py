@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NexRemote duman testleri — bağımlılıksız (pytest gerekmez).
+"""Computer Use Linux duman testleri — bağımlılıksız (pytest gerekmez).
 
 Çalıştır:  python3 tests/test_smoke.py
 Herhangi bir ortamda çalışır; eksik backend'i atlar (skip), hata vermez.
@@ -34,12 +34,12 @@ def check(name: str, fn):
 
 
 def main() -> int:
-    print("NexRemote duman testleri\n")
+    print("Computer Use Linux duman testleri\n")
 
-    from nexremote import NexRemote
-    from nexremote.models import Element, Role, Window
+    from computer_use_linux import ComputerUseLinux
+    from computer_use_linux.models import Element, Role, Window
 
-    nr = NexRemote()
+    nr = ComputerUseLinux()
 
     # --- modeller ---
     print("modeller:")
@@ -88,9 +88,9 @@ def main() -> int:
     print("\nTUI backend:")
     if tui and tui.capability().available:
         def _run():
-            r = nr.run("echo nexremote-smoke", session="smoke")
+            r = nr.run("echo computer-use-linux-smoke", session="smoke")
             assert r.exit_code == 0, f"exit {r.exit_code}"
-            assert "nexremote-smoke" in r.output, f"çıktı: {r.output!r}"
+            assert "computer-use-linux-smoke" in r.output, f"çıktı: {r.output!r}"
         check("run() komut çalıştırır", _run)
         check("sessions() liste döner", lambda: (
             isinstance(nr.sessions(), list)
@@ -104,7 +104,7 @@ def main() -> int:
 
     # --- input ---
     print("\ngiriş:")
-    from nexremote import input as inp
+    from computer_use_linux import input as inp
     check("available_tools() sözlük", lambda: (
         isinstance(inp.available_tools(), dict)
         or (_ for _ in ()).throw(AssertionError())))

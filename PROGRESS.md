@@ -1,4 +1,4 @@
-# NexRemote — Geliştirme Raporu
+# Computer Use Linux — Geliştirme Raporu
 
 ## v0.7.0 — hız (2026-11-10)
 
@@ -7,8 +7,8 @@ geliyordu: her CLI çağrısı yeni süreç + yeni bağlantılar, her ref eylemi
 pencerenin tüm ağacının (ve pencere listelerinin 3-4 kez) yeniden okunması,
 ve her eylem için ayrı model turu + ayrı doğrulama turu.
 
-- **Ölçüm:** `NEXREMOTE_TRACE=1` adım süreleri (servis kipinde istemcinin
-  stderr'ine gelir), `nexremote bench` p50/p95 (`--cli`: uçtan uca süreç süresi).
+- **Ölçüm:** `CUL_TRACE=1` adım süreleri (servis kipinde istemcinin
+  stderr'ine gelir), `computer-use-linux bench` p50/p95 (`--cli`: uçtan uca süreç süresi).
 - **Tık yolu:** eylem kapsamlı önbellek (pencere listeleri ve çözülen öğe bir
   kez okunur), ajan imleci beklenmez (komut gönderilir, tık hemen atılır; daemon
   yoksa arka planda başlar ve komutları kendisi çalıştırır, tek örnek kilidi),
@@ -20,9 +20,9 @@ ve her eylem için ayrı model turu + ayrı doğrulama turu.
   kurulumu da kalktığı için fark daha büyük olmalı — ölçülmedi).
 - **Ağaç:** durum kümesi düğüm başına bir kez, hafif okuma (konum ve kimlikte
   kullanılmayan değerler yok), düğüm/süre bütçesi, ref hızlı yolu (yol + kimlik;
-  GTK'da 18 → 3 ms). `NEXREMOTE_STRICT=1` her eylemde tam okuma.
+  GTK'da 18 → 3 ms). `CUL_STRICT=1` her eylemde tam okuma.
 - **Daha az tur:** `do` (toplu adım), `--after` (eylem sonrası fark), `wait`,
-  `click-text`, `fill`, `sleep`; MCP `nexremote_batch/_click_text/_fill/_wait/_after`
+  `click-text`, `fill`, `sleep`; MCP `cul_batch/_click_text/_fill/_wait/_after`
   (28 araç), HTTP `/batch /click_text /fill /wait` + `after`. Ajan döngüsü bir
   turdaki tüm satırları çalıştırır, geçmişi kırpar.
 - **Ekran/KWin:** Wayland servisi kareyi pencereye kırparak yazar (eski servisle
@@ -65,7 +65,7 @@ Görünür ajan imleci artık üç işletim sisteminde ve tüm adaptörlerde.
   geçiyor, odak çalınmıyor, daemon TCP üzerinden. 25/25.
 - **macOS** `maccursor.py`: ctypes ile Objective-C (pyobjc yok), her imzaya ayrı
   prototip (arm64). Sahte objc katmanıyla çağrı dizisi 25/25.
-- **Adaptörler:** MCP `nexremote_cursor` (23 araç), HTTP `/cursor` ve
+- **Adaptörler:** MCP `cul_cursor` (23 araç), HTTP `/cursor` ve
   `/cursor_hide`, CLI `cursor` / `point` / `cursor-hide`, skill talimatı. X11 28/28.
 
 **Doğrulanmayanlar:** macOS imleci gerçek Mac'te hiç çalıştırılmadı; Windows
@@ -75,14 +75,14 @@ imleci gerçek Windows 10/11'de (yüksek DPI, çoklu ekran) denenmedi.
 
 Gerçek kullanımda takılınan yerler kapatıldı:
 
-- **Electron/Chromium isimle kontrol:** `nexremote launch <program>` uygulamayı
+- **Electron/Chromium isimle kontrol:** `computer-use-linux launch <program>` uygulamayı
   `--force-renderer-accessibility` ile başlatır ve pencere ref'ini döndürür. Ağacı
   boş Chromium penceresinde `tree` neden boş olduğunu ve ne yapılacağını yazar.
   Sandbox'ta gerçek Electron 11/11.
 - **Sade ağaç:** gizli (SHOWING olmayan) öğeler atlanır, isimsiz kaplar katlanır,
   eylemli satırlar `ref=` taşır (model `find` çağırmadan tıklar). Zen'de 550 → 21 satır.
-- **MCP kaynakları:** `nexremote://windows`, `nexremote://terminals`,
-  `nexremote://tree/{ref}`; 22 araç.
+- **MCP kaynakları:** `cul://windows`, `cul://terminals`,
+  `cul://tree/{ref}`; 22 araç.
 - **HTTP adaptörü:** sabit zamanlı token karşılaştırma, token dosyası
   (`ps`'te görünmez), gövde sınırı + bozuk JSON → 400, bağlantı zaman aşımı,
   TLS; ağa açılırken ≥24 karakter token zorunlu. `deploy/install-service.sh`
@@ -98,7 +98,7 @@ Ajan imleci X11/XWayland ister; XWayland'siz Sway'de görünmez.
 ## v0.3.0 — çok platform (2026-10-17)
 
 Facade artık işletim sisteminden bağımsız; her şey `platforms.Desktop`
-sözleşmesinden geçer (`core/nexremote/platforms/base.py`).
+sözleşmesinden geçer (`core/computer_use_linux/platforms/base.py`).
 
 | Platform | Katman | Doğrulama |
 |---|---|---|
@@ -138,11 +138,11 @@ ortamda çalışan AI ajanı köprüsü.
 
 ## Ne yapıldı
 
-### Çekirdek (core/nexremote/)
+### Çekirdek (core/computer_use_linux/)
 - `models.py` — ortak dil: Element/Window/Screenshot/CommandResult, Role/Action
   normalizasyonu (backend-bağımsız).
 - `base.py` — Backend ABC (GUI + TUI polimorfizmi).
-- `nexremote.py` — NexRemote facade; **eksik backend tüm sistemi çökertmez**
+- `computer_use_linux.py` — Computer Use Linux facade; **eksik backend tüm sistemi çökertmez**
   (kısmi ortam desteği).
 - `input.py` — Wayland giriş enjeksiyonu (wtype/ydotool/dotool/xdotool).
 - `backends/gui.py` — AT-SPI tabanlı görme + isimle tıklama.
@@ -151,7 +151,7 @@ ortamda çalışan AI ajanı köprüsü.
 ### Adaptörler (adapters/)
 | Adaptör | Ne sunar | Doğrulama |
 |---|---|---|
-| `cli/nexremote_cli.py` | 15 komut + `--json`, `caps/observe/tree/find/click/...` | ✅ kcalc toggle |
+| `cli/computer_use_linux_cli.py` | 15 komut + `--json`, `caps/observe/tree/find/click/...` | ✅ kcalc toggle |
 | `mcp/server.py` | 13 MCP aracı (mcp 2.2.0 MCPServer) | ✅ bağımsız handshake |
 | `cli/agent_loop.py` | metin-protokol döngüsü (tool-calling'siz modeller) | ✅ sahte model |
 | `http/server.py` | stdlib HTTP API, Bearer token | ✅ gui+tui |
@@ -172,11 +172,11 @@ ortamda çalışan AI ajanı köprüsü.
    (Bu kritik bir bug'dı: `close()` tmux'u öldürüyordu, düzeltildi.)
 3. **İnteraktif TUI ajanı:** Python REPL başlatıldı, ayrı çağrılarda
    `print(6*7)` gönderildi, `42` ekrandan okundu.
-4. **Metin protokolü:** tool-calling'i olmayan model `nexremote` satırları
+4. **Metin protokolü:** tool-calling'i olmayan model `computer-use-linux` satırları
    yazdı, wrapper çalıştırdı, `DONE` alındı.
 5. **MCP:** 13 araç, JSON-RPC handshake + `tools/call` bağımsız doğrulandı.
 6. **HTTP:** `curl` ile health/caps/windows/run çalıştı.
-7. **Görünür ajan imleci (crosshair):** `core/nexremote/xcursor.py` imleç stili
+7. **Görünür ajan imleci (crosshair):** `core/computer_use_linux/xcursor.py` imleç stili
    "yön oku"ndan **crosshair (hedef)** stilinine çevrildi — dört yöne kalın
    çizgi + merkez halka + merkez nokta (`_line` metodu eklendi). İzole
    `Xvfb :98` sandbox'ında piksel sayımıyla doğrulandı: merkez nokta + 4 kol

@@ -13,7 +13,7 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote import cursor_theme as ct  # noqa: E402
+from computer_use_linux import cursor_theme as ct  # noqa: E402
 
 results: list[tuple[str, bool]] = []
 
@@ -96,23 +96,23 @@ except ValueError:
 # ------------------------------------------------------- tema arama zinciri
 with tempfile.TemporaryDirectory() as tmp:
     icons = os.path.join(tmp, "icons")
-    child = os.path.join(icons, "nexr-child")
-    parent = os.path.join(icons, "nexr-parent")
+    child = os.path.join(icons, "cul-child")
+    parent = os.path.join(icons, "cul-parent")
     os.makedirs(os.path.join(child))
     os.makedirs(os.path.join(parent, "hyprcursors"))
     os.makedirs(os.path.join(parent, "cursors"))
     with open(os.path.join(child, "index.theme"), "w") as f:
-        f.write("[Icon Theme]\nName=c\nInherits=nexr-parent\n")
+        f.write("[Icon Theme]\nName=c\nInherits=cul-parent\n")
     with zipfile.ZipFile(os.path.join(parent, "hyprcursors", "left_ptr.hlc"), "w") as z:
         z.writestr("meta.hl", "hotspot_x = 0.0625\nhotspot_y = 0.0625\ndefine_size = 0, a.svg\n")
         z.writestr("a.svg", SVG)
     with open(os.path.join(parent, "cursors", "left_ptr"), "wb") as f:
         f.write(xcursor([24]))
     env = dict(os.environ)
-    os.environ.update(XCURSOR_THEME="nexr-child", XCURSOR_SIZE="24", XDG_DATA_DIRS=tmp,
+    os.environ.update(XCURSOR_THEME="cul-child", XCURSOR_SIZE="24", XDG_DATA_DIRS=tmp,
                       HOME=tmp, XDG_CONFIG_HOME=os.path.join(tmp, "cfg"))
     try:
-        check("tema/boyut ortamdan", ct.theme_and_size() == ("nexr-child", 24))
+        check("tema/boyut ortamdan", ct.theme_and_size() == ("cul-child", 24))
         img = ct.load()
         if have_cairo:
             check("Inherits zinciriyle SVG bulundu", img is not None and img.source.startswith("svg:")

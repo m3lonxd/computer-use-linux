@@ -5,25 +5,25 @@
 #   tests/wine/setup.sh          kur (tekrar çalıştırmak güvenli — idempotent)
 #
 # Dizinler:
-#   ~/.cache/nexremote-wine/prefix        WINEPREFIX (yalnızca bu testlere ait)
-#   ~/.cache/nexremote-wine/python        gömülebilir Python (Z:\ yolundan çalışır)
-#   ~/.cache/nexremote-wine/dl            indirilen zip/wheel/deb önbelleği
-#   ~/.cache/nexremote-wine/uiautomationclient.tlb   UIA tür kitaplığı (aşağıda, 6. adım)
+#   ~/.cache/computer-use-linux-wine/prefix        WINEPREFIX (yalnızca bu testlere ait)
+#   ~/.cache/computer-use-linux-wine/python        gömülebilir Python (Z:\ yolundan çalışır)
+#   ~/.cache/computer-use-linux-wine/dl            indirilen zip/wheel/deb önbelleği
+#   ~/.cache/computer-use-linux-wine/uiautomationclient.tlb   UIA tür kitaplığı (aşağıda, 6. adım)
 #
 # Gömülebilir Python'da python312._pth dosyası varken PYTHONPATH YOK SAYILIR.
 # Bu yüzden ._pth dosyasına deponun core/ dizininin Z:\ yolunu ve
 # Lib\site-packages'ı ekliyoruz, "import site" satırını açıyoruz.
 set -euo pipefail
 
-PY_VER="${NEXR_WINE_PY:-3.12.10}"
+PY_VER="${CUL_WINE_PY:-3.12.10}"
 PY_TAG="python$(echo "$PY_VER" | cut -d. -f1,2 | tr -d .)"      # python312
-BASE="$HOME/.cache/nexremote-wine"
+BASE="$HOME/.cache/computer-use-linux-wine"
 PREFIX="$BASE/prefix"
 PYDIR="$BASE/python"
 DL="$BASE/dl"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CORE="$(cd "$HERE/../../core" && pwd)"
-COMTYPES_VER="${NEXR_COMTYPES:-1.4.11}"
+COMTYPES_VER="${CUL_COMTYPES:-1.4.11}"
 
 need() { command -v "$1" >/dev/null || { echo "eksik araç: $1" >&2; exit 1; }; }
 need wine; need wineserver; need xvfb-run; need curl; need unzip
@@ -112,4 +112,4 @@ fi
 [[ -s "$TLB" ]] && echo "✓ UIA tür kitaplığı: $TLB"
 
 # 7) duman testi
-"$HERE/run.sh" -c "import sys, nexremote, comtypes; print('python', sys.version.split()[0], sys.platform)"
+"$HERE/run.sh" -c "import sys, computer_use_linux, comtypes; print('python', sys.version.split()[0], sys.platform)"

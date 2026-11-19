@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$ROOT/site/download"
 mkdir -p "$OUT"
 
-NAME="nexremote"
+NAME="computer-use-linux"
 STAGE="$(mktemp -d)"
 DEST="$STAGE/$NAME"
 mkdir -p "$DEST"

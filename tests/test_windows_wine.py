@@ -22,8 +22,8 @@ if sys.platform != "win32":
     print("⊘ bu test Windows Python'u ister: tests/wine/run.sh tests/test_windows_wine.py")
     sys.exit(0)
 
-from nexremote.platforms import detect  # noqa: E402
-from nexremote.platforms.base import Unsupported  # noqa: E402
+from computer_use_linux.platforms import detect  # noqa: E402
+from computer_use_linux.platforms.base import Unsupported  # noqa: E402
 
 results: list[tuple[str, bool, str]] = []
 
@@ -95,7 +95,7 @@ try:
         pos = d.pointer_pos()
         check("click → imleç hedefte", pos is not None and abs(pos[0] - cx) <= 1
               and abs(pos[1] - cy) <= 1, str(pos))
-        text = "NexRemote ğüşıöç İ 42"
+        text = "Computer Use Linux ğüşıöç İ 42"
         d.type_text(text)
         time.sleep(0.5)
         # Notepad'in düzenleme denetimi: WM_GETTEXT ile içerik doğrula
@@ -107,7 +107,7 @@ try:
         u.SendMessageW.restype = ctypes.c_ssize_t
         u.SendMessageW.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_size_t,
                                    ctypes.c_void_p]
-        from nexremote.platforms.windows import parse_hwnd
+        from computer_use_linux.platforms.windows import parse_hwnd
         hwnd = parse_hwnd(win.id)
         edit = u.FindWindowExW(hwnd, None, "Edit", None)
         buf = ctypes.create_unicode_buffer(512)
@@ -127,7 +127,7 @@ try:
             check("scroll hata vermedi", False, str(e))
 
     # ------------------------------------------------------- ekran görüntüsü
-    out = os.path.join(tempfile.gettempdir(), "nexr-shot.png")
+    out = os.path.join(tempfile.gettempdir(), "cul-shot.png")
     shot = d.screenshot(out)
     check("screenshot PNG", os.path.getsize(out) > 1000 and shot.width >= 640,
           f"{shot.width}x{shot.height} scale={shot.scale} {shot.backend}")
@@ -146,14 +146,14 @@ try:
 
     # ---------------------------------------------------------- konsol
     CREATE_NEW_CONSOLE = 0x10
-    con = subprocess.Popen(["cmd.exe", "/Q", "/K", "title nexr-test"],
+    con = subprocess.Popen(["cmd.exe", "/Q", "/K", "title cul-test"],
                            creationflags=CREATE_NEW_CONSOLE)
     procs.append(con)
     term = wait(lambda: next((t for t in d.terminals() if t.pid == con.pid), None), 20, 0.5)
     check("terminals(): yeni cmd konsolu", term is not None, term and f"{term.ref} {term.title!r}")
     if term:
-        d.terminal_send(term.ref, "echo NEXR_%COMPUTERNAME:~0,0%OK_7x6", enter=True)
-        seen = wait(lambda: "NEXR_OK_7x6" in d.terminal_read(term.ref), 10, 0.4)
+        d.terminal_send(term.ref, "echo CUL_%COMPUTERNAME:~0,0%OK_7x6", enter=True)
+        seen = wait(lambda: "CUL_OK_7x6" in d.terminal_read(term.ref), 10, 0.4)
         check("terminal_send + terminal_read (komut çıktısı okundu)", bool(seen))
         d.terminal_send(term.ref, "echo ğüş", enter=True)
         seen = wait(lambda: "ğüş" in d.terminal_read(term.ref), 10, 0.4)

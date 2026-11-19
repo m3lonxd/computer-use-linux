@@ -19,7 +19,7 @@ def emit(**ev):
     log.write(json.dumps(ev, ensure_ascii=False) + "\n")
 
 
-win = Gtk.Window(title="nexremote-probe")
+win = Gtk.Window(title="computer-use-linux-probe")
 win.set_default_size(1280, 800)
 box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 entry = Gtk.Entry()

@@ -16,10 +16,10 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
-if os.environ.get("NEXR_GNOME") != "1":
+if os.environ.get("CUL_GNOME") != "1":
     sys.exit("bu test yalnızca tests/gnome_sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
-ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "NEXREMOTE_CURSOR": "0"}
+ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "CUL_CURSOR": "0"}
 LOG = os.path.join(os.environ["XDG_RUNTIME_DIR"], "probe.jsonl")
 results: list[tuple[str, bool, str]] = []
 
@@ -35,7 +35,7 @@ def skip(name: str, why: str) -> None:
 
 def nx(*args: str, timeout: float = 40) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
+        return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/computer_use_linux_cli.py", *args],
                               capture_output=True, text=True, timeout=timeout, env=ENV)
     except subprocess.TimeoutExpired:
         return subprocess.CompletedProcess(args, 124, "", f"zaman aşımı ({timeout:.0f} sn)")
@@ -71,7 +71,7 @@ def main() -> int:
         time.sleep(1.0)
 
         sys.path.insert(0, f"{ROOT}/core")
-        from nexremote.platforms.linux import session_kind
+        from computer_use_linux.platforms.linux import session_kind
         check("oturum türü gnome-wayland", session_kind() == "gnome-wayland", session_kind())
 
         caps = nx("caps")
@@ -84,7 +84,7 @@ def main() -> int:
         except ValueError:
             wl = []
         check("windows: AT-SPI geri dönüşü deneme penceresini listeledi",
-              any("nexremote-probe" in (w.get("title") or "") for w in wl),
+              any("computer-use-linux-probe" in (w.get("title") or "") for w in wl),
               (ws.stderr.strip() or f"{len(wl)} pencere")[:100])
 
         # --- portal girişi: izin diyaloğu onaylanmazsa atla

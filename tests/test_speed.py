@@ -19,7 +19,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 CORE = os.path.join(ROOT, "core")
-CLI = os.path.join(ROOT, "adapters", "cli", "nexremote_cli.py")
+CLI = os.path.join(ROOT, "adapters", "cli", "computer_use_linux_cli.py")
 sys.path.insert(0, CORE)
 sys.path.insert(0, os.path.join(ROOT, "adapters", "cli"))
 
@@ -31,12 +31,12 @@ def check(name: str, ok: bool, detail: str = "") -> None:
     print(("  ✓ " if ok else "  ✗ ") + name + (f" — {detail}" if detail else ""))
 
 
-tmp = tempfile.mkdtemp(prefix="nexr-speed-")
+tmp = tempfile.mkdtemp(prefix="cul-speed-")
 os.chmod(tmp, 0o700)
-ENV = {**{k: v for k, v in os.environ.items() if not k.startswith("NEXREMOTE_")},
-       "PYTHONPATH": CORE, "XDG_RUNTIME_DIR": tmp, "NEXREMOTE_HOME": tmp,
-       "NEXREMOTE_SERVICE": "1", "NEXREMOTE_SERVICE_IDLE": "60", "TMUX_TMPDIR": tmp,
-       "NEXREMOTE_CURSOR": "0"}
+ENV = {**{k: v for k, v in os.environ.items() if not k.startswith("CUL_")},
+       "PYTHONPATH": CORE, "XDG_RUNTIME_DIR": tmp, "CUL_HOME": tmp,
+       "CUL_SERVICE": "1", "CUL_SERVICE_IDLE": "60", "TMUX_TMPDIR": tmp,
+       "CUL_CURSOR": "0"}
 
 
 def cli(*args, env=None):
@@ -47,7 +47,7 @@ def cli(*args, env=None):
 
 
 # ------------------------------------------------------------- argümanlar
-import nexremote_cli as nc  # noqa: E402
+import computer_use_linux_cli as nc  # noqa: E402
 
 check("--json sona yazılınca öne alınır", nc._norm_argv(["click", "x", "--json"])
       == ["--json", "click", "x"])
@@ -69,8 +69,8 @@ try:
     served = __import__("json").loads(st2.stdout).get("served", 0) if st2.returncode == 0 else 0
     check("sonraki çağrı servisten yanıtlanır", r2.returncode == 0 and served >= 1, st2.stdout)
 
-    r, _t = cli("sleep", "0", env={"NEXREMOTE_TRACE": "1"})
-    check("NEXREMOTE_TRACE servise iletilir, iz istemcinin stderr'ine gelir",
+    r, _t = cli("sleep", "0", env={"CUL_TRACE": "1"})
+    check("CUL_TRACE servise iletilir, iz istemcinin stderr'ine gelir",
           "[trace]" in r.stderr and "(servis)" in r.stderr, r.stderr[-200:])
     r, _t = cli("do", "sleep 0", "click-text", "sleep 0")
     check("do: hatalı adımda durur, çıkış kodu iletilir",
@@ -80,7 +80,7 @@ try:
     check("do --json: adım sonuçları", r.returncode == 0 and out["ok"] and len(out["steps"]) == 2)
 
     with_svc = [cli("sleep", "0")[1] for _ in range(7)]
-    without = [cli("sleep", "0", env={"NEXREMOTE_SERVICE": "0"})[1] for _ in range(7)]
+    without = [cli("sleep", "0", env={"CUL_SERVICE": "0"})[1] for _ in range(7)]
     a, b = statistics.median(with_svc), statistics.median(without)
     check("gecikme bütçesi: servisli çağrı servissizden hızlı", a < b, f"{a:.0f} ms < {b:.0f} ms")
 
@@ -94,7 +94,7 @@ finally:
 if shutil.which("tmux"):
     os.environ["TMUX_TMPDIR"] = tmp
     os.environ.setdefault("SHELL", "/bin/bash")
-    from nexremote.backends.tui import TuiBackend, _key_name  # noqa: E402
+    from computer_use_linux.backends.tui import TuiBackend, _key_name  # noqa: E402
     t = TuiBackend()
     try:
         r = t.run("echo bir", "hiz2", 10)
@@ -129,11 +129,11 @@ mock = os.path.join(tmp, "mock.py")
 with open(mock, "w") as f:
     f.write('import sys\np = sys.stdin.read()\n'
             'print("DONE: düzeldi" if "[HATA]" in p else '
-            '"nexremote sleep 0\\nnexremote click-text\\nnexremote sleep 0\\nDONE: erken")\n')
+            '"computer-use-linux sleep 0\\ncomputer-use-linux click-text\\ncomputer-use-linux sleep 0\\nDONE: erken")\n')
 r = subprocess.run([sys.executable, os.path.join(ROOT, "adapters", "cli", "agent_loop.py"),
                     "--model-cmd", f"{sys.executable} {mock}", "--goal", "test"],
                    capture_output=True, text=True, timeout=120,
-                   env={**ENV, "NEXREMOTE_SERVICE": "0"})
+                   env={**ENV, "CUL_SERVICE": "0"})
 lines = [ln for ln in r.stdout.splitlines() if ln.startswith("[1] $")]
 check("ajan döngüsü: bir turda birden çok satır, hatada kalan atlanır",
       len(lines) == 2, r.stdout[-300:])

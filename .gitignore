@@ -9,6 +9,6 @@ site/.vercel/
 site/.env.local
 
 # ajan imleci soketi
-/tmp/nexremote-cursor-*.sock
+/tmp/computer-use-linux-cursor-*.sock
 build/
 *.egg-info/

@@ -27,7 +27,7 @@ run "ajan imleci — eylem geri bildirimi"  python3 tests/test_cursor_feedback.p
 run "ajan imleci — daemon/taşıma"  python3 tests/test_cursor_daemon.py
 run "ajan imleci — macOS (sahte objc)"  python3 tests/test_cursor_macos.py
 run "ajan imleci — Xvfb"         tests/x11_sandbox.sh python3 tests/test_cursor_x11.py
-if [[ -f "$HOME/.cache/nexremote-wine/python/python.exe" ]]; then
+if [[ -f "$HOME/.cache/computer-use-linux-wine/python/python.exe" ]]; then
     run "Windows — Wine"            tests/wine/run.sh tests/test_windows_wine.py
     run "ajan imleci — Wine"        tests/wine/run.sh tests/test_cursor_wine.py
 else

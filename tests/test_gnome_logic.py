@@ -20,7 +20,7 @@ def check(name, ok, detail=""):
     print(f"  {'✓' if ok else '✗'} {name}" + (f" — {detail}" if detail else ""))
 
 
-from nexremote import portal_input as pi  # noqa: E402
+from computer_use_linux import portal_input as pi  # noqa: E402
 
 with mock.patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"}):
     check("GNOME: ASCII tuşlanır", pi._keyable("a") and pi._keyable("\n"))
@@ -28,10 +28,10 @@ with mock.patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME"}):
 with mock.patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "KDE"}):
     check("KDE: Latin-1 eskisi gibi tuşlanır", pi._keyable("ü"))
 
-with mock.patch.dict(os.environ, {"NEXREMOTE_INPUT_BACKEND": "mutter"}):
-    check("NEXREMOTE_INPUT_BACKEND=mutter seçilir", pi.use_mutter())
+with mock.patch.dict(os.environ, {"CUL_INPUT_BACKEND": "mutter"}):
+    check("CUL_INPUT_BACKEND=mutter seçilir", pi.use_mutter())
 with mock.patch.dict(os.environ, {}, clear=False):
-    os.environ.pop("NEXREMOTE_INPUT_BACKEND", None)
+    os.environ.pop("CUL_INPUT_BACKEND", None)
     check("varsayılan portal (izin ister)", not pi.use_mutter())
 
 
@@ -62,7 +62,7 @@ check("Mutter monitörleri: ölçekli mantıksal boyut", mons == [
     {"connector": "DP-1", "x": 0, "y": 0, "w": 1920, "h": 1080},
     {"connector": "DP-2", "x": 1920, "y": 0, "w": 1920, "h": 1080}], str(mons))
 
-from nexremote.platforms import linux  # noqa: E402
+from computer_use_linux.platforms import linux  # noqa: E402
 
 with mock.patch.dict(os.environ, {"XDG_CURRENT_DESKTOP": "GNOME", "XDG_SESSION_TYPE": "wayland",
                                   "WAYLAND_DISPLAY": "w0"}):

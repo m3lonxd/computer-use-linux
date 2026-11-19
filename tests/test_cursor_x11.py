@@ -14,12 +14,12 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-if os.environ.get("NEXR_SANDBOX_KIND") != "x11":
+if os.environ.get("CUL_SANDBOX_KIND") != "x11":
     sys.exit("bu test yalnızca tests/x11_sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
 # yerleşik ok önce sınanır; tema imleci aşağıda ayrıca
-os.environ["NEXREMOTE_CURSOR_THEME"] = "0"
-from nexremote import xcursor as xc  # noqa: E402
+os.environ["CUL_CURSOR_THEME"] = "0"
+from computer_use_linux import xcursor as xc  # noqa: E402
 
 results: list[tuple[str, bool]] = []
 
@@ -103,7 +103,7 @@ check("geri gitme yok", all(b[1] >= a[1] for a, b in zip(frames, frames[1:])))
 cur.close()
 
 # ------------------------------------------------- tema imleci (ARGB pencere)
-os.environ["NEXREMOTE_CURSOR_THEME"] = "1"
+os.environ["CUL_CURSOR_THEME"] = "1"
 theme = xc.theme_cursor()
 if theme is None:
     print("  ⊘ bu makinede imleç teması bulunamadı — tema imleci testi atlandı")
@@ -126,17 +126,17 @@ else:
 
 # ------------------------------------- daemon + facade (ayrı süreç, Unix soketi)
 import tempfile  # noqa: E402
-os.environ["NEXREMOTE_CURSOR_SOCK"] = os.path.join(tempfile.mkdtemp(), "c.sock")
-from nexremote import agent_cursor as ac  # noqa: E402
-from nexremote.nexremote import NexRemote  # noqa: E402
-nr = NexRemote()
+os.environ["CUL_CURSOR_SOCK"] = os.path.join(tempfile.mkdtemp(), "c.sock")
+from computer_use_linux import agent_cursor as ac  # noqa: E402
+from computer_use_linux.desktop import ComputerUseLinux  # noqa: E402
+nr = ComputerUseLinux()
 check("facade.pointer_available X11'de", nr.pointer_available()[0], nr.pointer_available()[1])
 try:
     moved = nr.cursor(640, 360, click=True)
 except Exception as e:
     moved = False
     print(f"    {type(e).__name__}: {e}")
-check("facade.cursor daemon'ı başlattı (python -m nexremote.agent_cursor)",
+check("facade.cursor daemon'ı başlattı (python -m computer_use_linux.agent_cursor)",
       moved and ac.daemon_running())
 time.sleep(0.2)
 tip = px(641, 362)
@@ -146,7 +146,7 @@ check("cursor_hide", nr.cursor_hide() and (time.sleep(0.2) or px(641, 362) == (2
 # HTTP adaptörü aynı daemon'ı sürer
 import importlib.util  # noqa: E402
 spec = importlib.util.spec_from_file_location(
-    "nexr_http", os.path.join(HERE, "..", "adapters", "http", "server.py"))
+    "cul_http", os.path.join(HERE, "..", "adapters", "http", "server.py"))
 http_srv = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(http_srv)
 http_srv._NR = nr

@@ -20,8 +20,8 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 SERVER = os.path.join(ROOT, "adapters", "http", "server.py")
-ENV = {**os.environ, "NEXREMOTE_CURSOR": "0"}
-ENV.pop("NEXREMOTE_TOKEN", None)
+ENV = {**os.environ, "CUL_CURSOR": "0"}
+ENV.pop("CUL_TOKEN", None)
 TOKEN = "t" * 12 + "-gizli-anahtar-0123456789"
 
 fails = 0
@@ -75,7 +75,7 @@ def run_cli(*args):
 
 
 def main() -> int:
-    tmp = tempfile.mkdtemp(prefix="nexr-http-")
+    tmp = tempfile.mkdtemp(prefix="cul-http-")
     p, port, line = start("--token", TOKEN)
     try:
         check("sunucu açıldı", "http://127.0.0.1" in line, line.strip())
@@ -159,7 +159,7 @@ def main() -> int:
     else:
         p, port, line = start("--token-file", tf, "--tls-cert", cert, "--tls-key", key)
         try:
-            check("HTTPS açıldı", line.startswith("NexRemote HTTP: https://"), line.strip())
+            check("HTTPS açıldı", line.startswith("Computer Use Linux HTTP: https://"), line.strip())
             # El sıkışmayan istemci accept'i kilitlememeli
             idle = socket.create_connection(("127.0.0.1", port))
             st, _ = req(port, "GET", "/caps", token=tok, tls=True)

@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# NexRemote HTTP adaptörünü systemd kullanıcı servisi olarak kurar.
+# Computer Use Linux HTTP adaptörünü systemd kullanıcı servisi olarak kurar.
 #
 #   deploy/install-service.sh                      yalnızca bu makine (127.0.0.1:8788)
 #   deploy/install-service.sh --host 0.0.0.0 --tls-cert C --tls-key K
 #                                                  ağa aç (token + TLS)
 #   deploy/install-service.sh --uninstall          servisi kaldır (token dosyası kalır)
 #
-# Token ~/.config/nexremote/http.token içinde (yalnızca sizin okuyabileceğiniz
+# Token ~/.config/computer-use-linux/http.token içinde (yalnızca sizin okuyabileceğiniz
 # 600 izniyle) üretilir; komut satırında görünmez. TLS vermeden ağa açarsanız
 # token düz metin gider — onun yerine SSH tüneli kullanın:
 #   ssh -N -L 8788:127.0.0.1:8788 kullanici@bu-makine
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-NAME=nexremote-http
-CONF="${XDG_CONFIG_HOME:-$HOME/.config}/nexremote"
+NAME=computer-use-linux-http
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/computer-use-linux"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 HOST=127.0.0.1 PORT=8788 CERT="" KEY="" UNINSTALL=0 START=1
 
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-command -v systemctl >/dev/null || die "systemd yok; sunucuyu elle çalıştırın: nexremote-http"
+command -v systemctl >/dev/null || die "systemd yok; sunucuyu elle çalıştırın: computer-use-linux-http"
 
 if [[ $UNINSTALL == 1 ]]; then
     systemctl --user disable --now "$NAME.service" 2>/dev/null || true
@@ -55,10 +55,10 @@ if [[ ! -s "$CONF/http.token" ]]; then
 fi
 chmod 600 "$CONF/http.token"
 {
-    echo "NEXREMOTE_HOST=$HOST"
-    echo "NEXREMOTE_PORT=$PORT"
-    echo "NEXREMOTE_TOKEN_FILE=$CONF/http.token"
-    [[ -n "$CERT" ]] && echo "NEXREMOTE_TLS_CERT=$CERT" && echo "NEXREMOTE_TLS_KEY=$KEY"
+    echo "CUL_HOST=$HOST"
+    echo "CUL_PORT=$PORT"
+    echo "CUL_TOKEN_FILE=$CONF/http.token"
+    [[ -n "$CERT" ]] && echo "CUL_TLS_CERT=$CERT" && echo "CUL_TLS_KEY=$KEY"
     true
 } > "$CONF/http.env"
 

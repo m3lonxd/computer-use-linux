@@ -17,6 +17,6 @@
     }
   ],
   "redirects": [
-    { "source": "/github", "destination": "https://github.com/1337om3r/nexremote", "permanent": false }
+    { "source": "/github", "destination": "https://github.com/m3lonxd/computer-use-linux", "permanent": false }
   ]
 }

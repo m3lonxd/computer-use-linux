@@ -13,7 +13,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-if os.environ.get("NEXR_SANDBOX") != "1":
+if os.environ.get("CUL_SANDBOX") != "1":
     print("  ⊘ yalnızca sandbox'ta (tests/x11_sandbox.sh) — atlandı")
     sys.exit(77)
 try:
@@ -24,8 +24,8 @@ except (ImportError, ValueError) as e:
     print(f"  ⊘ gi/Atspi/Gtk yok ({e}) — atlandı")
     sys.exit(77)
 
-from nexremote import snapshot as snap, trace  # noqa: E402
-from nexremote.nexremote import NexRemote  # noqa: E402
+from computer_use_linux import snapshot as snap, trace  # noqa: E402
+from computer_use_linux.desktop import ComputerUseLinux  # noqa: E402
 
 results: list[tuple[str, bool]] = []
 
@@ -65,7 +65,7 @@ def mode_of(fn) -> list[str]:
 
 app = start_app(extra=30)
 try:
-    nr = NexRemote()
+    nr = ComputerUseLinux()
     gui = nr._gui()
     win_ref = next(w.ref for w in gui.windows() if w.title == "NexTest")
 
@@ -103,9 +103,9 @@ try:
     check("giriş alanının ref'i var", bool(entry_line))
 
     t_res = timed(lambda: nr._resolve_el(inc), 5)
-    os.environ["NEXREMOTE_STRICT"] = "1"
+    os.environ["CUL_STRICT"] = "1"
     t_strict = timed(lambda: nr._resolve_el(inc), 5)
-    del os.environ["NEXREMOTE_STRICT"]
+    del os.environ["CUL_STRICT"]
     check("hızlı yol tam okumadan hızlı", t_res < t_strict, f"{t_res:.1f} ms < {t_strict:.1f} ms")
 
     # --- sıra kayması: yol başka öğeyi gösterir → kimlik tutmaz → tam okuma, doğru öğe
@@ -145,13 +145,13 @@ try:
     time.sleep(0.2)
     check("ikiz sonradan çıkınca hızlı yol saklı yoldakine basar",
           modes and "yol=hızlı" in modes[0] and label(nr) != before, str(modes))
-    os.environ["NEXREMOTE_STRICT"] = "1"
+    os.environ["CUL_STRICT"] = "1"
     try:
         nr.click(inc)
-        check("NEXREMOTE_STRICT=1 ikizi AMBIGUOUS_TARGET ile reddeder", False)
+        check("CUL_STRICT=1 ikizi AMBIGUOUS_TARGET ile reddeder", False)
     except snap.AmbiguousTarget:
-        check("NEXREMOTE_STRICT=1 ikizi AMBIGUOUS_TARGET ile reddeder", True)
-    del os.environ["NEXREMOTE_STRICT"]
+        check("CUL_STRICT=1 ikizi AMBIGUOUS_TARGET ile reddeder", True)
+    del os.environ["CUL_STRICT"]
 
     # --- click_text
     try:
@@ -199,7 +199,7 @@ try:
     check("sonuçsuz find anlık görüntü yazmaz", not hits and len(os.listdir(d)) == n0)
 
     # --- uzun ömürlü süreç: GLib kuyruğu boşaltılınca önbellek güncel kalır
-    nr2 = NexRemote(long_lived=True)
+    nr2 = ComputerUseLinux(long_lived=True)
     gui2 = nr2._gui()
     w2 = next(w.ref for w in gui2.windows() if w.title == "NexTest")
     def tamam(root):

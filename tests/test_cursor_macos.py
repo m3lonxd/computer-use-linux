@@ -13,8 +13,8 @@ from unittest import mock
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote import agent_cursor as ac  # noqa: E402
-from nexremote import maccursor as mc  # noqa: E402
+from computer_use_linux import agent_cursor as ac  # noqa: E402
+from computer_use_linux import maccursor as mc  # noqa: E402
 
 results: list[bool] = []
 

@@ -20,8 +20,8 @@ if sys.platform != "win32":
     sys.exit(0)
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "core"))
-from nexremote import agent_cursor as ac  # noqa: E402
-from nexremote import wincursor as wc  # noqa: E402
+from computer_use_linux import agent_cursor as ac  # noqa: E402
+from computer_use_linux import wincursor as wc  # noqa: E402
 
 results: list[tuple[str, bool, str]] = []
 
@@ -116,10 +116,10 @@ def make_trap():
     wcx.cbSize = ctypes.sizeof(wc.WNDCLASSEXW)
     wcx.lpfnWndProc = TRAP_PROC
     wcx.hInstance = k.GetModuleHandleW(None)
-    wcx.lpszClassName = "NexRemoteClickTrap"
+    wcx.lpszClassName = "ComputerUseLinuxClickTrap"
     wcx.hbrBackground = 6                                     # COLOR_WINDOW+1
     u.RegisterClassExW(ctypes.byref(wcx))
-    hwnd = u.CreateWindowExW(0, "NexRemoteClickTrap", "trap", 0x80000000 | 0x10000000,  # POPUP|VISIBLE
+    hwnd = u.CreateWindowExW(0, "ComputerUseLinuxClickTrap", "trap", 0x80000000 | 0x10000000,  # POPUP|VISIBLE
                              200, 150, 600, 400, None, None, wcx.hInstance, None)
     u.ShowWindow(hwnd, 5)
     u.UpdateWindow(hwnd)
@@ -184,7 +184,7 @@ def main() -> int:
           f"tuzak {clicks[:1]} (beklenen ≈ (202, 154))")
     check("odak çalınmadı", u.GetForegroundWindow() == fg and fg != cur.hwnd, f"ön={u.GetForegroundWindow()} önce={fg}")
 
-    shot = os.environ.get("NEXR_CURSOR_SHOT")
+    shot = os.environ.get("CUL_CURSOR_SHOT")
     if shot:                                                  # gözle inceleme için 120x120 PPM
         px = grab(360, 260, 120, 120)
         with open(shot, "wb") as f:
@@ -204,8 +204,8 @@ def main() -> int:
     check("close pencereyi yok eder", cur.hwnd is None)
 
     # ----------------------------------------------- daemon (TCP + belirteç)
-    from nexremote.nexremote import NexRemote
-    nr = NexRemote()
+    from computer_use_linux.desktop import ComputerUseLinux
+    nr = ComputerUseLinux()
     check("facade.pointer_available Windows'ta", nr.pointer_available()[0], nr.pointer_available()[1])
     try:
         ok = nr.cursor(700, 500, click=True)

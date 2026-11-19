@@ -16,14 +16,14 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "core"))
-os.environ["NEXREMOTE_HOME"] = tempfile.mkdtemp(prefix="nexremote-snap-test-")
-os.environ["NEXREMOTE_CURSOR"] = "0"
+os.environ["CUL_HOME"] = tempfile.mkdtemp(prefix="computer-use-linux-snap-test-")
+os.environ["CUL_CURSOR"] = "0"
 
-from nexremote import snapshot as snap                      # noqa: E402
-from nexremote.base import Backend                          # noqa: E402
-from nexremote.lease import LeaseTimeout, input_lease       # noqa: E402
-from nexremote.models import Capability, Element, Role, Window  # noqa: E402
-from nexremote.nexremote import NexRemote                   # noqa: E402
+from computer_use_linux import snapshot as snap                      # noqa: E402
+from computer_use_linux.base import Backend                          # noqa: E402
+from computer_use_linux.lease import LeaseTimeout, input_lease       # noqa: E402
+from computer_use_linux.models import Capability, Element, Role, Window  # noqa: E402
+from computer_use_linux.desktop import ComputerUseLinux                   # noqa: E402
 
 fails = 0
 
@@ -123,7 +123,7 @@ class FakeDesktop:
 
 
 gui = FakeGui()
-nr = NexRemote(backends=[gui], desktop=FakeDesktop())
+nr = ComputerUseLinux(backends=[gui], desktop=FakeDesktop())
 
 
 def ref_of(text: str, name: str) -> str:
@@ -215,10 +215,10 @@ dt = time.monotonic() - t0
 check("devre dışı düğme etkinleşince tıklanır (bekleme ≥0.4 sn)",
       gui.clicked[-1] == "button:Kaydet" and 0.35 <= dt < 3, f"{dt:.2f} sn")
 gui.spec[0]["enabled"] = False
-os.environ["NEXREMOTE_WAIT"] = "0.3"
+os.environ["CUL_WAIT"] = "0.3"
 ok, msg = raises(lambda: nr.click(rk), snap.ActionTimeout)
 check("etkinleşmeyen öğe TIMEOUT ile reddedilir", ok, msg)
-del os.environ["NEXREMOTE_WAIT"]
+del os.environ["CUL_WAIT"]
 
 print("ANLIK GÖRÜNTÜ — bulma ve alt ağaç")
 gui.spec = [{"role": Role.TAB, "name": "Genel", "actions": ["click"],
@@ -249,7 +249,7 @@ with input_lease():
         nested = True
 check("aynı süreçte iç içe kira kilitlenmez", nested)
 code = ("import os,sys,time;sys.path.insert(0,%r);"
-        "from nexremote.lease import input_lease\n"
+        "from computer_use_linux.lease import input_lease\n"
         "with input_lease():\n print('TUT',flush=True);time.sleep(1.5)") % os.path.join(ROOT, "core")
 p = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True,
                      env=dict(os.environ))

@@ -30,7 +30,7 @@ def least_squares(fun, p0, args=(), loss=None, f_scale=1.0, iters=300):
             if lam > 1e9: return _R(p)
         if np.linalg.norm(step) < 1e-10 * (1 + np.linalg.norm(p)): break
     return _R(p)
-s = open('/home/omarchy/nexremote/site/assets/site.js', encoding='utf-8').read()
+s = open(__import__('os').path.join(__import__('os').path.dirname(__file__), '..', '..', 'assets', 'site.js'), encoding='utf-8').read()
 K = {m.group(1): np.array(list(map(int, m.group(2).split(','))), float).reshape(4, 2) for m in re.finditer(r'\["([^"]+)",\[([\d,]+)\]\]', s)}
 C2 = {k: v.mean(0) for k, v in K.items()}
 U = 19.05  # mm

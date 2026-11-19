@@ -1,57 +1,49 @@
 #!/usr/bin/env bash
-# NexRemote kurulum — wrapper'ları kurar, bağımlılıkları kontrol eder.
+# Computer Use Linux kurulum — wrapper'ları kurar, bağımlılıkları kontrol eder.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BIN="${CUL_BIN:-${NEXREMOTE_BIN:-$HOME/bin}}"
+BIN="${CUL_BIN:-$HOME/bin}"
 mkdir -p "$BIN"
 
-echo "NexRemote kurulumu"
+echo "Computer Use Linux kurulumu"
 echo "  proje : $ROOT"
 echo "  bin   : $BIN"
 echo
 
-# --- wrapper: nexremote (CLI) ---
-cat > "$BIN/nexremote" <<EOF
+# --- wrapper: computer-use-linux (CLI) ---
+cat > "$BIN/computer-use-linux" <<EOF
 #!/bin/bash
 export PYTHONPATH="$ROOT/core:$ROOT/adapters/cli:\$PYTHONPATH"
-exec python3 "$ROOT/adapters/cli/nexremote_cli.py" "\$@"
+exec python3 "$ROOT/adapters/cli/computer_use_linux_cli.py" "\$@"
 EOF
-chmod +x "$BIN/nexremote"
+chmod +x "$BIN/computer-use-linux"
 
-# --- wrapper: nexremote-agent (metin protokolü) ---
-cat > "$BIN/nexremote-agent" <<EOF
+# --- wrapper: computer-use-linux-agent (metin protokolü) ---
+cat > "$BIN/computer-use-linux-agent" <<EOF
 #!/bin/bash
 export PYTHONPATH="$ROOT/core:$ROOT/adapters/cli:\$PYTHONPATH"
 exec python3 "$ROOT/adapters/cli/agent_loop.py" "\$@"
 EOF
-chmod +x "$BIN/nexremote-agent"
+chmod +x "$BIN/computer-use-linux-agent"
 
-# --- wrapper: nexremote-http ---
-cat > "$BIN/nexremote-http" <<EOF
+# --- wrapper: computer-use-linux-http ---
+cat > "$BIN/computer-use-linux-http" <<EOF
 #!/bin/bash
 export PYTHONPATH="$ROOT/core:\$PYTHONPATH"
 exec python3 "$ROOT/adapters/http/server.py" "\$@"
 EOF
-chmod +x "$BIN/nexremote-http"
+chmod +x "$BIN/computer-use-linux-http"
 
-# --- wrapper: nexremote-mcp ---
-cat > "$BIN/nexremote-mcp" <<EOF
+# --- wrapper: computer-use-linux-mcp ---
+cat > "$BIN/computer-use-linux-mcp" <<EOF
 #!/bin/bash
 export PYTHONPATH="$ROOT/core:$ROOT/adapters/mcp:\$PYTHONPATH"
 exec python3 "$ROOT/adapters/mcp/server.py" "\$@"
 EOF
-chmod +x "$BIN/nexremote-mcp"
-
-# --- yeni görünen ad: computer-use-linux* (eski nexremote* takma ad olarak kalır) ---
-for old in nexremote nexremote-agent nexremote-http nexremote-mcp; do
-  new="computer-use-linux${old#nexremote}"
-  cp "$BIN/$old" "$BIN/$new"
-  chmod +x "$BIN/$new"
-done
+chmod +x "$BIN/computer-use-linux-mcp"
 
 echo "✓ wrapper'lar kuruldu: computer-use-linux, computer-use-linux-agent, computer-use-linux-http, computer-use-linux-mcp"
-echo "  (eski nexremote* komutları takma ad olarak çalışmaya devam eder)"
 echo
 
 # --- bağımlılık kontrolü ---

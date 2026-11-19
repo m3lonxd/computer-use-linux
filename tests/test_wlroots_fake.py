@@ -14,7 +14,7 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-from nexremote.platforms.wlroots import Hyprland, Sway  # noqa: E402
+from computer_use_linux.platforms.wlroots import Hyprland, Sway  # noqa: E402
 
 results: list[bool] = []
 
@@ -45,7 +45,7 @@ HYPR_CLIENTS = [
     {"address": "0x55aa01", "mapped": True, "hidden": False, "at": [10, 40], "size": [900, 700],
      "workspace": {"id": 1, "name": "1"}, "class": "kitty", "title": "kitty", "pid": 444},
     {"address": "0x55aa02", "mapped": True, "hidden": False, "at": [0, 0], "size": [800, 600],
-     "workspace": {"id": -98, "name": "special:nexremote_min"}, "class": "org.gnome.Nautilus",
+     "workspace": {"id": -98, "name": "special:cul_min"}, "class": "org.gnome.Nautilus",
      "title": "Dosyalar", "pid": 555},
     {"address": "0x55aa03", "mapped": False, "at": [0, 0], "size": [0, 0],
      "workspace": {"id": 1, "name": "1"}, "class": "x", "title": "gizli", "pid": 666},
@@ -125,7 +125,7 @@ h.act("0x55aa02", "activate")
 h.act("0x55aa01", "close")
 acts = [c for c in calls() if c[:1] == ["dispatch"]]
 check("hyprland: dispatch komutları", acts == [
-    ["dispatch", "movetoworkspacesilent", "special:nexremote_min,address:0x55aa01"],
+    ["dispatch", "movetoworkspacesilent", "special:cul_min,address:0x55aa01"],
     ["dispatch", "movetoworkspace", "e+0,address:0x55aa02"],
     ["dispatch", "focuswindow", "address:0x55aa02"],
     ["dispatch", "closewindow", "address:0x55aa01"]], str(acts))

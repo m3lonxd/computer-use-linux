@@ -5,22 +5,22 @@
 #   tests/sandbox.sh <komut...>     komutu sandbox ortamında çalıştırır
 #
 # Komut çalışırken şu değişkenler tanımlıdır:
-#   WAYLAND_DISPLAY=nexr-sbx-$$   XDG_RUNTIME_DIR=<geçici>   NEXR_SANDBOX=1
+#   WAYLAND_DISPLAY=cul-sbx-$$   XDG_RUNTIME_DIR=<geçici>   CUL_SANDBOX=1
 set -euo pipefail
 
-if [[ "${NEXR_SANDBOX_INNER:-}" != 1 ]]; then
-    export NEXR_SANDBOX_INNER=1
+if [[ "${CUL_SANDBOX_INNER:-}" != 1 ]]; then
+    export CUL_SANDBOX_INNER=1
     exec dbus-run-session -- "$0" "$@"
 fi
 
-ROOT="$(mktemp -d /tmp/nexr-sandbox.XXXXXX)"
+ROOT="$(mktemp -d /tmp/cul-sandbox.XXXXXX)"
 chmod 700 "$ROOT"
 mkdir -p "$ROOT"/{run,config,data,cache}
 export XDG_RUNTIME_DIR="$ROOT/run" XDG_CONFIG_HOME="$ROOT/config" \
        XDG_DATA_HOME="$ROOT/data" XDG_CACHE_HOME="$ROOT/cache"
 export XDG_CURRENT_DESKTOP=KDE XDG_SESSION_TYPE=wayland KDE_FULL_SESSION=true
 export QT_QPA_PLATFORM=wayland QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 QT_ACCESSIBILITY=1
-export WAYLAND_DISPLAY="nexr-sbx-$$" NEXR_SANDBOX=1
+export WAYLAND_DISPLAY="cul-sbx-$$" CUL_SANDBOX=1
 unset DISPLAY
 # D-Bus'ın kendiliğinden başlattığı servisler (portal, a11y) bu ortamı görsün
 dbus-update-activation-environment XDG_RUNTIME_DIR XDG_CONFIG_HOME XDG_DATA_HOME \
@@ -51,5 +51,5 @@ for _ in $(seq 100); do
     busctl --user status org.freedesktop.portal.Desktop >/dev/null 2>&1 && break; sleep 0.1
 done
 
-export NEXR_SANDBOX_LOGS="$ROOT"
+export CUL_SANDBOX_LOGS="$ROOT"
 "$@"

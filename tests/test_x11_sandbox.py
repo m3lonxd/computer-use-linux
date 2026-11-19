@@ -17,11 +17,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CORE = os.path.join(HERE, "..", "core")
 sys.path.insert(0, CORE)
 
-if os.environ.get("NEXR_SANDBOX_KIND") != "x11":
+if os.environ.get("CUL_SANDBOX_KIND") != "x11":
     sys.exit("bu test yalnızca tests/x11_sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
-from nexremote import NexRemote                    # noqa: E402
-from nexremote.platforms import Unsupported, detect  # noqa: E402
+from computer_use_linux import ComputerUseLinux                    # noqa: E402
+from computer_use_linux.platforms import Unsupported, detect  # noqa: E402
 
 LOG = os.path.join(os.environ["XDG_RUNTIME_DIR"], "probe.jsonl")
 results: list[tuple[str, bool]] = []
@@ -61,7 +61,7 @@ def last_text() -> str:
 
 def cli(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run([sys.executable, os.path.join(HERE, "..", "adapters", "cli",
-                                                        "nexremote_cli.py"), *args],
+                                                        "computer_use_linux_cli.py"), *args],
                           capture_output=True, text=True, timeout=30,
                           env={**os.environ, "PYTHONPATH": CORE})
 
@@ -80,7 +80,7 @@ try:
           json.dumps({k: v["detail"] for k, v in caps.items()}, ensure_ascii=False))
 
     wins = d.windows()
-    w = next((w for w in wins if w.title == "nexremote-probe"), None)
+    w = next((w for w in wins if w.title == "computer-use-linux-probe"), None)
     check("windows: sonda listelendi (pid + boyut)",
           w is not None and w.pid == probe.pid and w.w >= 1000 and w.h >= 700, str(w))
 
@@ -150,7 +150,7 @@ try:
     check("ekran görüntüsü boş değil", len(set(img.convert("L").getdata())) > 2)
 
     # facade + CLI uçtan uca
-    nr = NexRemote()
+    nr = ComputerUseLinux()
     check("facade windows win:<id>", any(x.ref == f"win:{w.id}" for x in nr.windows()))
     r = cli("--json", "caps")
     check("CLI caps platform=x11", r.returncode == 0 and json.loads(r.stdout)["platform"] == "x11",

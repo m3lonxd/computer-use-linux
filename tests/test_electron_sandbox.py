@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Electron uygulamasının isimle kontrolü — İZOLE sandbox'ta.
 
-    NEXR_ELECTRON=/yol/electron tests/sandbox.sh python3 tests/test_electron_sandbox.py
+    CUL_ELECTRON=/yol/electron tests/sandbox.sh python3 tests/test_electron_sandbox.py
 
 Bayraksız açılan Electron ağaç yayınlamaz (hata ve ipucu beklenir);
-`nexremote launch` ile açılan aynı uygulamanın butonu ağaçtaki ref'iyle
+`computer-use-linux launch` ile açılan aynı uygulamanın butonu ağaçtaki ref'iyle
 tıklanır ve sayfadaki değişiklik ağaçtan geri okunur. Electron yoksa atlanır.
 """
 import json
@@ -18,12 +18,12 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
-if os.environ.get("NEXR_SANDBOX") != "1":
+if os.environ.get("CUL_SANDBOX") != "1":
     sys.exit("bu test yalnızca tests/sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
 from test_input_sandbox import check, results  # noqa: E402
 
-ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "NEXREMOTE_CURSOR": "0"}
+ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "CUL_CURSOR": "0"}
 
 MAIN_JS = r"""
 const {app, BrowserWindow} = require('electron');
@@ -39,7 +39,7 @@ app.whenReady().then(() => {
 
 
 def nx(*args: str, timeout: float = 60) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
+    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/computer_use_linux_cli.py", *args],
                           capture_output=True, text=True, timeout=timeout, env=ENV)
 
 
@@ -56,16 +56,16 @@ def tree_of(ref: str, want: str, timeout: float = 10) -> str:
 
 
 def main() -> int:
-    electron = os.environ.get("NEXR_ELECTRON") or shutil.which("electron")
+    electron = os.environ.get("CUL_ELECTRON") or shutil.which("electron")
     if not electron:
-        print("  ⊘ electron yok — NEXR_ELECTRON=/yol/electron ile çalıştırın")
+        print("  ⊘ electron yok — CUL_ELECTRON=/yol/electron ile çalıştırın")
         print("ELECTRON: atlandı")
         return 0
-    app = tempfile.mkdtemp(prefix="nexr-electron-")
+    app = tempfile.mkdtemp(prefix="cul-electron-")
     with open(os.path.join(app, "main.js"), "w") as f:
         f.write(MAIN_JS)
     with open(os.path.join(app, "package.json"), "w") as f:
-        json.dump({"name": "nexr-electron-probe", "main": "main.js"}, f)
+        json.dump({"name": "cul-electron-probe", "main": "main.js"}, f)
     base = [electron, "--ozone-platform=wayland", "--no-sandbox", app]
     pids: list[int] = []
     try:
@@ -86,7 +86,7 @@ def main() -> int:
             out = nx("tree", "--window", ref).stdout
             check("bayraksız: buton ağaçta yok", "Kaydet" not in out)
             check("bayraksız: Electron ipucu + launch önerisi",
-                  "Electron" in out and "nexremote launch" in out, out.strip()[-90:])
+                  "Electron" in out and "computer-use-linux launch" in out, out.strip()[-90:])
 
         # 2) launch: bayrak eklenir, pencere ref'i döner
         r = nx("launch", "--wait", "25", *base, "bayrakli-pencere", "--json")

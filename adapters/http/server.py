@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NexRemote HTTP adaptörü — YALNIZCA stdlib.
+"""Computer Use Linux HTTP adaptörü — YALNIZCA stdlib.
 
 Kabuk komutu çalıştıramayan ama HTTP konuşabilen harness'lar için
 (uzak ajanlar, web arayüzleri, diğer makinelerdeki ajanlar). Sıfır bağımlılık.
@@ -40,7 +40,7 @@ Güvenlik: varsayılan olarak yalnızca localhost'a bağlanır. Başka bir aray�
 token'sız (veya 24 karakterden kısa token'la) bağlanmayı REDDEDER — masaüstü
 kontrolü ağa açılmış olurdu. Token verilince Authorization: Bearer <token>
 zorunludur; sabit zamanlı karşılaştırılır. Token'ı komut satırına değil
-NEXREMOTE_TOKEN'a ya da --token-file'a koyun (ps çıktısında görünmesin).
+CUL_TOKEN'a ya da --token-file'a koyun (ps çıktısında görünmesin).
 --tls-cert/--tls-key ile HTTPS; ağ üzerinden düz HTTP'de token okunabilir,
 TLS yoksa SSH tüneli kullanın. Kurulum: deploy/install-service.sh.
 
@@ -67,13 +67,8 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 for cand in (os.path.join(_HERE, "..", "..", "core"),
              os.path.join(_HERE, "..", "core")):
     cand = os.path.abspath(cand)
-    if os.path.isdir(os.path.join(cand, "nexremote")) and cand not in sys.path:
+    if os.path.isdir(os.path.join(cand, "computer_use_linux")) and cand not in sys.path:
         sys.path.insert(0, cand)
-
-# Yeni ad: CUL_* ortam değişkenleri eski NEXREMOTE_* adlarına aktarılır; eski adlar da geçerli.
-for _k, _v in list(os.environ.items()):
-    if _k.startswith("CUL_"):
-        os.environ.setdefault("NEXREMOTE_" + _k[4:], _v)
 
 TOKEN = None
 ALLOW_ORIGINS: set[str] = set()
@@ -93,8 +88,8 @@ class BadRequest(Exception):
 def get_nr():
     global _NR
     if _NR is None:
-        from nexremote import NexRemote
-        _NR = NexRemote(long_lived=True)
+        from computer_use_linux import ComputerUseLinux
+        _NR = ComputerUseLinux(long_lived=True)
     return _NR
 
 
@@ -250,7 +245,7 @@ def _dispatch(method: str, body: dict):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "NexRemote"
+    server_version = "ComputerUseLinux"
     timeout = 60   # sessiz bağlantı bir iş parçacığını sonsuza dek tutmasın
 
     def _send(self, code: int, obj) -> None:
@@ -353,15 +348,15 @@ class Handler(BaseHTTPRequestHandler):
 
 def main(argv=None) -> int:
     global TOKEN
-    p = argparse.ArgumentParser(description="NexRemote HTTP adaptörü")
+    p = argparse.ArgumentParser(description="Computer Use Linux HTTP adaptörü")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8788)
-    p.add_argument("--token", default=os.environ.get("NEXREMOTE_TOKEN"),
-                   help="Bearer token (tercihen NEXREMOTE_TOKEN ya da --token-file)")
-    p.add_argument("--token-file", default=os.environ.get("NEXREMOTE_TOKEN_FILE"),
+    p.add_argument("--token", default=os.environ.get("CUL_TOKEN"),
+                   help="Bearer token (tercihen CUL_TOKEN ya da --token-file)")
+    p.add_argument("--token-file", default=os.environ.get("CUL_TOKEN_FILE"),
                    help="token'ı bu dosyadan oku (ilk satır)")
-    p.add_argument("--tls-cert", default=os.environ.get("NEXREMOTE_TLS_CERT"))
-    p.add_argument("--tls-key", default=os.environ.get("NEXREMOTE_TLS_KEY"))
+    p.add_argument("--tls-cert", default=os.environ.get("CUL_TLS_CERT"))
+    p.add_argument("--tls-key", default=os.environ.get("CUL_TLS_KEY"))
     p.add_argument("--gen-token", action="store_true", help="rastgele token yaz ve çık")
     p.add_argument("--allow-origin", action="append", default=[],
                    help="bu tarayıcı kökeninden gelen isteklere izin ver (tekrarlanabilir)")
@@ -414,7 +409,7 @@ def main(argv=None) -> int:
         srv.socket = ctx.wrap_socket(srv.socket, server_side=True,
                                      do_handshake_on_connect=False)
         scheme = "https"
-    print(f"NexRemote HTTP: {scheme}://{a.host}:{a.port}  (token: {'var' if TOKEN else 'yok'})",
+    print(f"Computer Use Linux HTTP: {scheme}://{a.host}:{a.port}  (token: {'var' if TOKEN else 'yok'})",
           flush=True)
     try:
         srv.serve_forever()

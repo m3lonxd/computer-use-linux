@@ -18,10 +18,10 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
-if os.environ.get("NEXR_SWAY") != "1":
+if os.environ.get("CUL_SWAY") != "1":
     sys.exit("bu test yalnızca tests/sway_sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
-ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "NEXREMOTE_CURSOR": "0"}
+ENV = {**os.environ, "PYTHONPATH": f"{ROOT}/core:{ROOT}/adapters/cli", "CUL_CURSOR": "0"}
 LOG = os.path.join(os.environ["XDG_RUNTIME_DIR"], "probe.jsonl")
 results: list[tuple[str, bool, str]] = []
 
@@ -32,7 +32,7 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 
 
 def nx(*args: str, timeout: float = 30) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/nexremote_cli.py", *args],
+    return subprocess.run([sys.executable, f"{ROOT}/adapters/cli/computer_use_linux_cli.py", *args],
                           capture_output=True, text=True, timeout=timeout, env=ENV)
 
 
@@ -72,7 +72,7 @@ def main() -> int:
         check("caps: Sway IPC faresi", "Sway IPC" in caps,
               next((ln.strip() for ln in caps.splitlines() if "fare" in ln), ""))
         ws = json.loads(nx("windows", "--json").stdout or "[]")
-        win = next((w for w in ws if w.get("title") == "nexremote-probe"), None)
+        win = next((w for w in ws if w.get("title") == "computer-use-linux-probe"), None)
         check("windows: pencere Sway ağacından geldi", bool(win), str(win))
 
         n = len(events())

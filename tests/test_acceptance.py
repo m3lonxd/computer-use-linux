@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NexRemote kabul testleri — gerçek dünya senaryoları.
+"""Computer Use Linux kabul testleri — gerçek dünya senaryoları.
 
 Çalıştır:  python3 tests/test_acceptance.py
 Kabul kriterleri:
@@ -36,8 +36,8 @@ def skip(name):
 
 
 def main() -> int:
-    from nexremote import NexRemote
-    nr = NexRemote()
+    from computer_use_linux import ComputerUseLinux
+    nr = ComputerUseLinux()
     tui = nr.backends.get("tui")
     gui = nr.backends.get("gui")
 
@@ -46,8 +46,8 @@ def main() -> int:
         try:
             r = nr.run("echo KALICI-ABC", session="acc1")
             assert r.exit_code == 0, f"run exit {r.exit_code}"
-            # YENİ bir NexRemote örneği = yeni "çağrı" simülasyonu
-            nr2 = NexRemote()
+            # YENİ bir Computer Use Linux örneği = yeni "çağrı" simülasyonu
+            nr2 = ComputerUseLinux()
             scr = nr2.read_screen("acc1")
             assert "KALICI-ABC" in scr, f"ekranda yok: {scr[-200:]!r}"
             ok("run → yeni örnekte screen okundu")
@@ -67,7 +67,7 @@ def main() -> int:
             nr.send_keys("print(6*7)", session="acc2")
             nr.send_keys("Enter", session="acc2")
             time.sleep(0.6)
-            nr3 = NexRemote()
+            nr3 = ComputerUseLinux()
             scr = nr3.read_screen("acc2")
             assert "42" in scr, f"42 yok: {scr[-200:]!r}"
             ok("REPL'e kod → 42 okundu")
@@ -149,7 +149,7 @@ def main() -> int:
             f.write(
                 "import sys\np=sys.stdin.read()\n"
                 "n=p.count('ARAÇ SONUCU')\n"
-                "if n==0: print('nexremote run \"echo ACC-OK\"')\n"
+                "if n==0: print('computer-use-linux run \"echo ACC-OK\"')\n"
                 "else: print('DONE: bitti')\n")
         r = subprocess.run(
             [sys.executable, os.path.join(ROOT, "adapters", "cli", "agent_loop.py"),

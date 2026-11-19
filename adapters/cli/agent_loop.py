@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""NexRemote metin-protokol ajan döngüsü — TOOL-CALLING OLMAYAN MODELLER İÇİN.
+"""Computer Use Linux metin-protokol ajan döngüsü — TOOL-CALLING OLMAYAN MODELLER İÇİN.
 
 Fikir: Metin üretebilen HER model (proxy'lenmiş CLI, ollama, uzak API, düz
-sohbet modeli) bir ajan olabilir. Model `nexremote ...` komutlarını satır
+sohbet modeli) bir ajan olabilir. Model `computer-use-linux ...` komutlarını satır
 olarak yazar; bu wrapper onları yakalar, çalıştırır ve sonucu geri besler.
 Böylece tool-calling desteği olmayan modeller bile masaüstünü/terminali
 görüp kontrol eder.
@@ -15,16 +15,16 @@ Bu yüzden herhangi bir CLI/LLM ile çalışır:
   --model-cmd "aider --message-only"      (örnek)
 
 Kullanım:
-  nexremote-agent --model-cmd "ollama run qwen2.5" \
+  computer-use-linux-agent --model-cmd "ollama run qwen2.5" \
       --goal "Hesap makinesini aç, 7 çarpı 8 hesapla, sonucu ekrandan oku."
 
 Protokol (modelin uyması gereken):
-  - Eylem için satır:   nexremote <alt-komut> [args]      ya da  TOOL: nexremote ...
+  - Eylem için satır:   computer-use-linux <alt-komut> [args]      ya da  TOOL: computer-use-linux ...
   - Bir turda BİRDEN ÇOK satır yazılabilir: sırayla çalışır, ilk hatada durur
     (her eylem için ayrı model turu beklemek yavaştır).
   - Bitince satır:      DONE: <özet>   (aynı turdaki eylemler önce çalışır; hata
     olursa görev bitmiş sayılmaz)
-  - Düşünce serbest metin; yalnızca `nexremote` ile başlayan satırlar çalışır.
+  - Düşünce serbest metin; yalnızca `computer-use-linux` ile başlayan satırlar çalışır.
 """
 from __future__ import annotations
 
@@ -41,33 +41,33 @@ for p in (CORE, CLI):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-_TOOL_RE = re.compile(r"^\s*(?:TOOL:\s*)?(nexremote\s+.+?)\s*$", re.MULTILINE)
+_TOOL_RE = re.compile(r"^\s*(?:TOOL:\s*)?(computer-use-linux\s+.+?)\s*$", re.MULTILINE)
 _DONE_RE = re.compile(r"^\s*DONE:\s*(.*)$", re.MULTILINE)
 
 SYSTEM = """Sen bir masaüstü/terminal kontrol ajanısın. Görevi adım adım yaparsın.
 
-ELİNDEKİ TEK ARAÇ: `nexremote` kabuk komutu. Kullanılabilir alt komutlar:
-  nexremote observe                  # İLK BUNU YAP: pencereler (win:{..}) + açık terminaller
-  nexremote tree --window REF -i     # eyleme açık öğeler; satırlar ref=@s…:eN ile biter
-  nexremote click REF --after        # öğeye tıkla + ekranda neyin değiştiğini gör
-  nexremote click-text "Kaydet"      # adıyla bul ve tıkla (tek adım)
-  nexremote fill REF "metin" --enter # alanı doldur ve Enter
-  nexremote wait --element "Tamam"   # görünene kadar bekle (uyuyup tekrar bakma)
-  nexremote find "Ad" --window REF   # öğe ara -> ref döner
-  nexremote launch PROGRAM           # Electron'u ağacı açık başlat (ağaç boş + ipucu çıkarsa)
-  nexremote set-text REF "metin"     # alanın içeriğini değiştir
-  nexremote window REF activate      # pencereyi öne getir (yazmadan önce)
-  nexremote type "metin"             # odaktaki pencereye yaz
-  nexremote key "ctrl+s"             # tuş kombinasyonu
-  nexremote click X Y                # ekran koordinatına gerçek tık (--right, --double)
-  nexremote scroll N --at X Y        # tekerlek (+aşağı / -yukarı)
-  nexremote terms                    # masaüstündeki açık terminaller
-  nexremote term-read REF            # terminalin ekranını oku
-  nexremote term-send REF "metin" --enter    # terminale yaz (--key C-c)
-  nexremote run "komut"              # kendi terminalinde komut çalıştır, çıktıyı al
+ELİNDEKİ TEK ARAÇ: `computer-use-linux` kabuk komutu. Kullanılabilir alt komutlar:
+  computer-use-linux observe                  # İLK BUNU YAP: pencereler (win:{..}) + açık terminaller
+  computer-use-linux tree --window REF -i     # eyleme açık öğeler; satırlar ref=@s…:eN ile biter
+  computer-use-linux click REF --after        # öğeye tıkla + ekranda neyin değiştiğini gör
+  computer-use-linux click-text "Kaydet"      # adıyla bul ve tıkla (tek adım)
+  computer-use-linux fill REF "metin" --enter # alanı doldur ve Enter
+  computer-use-linux wait --element "Tamam"   # görünene kadar bekle (uyuyup tekrar bakma)
+  computer-use-linux find "Ad" --window REF   # öğe ara -> ref döner
+  computer-use-linux launch PROGRAM           # Electron'u ağacı açık başlat (ağaç boş + ipucu çıkarsa)
+  computer-use-linux set-text REF "metin"     # alanın içeriğini değiştir
+  computer-use-linux window REF activate      # pencereyi öne getir (yazmadan önce)
+  computer-use-linux type "metin"             # odaktaki pencereye yaz
+  computer-use-linux key "ctrl+s"             # tuş kombinasyonu
+  computer-use-linux click X Y                # ekran koordinatına gerçek tık (--right, --double)
+  computer-use-linux scroll N --at X Y        # tekerlek (+aşağı / -yukarı)
+  computer-use-linux terms                    # masaüstündeki açık terminaller
+  computer-use-linux term-read REF            # terminalin ekranını oku
+  computer-use-linux term-send REF "metin" --enter    # terminale yaz (--key C-c)
+  computer-use-linux run "komut"              # kendi terminalinde komut çalıştır, çıktıyı al
 
 KURALLAR:
-- Her eylem bir satır: `nexremote ...`. Bildiğin adımları AYNI turda alt alta yaz;
+- Her eylem bir satır: `computer-use-linux ...`. Bildiğin adımları AYNI turda alt alta yaz;
   sırayla çalışırlar, ilk hatada durulur ve sonuçları birlikte görürsün.
 - Doğrulama için ayrı tur harcama: son eyleme `--after` ekle (ne değiştiğini yazar).
 - Ref'ler arayüz değişse de geçerli kalır; STALE_REF/AMBIGUOUS_TARGET gelirse yeni `tree -i`.
@@ -88,17 +88,17 @@ def call_model(model_cmd: str, prompt: str, timeout: float = 120.0) -> str:
 
 
 def run_tool(line: str, timeout: float = 60.0) -> tuple[str, bool]:
-    """nexremote satırını çalıştır: (çıktı, başarılı mı)."""
+    """computer-use-linux satırını çalıştır: (çıktı, başarılı mı)."""
     import shlex
     try:
         argv = shlex.split(line.strip())
     except ValueError as e:
         return f"[araç satırı ayrıştırılamadı: {e}]", False
-    if not argv or argv[0] != "nexremote":
+    if not argv or argv[0] != "computer-use-linux":
         return "[geçersiz araç satırı]", False
-    # `nexremote` PATH'te olmayabilir — CLI'yi bu Python ile doğrudan çağır.
+    # `computer-use-linux` PATH'te olmayabilir — CLI'yi bu Python ile doğrudan çağır.
     # Kabuk kullanılmaz: model çıktısı kabukta yorumlanmaz, Windows'ta da aynı çalışır.
-    cmd = [sys.executable, os.path.join(CLI, "nexremote_cli.py"), *argv[1:]]
+    cmd = [sys.executable, os.path.join(CLI, "computer_use_linux_cli.py"), *argv[1:]]
     env = dict(os.environ)
     env["PYTHONPATH"] = os.pathsep.join(p for p in (CORE, CLI, env.get("PYTHONPATH", "")) if p)
     env.setdefault("PYTHONIOENCODING", "utf-8")
@@ -134,7 +134,7 @@ def _trim(history: list[str], keep: int, head: int = 3, old_limit: int = 1500) -
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description="NexRemote metin-protokol ajan döngüsü")
+    p = argparse.ArgumentParser(description="Computer Use Linux metin-protokol ajan döngüsü")
     p.add_argument("--model-cmd", required=True,
                    help="Model komutu (stdin=prompt, stdout=metin)")
     p.add_argument("--goal", required=True, help="Yapılacak görev")
@@ -146,7 +146,7 @@ def main(argv=None) -> int:
 
     history: list[str] = [SYSTEM,
                           f"\nGÖREV: {a.goal}\n",
-                          "İlk adımın: `nexremote caps` çalıştır ve ne "
+                          "İlk adımın: `computer-use-linux caps` çalıştır ve ne "
                           "yapabildiğini öğren.\n"]
     steps = 0
     idle = 0                       # art arda araçsız tur
@@ -169,7 +169,7 @@ def main(argv=None) -> int:
             idle += 1
             # model araç çağırmadı; ona yol göster
             history.append(f"ASİSTAN: {raw}")
-            history.append("SİSTEM: Geçerli bir `nexremote ...` satırı yaz ya da "
+            history.append("SİSTEM: Geçerli bir `computer-use-linux ...` satırı yaz ya da "
                            "`DONE: ...` ile bitir.")
             if idle >= 3:
                 # üst üste üç turdur araç yok — çıkmazı önle

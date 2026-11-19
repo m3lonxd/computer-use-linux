@@ -36,10 +36,10 @@ def raises(exc, fn, *a, **kw) -> bool:
 
 # ------------------------------------------------------------ içe aktarma
 try:
-    from nexremote.platforms import macos as M
-    from nexremote.backends import ax as AX
-    from nexremote.models import Role
-    from nexremote.platforms.base import Unsupported
+    from computer_use_linux.platforms import macos as M
+    from computer_use_linux.backends import ax as AX
+    from computer_use_linux.models import Role
+    from computer_use_linux.platforms.base import Unsupported
     check("Linux'ta import: platforms.macos + backends.ax", True)
 except Exception as e:                          # içe aktarma çökerse kalan testler anlamsız
     check("Linux'ta import: platforms.macos + backends.ax", False, f"{type(e).__name__}: {e}")
@@ -445,7 +445,7 @@ with mock.patch.object(M.time, "sleep"):
     with open(fake, "w") as f:
         f.write(f"#!{sys.executable}\nimport sys\nsys.path.insert(0, {os.path.join(HERE, '..', 'core')!r})\n"
                 f"open({log!r}, 'w').write(' '.join(sys.argv[1:]))\n"
-                "from nexremote.platforms._png import write_png\n"
+                "from computer_use_linux.platforms._png import write_png\n"
                 "write_png(sys.argv[-1], 800, 600, bytes(800 * 600 * 3))\n")
     os.chmod(fake, os.stat(fake).st_mode | stat.S_IEXEC)
     lib.CGDisplayBounds.return_value = M.CGRect(M.CGPoint(0, 0), M.CGSize(400, 300))

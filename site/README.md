@@ -1,7 +1,7 @@
 # Computer Use Linux — tanıtım sitesi
 
-Statik site (framework yok), iki dilli: `/` (EN) ve `/tr/` (TR). Eski adı
-NexRemote; komut artık `computer-use-linux`, eski `nexremote` takma ad; depo `m3lonxd/computer-use-linux`, Python paket adı `nexremote` kalır.
+Statik site (framework yok), iki dilli: `/` (EN) ve `/tr/` (TR). Komut `computer-use-linux`,
+depo `m3lonxd/computer-use-linux`.
 
 ## Yapı
 ```
@@ -16,7 +16,7 @@ site/
 │   ├── site.js         sekmeler, kopyala, kaydırma animasyonları, döngü videoları
 │   └── mark.svg        favicon
 ├── media/              döngü videoları ve posterleri (aşağıya bak)
-├── download/           üretilen indirme paketleri (nexremote.zip / .tar.gz)
+├── download/           üretilen indirme paketleri (computer-use-linux.zip / .tar.gz)
 ├── make_download.sh    paketi yeniden üretir
 └── vercel.json         başlık + yönlendirme kuralları
 ```
@@ -62,7 +62,7 @@ cd site && python3 -m http.server 8899 --bind 127.0.0.1     # http://127.0.0.1:8
 ## Deploy
 Bu çalışmada deploy edilmedi. Yayınlamak için (kullanıcı onayıyla):
 ```bash
-bash site/deploy.sh      # ~/nexremote kökünden
+bash site/deploy.sh      # depo kökünden
 ```
 `vercel --prod`'u doğrudan çalıştırmayın: Hobby planı, commit yazarı ekip
 sahibinin GitHub hesabı olmayan dağıtımı `BLOCKED` bırakır. Betik siteyi Git

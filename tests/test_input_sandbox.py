@@ -3,8 +3,8 @@
 
     tests/sandbox.sh python3 tests/test_input_sandbox.py
 
-Sanal KWin'de tam ekran bir sonda penceresi açar, NexRemote giriş servisini
-başlatır, izin diyaloğunu NexRemote'un kendi AT-SPI okumasıyla onaylar, sonra
+Sanal KWin'de tam ekran bir sonda penceresi açar, Computer Use Linux giriş servisini
+başlatır, izin diyaloğunu Computer Use Linux'un kendi AT-SPI okumasıyla onaylar, sonra
 gerçek olayların pencereye ulaştığını sondanın kaydından doğrular.
 """
 import json
@@ -17,11 +17,11 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "core"))
 
-if os.environ.get("NEXR_SANDBOX") != "1":
+if os.environ.get("CUL_SANDBOX") != "1":
     sys.exit("bu test yalnızca tests/sandbox.sh içinde çalışır (gerçek masaüstüne dokunmaz)")
 
-from nexremote import portal_input as pi          # noqa: E402
-from nexremote.backends.gui import GuiBackend     # noqa: E402
+from computer_use_linux import portal_input as pi          # noqa: E402
+from computer_use_linux.backends.gui import GuiBackend     # noqa: E402
 
 LOG = os.path.join(os.environ["XDG_RUNTIME_DIR"], "probe.jsonl")
 results: list[tuple[str, bool, str]] = []

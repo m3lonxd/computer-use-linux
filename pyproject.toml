@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nexremote"
+name = "computer-use-linux"
 version = "0.7.0"
 description = "AI ajanlarına masaüstü görme + kontrol: pencereler, gerçek fare/klavye, erişilebilirlik ağacı, terminaller"
 readme = "README.md"
@@ -30,23 +30,18 @@ mcp = ["mcp>=1.2"]
 all = ["pillow>=9", "mcp>=1.2"]
 
 [project.scripts]
-computer-use-linux = "nexremote_adapters.cli.nexremote_cli:main"
-computer-use-linux-agent = "nexremote_adapters.cli.agent_loop:main"
-computer-use-linux-http = "nexremote_adapters.http.server:main"
-computer-use-linux-mcp = "nexremote_adapters.mcp.server:main"
-# eski adlar (geriye uyum)
-nexremote = "nexremote_adapters.cli.nexremote_cli:main"
-nexremote-agent = "nexremote_adapters.cli.agent_loop:main"
-nexremote-http = "nexremote_adapters.http.server:main"
-nexremote-mcp = "nexremote_adapters.mcp.server:main"
+computer-use-linux = "computer_use_linux_adapters.cli.computer_use_linux_cli:main"
+computer-use-linux-agent = "computer_use_linux_adapters.cli.agent_loop:main"
+computer-use-linux-http = "computer_use_linux_adapters.http.server:main"
+computer-use-linux-mcp = "computer_use_linux_adapters.mcp.server:main"
 
 [tool.setuptools]
-package-dir = { "nexremote" = "core/nexremote", "nexremote_adapters" = "adapters" }
+package-dir = { "computer_use_linux" = "core/computer_use_linux", "computer_use_linux_adapters" = "adapters" }
 packages = [
-    "nexremote", "nexremote.backends", "nexremote.platforms",
-    "nexremote_adapters", "nexremote_adapters.cli", "nexremote_adapters.http",
-    "nexremote_adapters.mcp", "nexremote_adapters.skill",
+    "computer_use_linux", "computer_use_linux.backends", "computer_use_linux.platforms",
+    "computer_use_linux_adapters", "computer_use_linux_adapters.cli", "computer_use_linux_adapters.http",
+    "computer_use_linux_adapters.mcp", "computer_use_linux_adapters.skill",
 ]
 
 [tool.setuptools.package-data]
-"nexremote_adapters.skill" = ["*.md"]
+"computer_use_linux_adapters.skill" = ["*.md"]

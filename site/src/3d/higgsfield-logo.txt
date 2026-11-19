@@ -1,5 +1,5 @@
 Ek iş (önceki iki deneme bitince): logomuzu referans alarak aynı düzenlemeden 2 deneme daha üret.
-1. Logoyu media_import_url ile içe al: https://raw.githubusercontent.com/m3lonxd/nexremote/feat/computer-use-linux/site/assets/logo.png
+1. Logoyu media_import_url ile içe al: https://raw.githubusercontent.com/m3lonxd/computer-use-linux/master/site/assets/logo.png
 2. Model, oran ve giriş görseli aynı (job 46474540-c42e-449a-bdea-9651d7acfdd0, role image). Logoyu medias'a ikinci referans olarak ekle (modelin kabul ettiği referans rolüyle).
 3. Prompt öncekiyle aynı, sonuna şunu ekle: "The Tux figure and the purple cursor he holds must follow the second reference image (our 2D logo: Tux holding a violet pointer arrow) exactly in design, colors and proportions, turned into a realistic 3D figurine."
 Sırayla üret, nsfw olursa bir kez yeniden dene. Bitince dört denemenin hepsinin job id ve rawUrl listesini yaz, açıklama ekleme.
