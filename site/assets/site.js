@@ -242,8 +242,8 @@
 
   // ============================================ etkileşimli klavye (hero)
   // Hero fotoğrafındaki her tuş kapağının üst yüzeyi (1920x1072 görsel uzayında bir dörtgen).
-  // Fare bir kapağın üstüne gelince fotoğraftan kesilmiş o kapak yaması birkaç piksel iner,
-  // kararır, altında koyu bir boşluk açılır. Yama, videonun üstünde ama koyu gradyanın altında durur.
+  // Fare bir kapağın üstüne gelince o kapak yumuşakça iner, hafif kararır, üstünde koyu
+  // aralık açılır; fare çıkınca geri kalkar. Yama, videonun üstünde ama koyu gradyanın altında durur.
   // Hit-test elementFromPoint ile değil, fare konumunun görsel uzayına çevrilip dörtgende
   // nokta testi yapılmasıyla; metin ve düğmeler olduğu gibi tıklanır. Dokunmatikte kapalı.
   if (fine) (function () {
@@ -290,11 +290,8 @@
       Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
       parent.appendChild(el); return el;
     }
-    var WALL = 34;
-    // Basılı hali Higgsfield ile tek tek üretilmiş tuşlar: [dosya, x, y, g, y] (1920x1072 uzayı).
-    // Bu tuşlarda kaydırma efekti yerine gerçek basılı fotoğraf yaması gösterilir.
-    var PRESSED = {"1":["1",940,684,198,151],"2":["2",1096,653,193,195],"3":["3",1227,598,206,150],"D":["d",1507,764,230,161],"Esc":["esc",685,691,195,136],"F1":["f1",979,567,214,133],"F2":["f2",1119,515,207,127],"F3":["f3",1223,520,200,91],"S":["s",1353,835,251,144],"W":["w",1243,741,258,191],"~":["tilde",779,764,223,184],"4":["4",1376,566,202,138],"6":["6",1525,499,184,170]};
-    var KEYDIR = (img.getAttribute("src") || "").replace(/hero\.[a-z]+$/, "") + "keys/";
+    var WALL = 34;   // ön duvarın görünen yüksekliği (1920x1072 uzayı)
+    var SKIP = { Q: 1 };   // fotoğrafta zaten basılı
     function hull(P) {
       P = P.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
       function cr(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
@@ -303,27 +300,27 @@
       for (i = P.length - 1; i >= 0; i--) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0) up.pop(); up.push(P[i]); }
       return lo.slice(0, -1).concat(up.slice(0, -1));
     }
+    function sweep(pts, cx, cy, f) {
+      var b = pts.map(function (q) { return [cx + (q[0] - cx) * f, cy + (q[1] - cy) * f]; });
+      return hull(b.concat(b.map(function (q) { return [q[0], q[1] + WALL]; })))
+        .map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
+    }
+    // Her tuş iki katman: sabit "yuva" (kapak silüetiyle aynı, koyu; basınca belirir)
+    // ve kendi silüetine kırpılmış fotoğraf kapağı. Kırpma kapakla birlikte kayar, yuvanın
+    // kırpması sabit kalır: kapak inerken üstünde koyu aralık açılır, ön duvarı yuvanın alt
+    // kenarında kesilip kısalır. Fotoğrafın başka hiçbir parçası yer değiştirmez.
     KEYS.forEach(function (k, i) {
-      var c = k[1], pts = [], str = [], j;
-      for (j = 0; j < 8; j += 2) { pts.push([c[j], c[j + 1]]); str.push(c[j] + "," + c[j + 1]); }
-      // Kapak bölgesi: üst yüzey biraz büyütülüp ön duvar yüksekliği kadar aşağı süpürülür
-      // (dışbükey örtü). Bölge sabit kalır; içindeki fotoğraf aşağı kayar, böylece üst yüz ön
-      // duvarın üstüne iner ve eski yerinde boşluk açılır; çift görüntü oluşmaz.
-      var cx = 0, cy = 0; pts.forEach(function (q) { cx += q[0] / 4; cy += q[1] / 4; });
-      var big = pts.map(function (q) { return [cx + (q[0] - cx) * 1.1, cy + (q[1] - cy) * 1.1]; });
-      var reg = hull(big.concat(big.map(function (q) { return [q[0], q[1] + WALL]; })));
-      var rstr = reg.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
-      var cp = mk("clipPath", { id: "kc" + i }, defs);
-      mk("polygon", { points: rstr }, cp);
-      var kp = mk("g", { "class": "kp", "data-key": k[0], "clip-path": "url(#kc" + i + ")" }, g);
-      mk("polygon", { "class": "kp-sh", points: rstr }, kp);
+      if (SKIP[k[0]]) return;
+      var c = k[1], pts = [], j, cx = 0, cy = 0;
+      for (j = 0; j < 8; j += 2) pts.push([c[j], c[j + 1]]);
+      pts.forEach(function (q) { cx += q[0] / 4; cy += q[1] / 4; });
+      var sil = sweep(pts, cx, cy, 1.03), well = sil;
+      mk("polygon", { points: well }, mk("clipPath", { id: "kw" + i }, defs));
+      mk("polygon", { points: sil }, mk("clipPath", { id: "ks" + i }, defs));
+      var kp = mk("g", { "class": "kp", "data-key": k[0], "clip-path": "url(#kw" + i + ")" }, g);
+      mk("polygon", { "class": "kp-sh", points: well }, kp);
       var cap = mk("g", { "class": "kp-cap" }, kp);
-      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none" }, cap));
-      var ph = PRESSED[k[0]];
-      if (ph) {
-        kp.setAttribute("class", "kp ph");
-        mk("image", { "class": "kp-ph", href: KEYDIR + ph[0] + ".webp", x: ph[1], y: ph[2], width: ph[3], height: ph[4], preserveAspectRatio: "none" }, kp);
-      }
+      pics.push(mk("image", { width: IW, height: IH, preserveAspectRatio: "none", "clip-path": "url(#ks" + i + ")" }, cap));
       polys.push({ el: kp, pts: pts, name: k[0] });
     });
     bg.insertBefore(svg, null);
