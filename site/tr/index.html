@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=dda5a6ac74">
+<link rel="stylesheet" href="/assets/site.css?v=c823d51fec">
 <script>
   // JS varsa "js" sınıfı: yalnızca o zaman, görünmeden önce gizlenecek öğeler gizlenir.
   // Tema, boyamadan önce uygulanır (yanıp sönme olmasın).
@@ -281,6 +281,24 @@ Düzeltmemi ister misin? (e/h)</code></pre>
         <p><code>do</code> birden çok adımı tek çağrıda çalıştırır, ilk hatada durur. <code>--after</code> neyin değiştiğini yeni ref'lerle yazar; doğrulama ayrı tur olmaz. <code>wait</code> içeride yoklar.</p>
         <dl><dt>Ölçülen</dt><dd>N eylem + doğrulama = 1 çağrı</dd></dl>
       </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-camera"/></svg>
+        <h3>0,1 saniyede ekran görüntüsü</h3>
+        <p>Kare zaten açık olan ekran yayınından kopyalanır, her monitörün yayını ayrıdır; ekran görüntüsü artık yavaş portal yolundan geçmez.</p>
+        <dl><dt>Ölçülen</dt><dd>1,6 sn → 0,1 sn, üç monitör</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+        <h3>Çok monitörde okunur</h3>
+        <p>Varsayılan olarak yalnız etkin pencerenin monitörü çekilir; üç ekran tek resme küçülmez, yazı net kalır. <code>--region</code> yakınlaştırır, <code>--screen</code> başka monitörü seçer.</p>
+        <dl><dt>Ölçülen</dt><dd>görüntü ölçeği 0,32 → 0,82</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
+        <h3>Paralel ajanlar</h3>
+        <p>Her ajana <code>--agent</code> ile ad ver. Her birinin kendi servisi, kendi renginde imleci ve kendi son ekran görüntüsü olur; bir ajanın beklemesi ötekini durdurmaz.</p>
+        <dl><dt>Ölçülen</dt><dd>öteki ajan: 4,75 sn → 0,2 sn</dd></dl>
+      </li>
     </ul>
     <figure class="sample speed-sample" data-reveal>
       <div class="sample-bar" aria-hidden="true"><i></i><i></i><i></i><span>bash — computer-use-linux</span></div>
@@ -298,7 +316,7 @@ tıklandı
 [trace]     gönderim 1.1 ms
 [trace]   click 10.7 ms ref=@shi7xh2dc:e1
 [trace] komut click (servis) 10.8 ms</code></pre>
-      <figcaption>Xvfb'de bir GTK test uygulamasının gerçek çıktısı; değerler orada <code>computer-use-linux bench</code> ve <code>CUL_TRACE=1</code> ile ölçüldü. Gerçek KDE masaüstünde henüz ölçülmedi.</figcaption>
+      <figcaption>Xvfb'de bir GTK test uygulamasının gerçek çıktısı; ilk üç değer orada <code>computer-use-linux bench</code> ve <code>CUL_TRACE=1</code> ile ölçüldü. Son üçü üç monitörlü gerçek bir KDE Plasma masaüstünde ölçüldü.</figcaption>
     </figure>
   </div>
 </section>
@@ -426,14 +444,20 @@ tıklandı
       <li class="surface" data-surface data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-viewfinder"/></svg>
         <h3>Ekran</h3>
-        <p>Kırpma ve ölçek hatırlanır; <code>click X Y --from-shot</code> doğru piksele düşer. Wayland'de kare, giriş servisinin zaten açık tuttuğu ekran yayınından kopyalanır; ayrıca bir yakalama aracı başlatılmaz.</p>
-        <dl><dt>Komutlar</dt><dd><code>screenshot --window --max-width</code></dd></dl>
+        <p>Kırpma ve ölçek hatırlanır; <code>click X Y --from-shot</code> doğru piksele düşer. Wayland'de kare, giriş servisinin zaten açık tuttuğu ekran yayınından kopyalanır, her monitörün yayını ayrıdır, yaklaşık 0,1 sn sürer. Varsayılan olarak etkin pencerenin monitörü gelir; <code>--region</code> yakınlaştırır.</p>
+        <dl><dt>Komutlar</dt><dd><code>screenshot --screen --region --window</code></dd></dl>
       </li>
       <li class="surface surface-wide2" data-surface data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
         <h3>Ajan imleci</h3>
         <p>Ajanın çalıştığı yere ikinci, görünür bir ok gider: kısa ve neredeyse düz; fark edersiniz ama gözünüzü yormaz. Fareniz sizde kalır: tıklamalar içinden geçer, odak kaymaz.</p>
         <dl><dt>Komutlar</dt><dd><code>point</code> <code>cursor</code> <code>cursor-hide</code></dd></dl>
+      </li>
+      <li class="surface surface-wide3" data-surface data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-sessions"/></svg>
+        <h3>Aynı anda birden çok ajan</h3>
+        <p>Her ajana <code>--agent</code> ile ad verin: kendi arka plan servisi, kendi Material Bibata renginde imleci ve kendi son ekran görüntüsü olur. Okuma paralel yürür; tık ve tuşlar sırayla gider, <code>type --window</code> öne alma ile yazmayı tek adımda yapar, başka ajan araya girip odağı çalamaz.</p>
+        <dl><dt>Komutlar</dt><dd><code>--agent</code> <code>type --window</code> <code>key --window</code></dd></dl>
       </li>
       <li class="surface surface-caps" data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-checklist"/></svg>
@@ -484,8 +508,8 @@ tıklandı
     <p class="tb-legend" data-reveal>Dolu: gerçek masaüstü. Çerçeve: ekransız ya da Wine altında çalışan gerçek bir görüntü sunucusu. Amber: mantık sahtelerle sınandı. Kesikli: test edilmedi.</p>
 
     <div class="pm-wrap" data-reveal>
-      <p class="pm-dim">9 yüzey × 3 platform</p>
-      <table class="pm"><caption class="sr">Her yeteneğin Linux, Windows ve macOS&#x27;ta kullandığı kanal</caption><thead><tr><td><span class="pm-cap">Yetenek</span></td><th scope="col">Linux</th><th scope="col">Windows</th><th scope="col">macOS <span class="pv">Önizleme</span></th></tr></thead><tbody><tr><th scope="row">Ekrandaki her pencere</th><td data-os="Linux"><span class="pm-ch">KWin · hyprctl · swaymsg · EWMH</span><small>GNOME&#x27;da yalnızca AT-SPI</small></td><td data-os="Windows"><span class="pm-ch">EnumWindows</span></td><td data-os="macOS"><span class="pm-ch">CGWindowList + AX</span></td></tr><tr><th scope="row">Gerçek fare</th><td data-os="Linux"><span class="pm-ch">XTEST · RemoteDesktop portalı · Sway IPC</span></td><td data-os="Windows"><span class="pm-ch">SendInput</span></td><td data-os="macOS"><span class="pm-ch">CGEvent</span></td></tr><tr><th scope="row">Gerçek klavye</th><td data-os="Linux"><span class="pm-ch">XTEST · portal + pano · wtype</span></td><td data-os="Windows"><span class="pm-ch">SendInput (Unicode)</span></td><td data-os="macOS"><span class="pm-ch">CGEvent (Unicode)</span></td></tr><tr><th scope="row">Butona adıyla basma</th><td data-os="Linux"><span class="pm-ch">AT-SPI</span></td><td data-os="Windows"><span class="pm-ch">UI Automation</span><small>Wine&#x27;da sınanamadı</small></td><td data-os="macOS"><span class="pm-ch">Accessibility (AX)</span></td></tr><tr><th scope="row">Ağacı açık Electron ve Chromium</th><td data-os="Linux"><span class="pm-ch">bayrak + ortam</span></td><td data-os="Windows"><span class="pm-ch">bayrak</span></td><td data-os="macOS"><span class="pm-ch">bayrak</span></td></tr><tr><th scope="row">Açık terminaller</th><td data-os="Linux"><span class="pm-ch">Konsole D-Bus, tmux</span></td><td data-os="Windows"><span class="pm-ch">konsol tamponu (AttachConsole)</span></td><td data-os="macOS"><span class="pm-ch">Terminal.app, iTerm2, tmux</span></td></tr><tr><th scope="row">Kendi terminali</th><td data-os="Linux"><span class="pm-ch">tmux / PTY</span></td><td data-os="Windows"><span class="pm-ch">cmd.exe</span></td><td data-os="macOS"><span class="pm-ch">tmux / PTY</span></td></tr><tr><th scope="row">Görünür ajan imleci</th><td data-os="Linux"><span class="pm-ch">X11/XWayland pencere · imleç teman</span></td><td data-os="Windows"><span class="pm-ch">katmanlı pencere · sistem oku</span></td><td data-os="macOS"><span class="pm-ch">NSWindow · sistem oku</span></td></tr><tr><th scope="row">Ekran görüntüsü</th><td data-os="Linux"><span class="pm-ch">PipeWire yayını · spectacle · grim · Xlib</span></td><td data-os="Windows"><span class="pm-ch">GDI</span></td><td data-os="macOS"><span class="pm-ch">screencapture</span></td></tr></tbody></table>
+      <p class="pm-dim">10 yüzey × 3 platform</p>
+      <table class="pm"><caption class="sr">Her yeteneğin Linux, Windows ve macOS&#x27;ta kullandığı kanal</caption><thead><tr><td><span class="pm-cap">Yetenek</span></td><th scope="col">Linux</th><th scope="col">Windows</th><th scope="col">macOS <span class="pv">Önizleme</span></th></tr></thead><tbody><tr><th scope="row">Ekrandaki her pencere</th><td data-os="Linux"><span class="pm-ch">KWin · hyprctl · swaymsg · EWMH</span><small>GNOME&#x27;da yalnızca AT-SPI</small></td><td data-os="Windows"><span class="pm-ch">EnumWindows</span></td><td data-os="macOS"><span class="pm-ch">CGWindowList + AX</span></td></tr><tr><th scope="row">Gerçek fare</th><td data-os="Linux"><span class="pm-ch">XTEST · RemoteDesktop portalı · Sway IPC</span></td><td data-os="Windows"><span class="pm-ch">SendInput</span></td><td data-os="macOS"><span class="pm-ch">CGEvent</span></td></tr><tr><th scope="row">Gerçek klavye</th><td data-os="Linux"><span class="pm-ch">XTEST · portal + pano · wtype</span></td><td data-os="Windows"><span class="pm-ch">SendInput (Unicode)</span></td><td data-os="macOS"><span class="pm-ch">CGEvent (Unicode)</span></td></tr><tr><th scope="row">Butona adıyla basma</th><td data-os="Linux"><span class="pm-ch">AT-SPI</span></td><td data-os="Windows"><span class="pm-ch">UI Automation</span><small>Wine&#x27;da sınanamadı</small></td><td data-os="macOS"><span class="pm-ch">Accessibility (AX)</span></td></tr><tr><th scope="row">Ağacı açık Electron ve Chromium</th><td data-os="Linux"><span class="pm-ch">bayrak + ortam</span></td><td data-os="Windows"><span class="pm-ch">bayrak</span></td><td data-os="macOS"><span class="pm-ch">bayrak</span></td></tr><tr><th scope="row">Açık terminaller</th><td data-os="Linux"><span class="pm-ch">Konsole D-Bus, tmux</span></td><td data-os="Windows"><span class="pm-ch">konsol tamponu (AttachConsole)</span></td><td data-os="macOS"><span class="pm-ch">Terminal.app, iTerm2, tmux</span></td></tr><tr><th scope="row">Kendi terminali</th><td data-os="Linux"><span class="pm-ch">tmux / PTY</span></td><td data-os="Windows"><span class="pm-ch">cmd.exe</span></td><td data-os="macOS"><span class="pm-ch">tmux / PTY</span></td></tr><tr><th scope="row">Görünür ajan imleci</th><td data-os="Linux"><span class="pm-ch">X11/XWayland pencere · imleç teman</span></td><td data-os="Windows"><span class="pm-ch">katmanlı pencere · sistem oku</span></td><td data-os="macOS"><span class="pm-ch">NSWindow · sistem oku</span></td></tr><tr><th scope="row">Ekran görüntüsü</th><td data-os="Linux"><span class="pm-ch">PipeWire yayını (her monitör ayrı) · spectacle · grim · Xlib</span></td><td data-os="Windows"><span class="pm-ch">GDI</span></td><td data-os="macOS"><span class="pm-ch">screencapture</span></td></tr><tr><th scope="row">Paralel ajanlar</th><td data-os="Linux"><span class="pm-ch">Material Bibata imleçleri · ayrı daemon</span></td><td data-os="Windows"><span class="pm-ch">katmanlı pencere</span></td><td data-os="macOS"><span class="pm-ch">NSWindow</span></td></tr></tbody></table>
       <p class="pm-src">Kanallar, sayfa her üretildiğinde proje README&#x27;sinden okunur.</p>
     </div>
   </div>
@@ -653,10 +677,10 @@ bash-5.2$</code></pre>
       <div class="stat" data-reveal><dt>MCP aracı</dt><dd data-count="28">28</dd></div>
       <div class="stat" data-reveal><dt>CLI komutu</dt><dd data-count="35">35</dd></div>
       <div class="stat" data-reveal><dt>bağlanma yolu: kabuk, MCP, HTTP, metin döngüsü</dt><dd data-count="4">4</dd></div>
-      <div class="stat" data-reveal><dt>ulaştığı masaüstü yüzeyi</dt><dd data-count="9">9</dd></div>
+      <div class="stat" data-reveal><dt>ulaştığı masaüstü yüzeyi</dt><dd data-count="10">10</dd></div>
       <div class="stat" data-reveal><dt>kurulumu belgelenmiş harness</dt><dd data-count="11">11</dd></div>
-      <div class="stat" data-reveal><dt>test paketi; 4 tanesi atılabilir bir masaüstünde</dt><dd data-count="22">22</dd></div>
-      <div class="stat stat-wide" data-reveal><dt>satır Python, çekirdek ve adaptörler</dt><dd data-count="14572">14.572</dd></div>
+      <div class="stat" data-reveal><dt>test paketi; 4 tanesi atılabilir bir masaüstünde</dt><dd data-count="23">23</dd></div>
+      <div class="stat stat-wide" data-reveal><dt>satır Python, çekirdek ve adaptörler</dt><dd data-count="15171">15.171</dd></div>
       <div class="stat stat-zero" data-reveal><dt>gereken root ya da yönetici yetkisi</dt><dd data-count="0">0</dd></div>
     </dl>
   </div>
@@ -713,7 +737,7 @@ bash-5.2$</code></pre>
           <li data-reveal>Pencereler, terminaller ve erişilebilirlik ağacı canlı MCP kaynakları olarak</li>
           <li data-reveal>Başka bir makineyi yönetmek için HTTP adaptörüne token dosyalı ve TLS&#x27;li kullanıcı servisi</li>
           <li data-reveal>Linux, Windows ve macOS&#x27;ta farenize dokunmayan görünür ajan imleci; her adaptörden: MCP, HTTP, CLI</li>
-          <li data-reveal>Linux&#x27;ta daha hızlı: ekran görüntüsü canlı PipeWire yayınından (1,5 sn yerine yaklaşık 0,2 sn), imleç animasyonunu hiç beklemeyen tıklamalar</li>
+          <li data-reveal>Linux&#x27;ta daha hızlı: ekran görüntüsü canlı PipeWire yayınından, her monitöre ayrı yayın (1,6 sn yerine 0,1 sn), imleç animasyonunu hiç beklemeyen tıklamalar</li>
           <li data-reveal>v0.7 hız: CLI için arka plan servisi, ref hızlı yolu, <code>do</code> ve <code>cul_batch</code> ile toplu adımlar, <code>--after</code> değişiklik raporu, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> ve adım adım süre</li>
           <li data-reveal>Bir pip paketi: Linux'ta, Windows'ta ve macOS'ta <code>pip install .[all]</code></li>
           <li data-reveal>Yalıtılmış bir sandbox masaüstünde girdi testleri; X11 Xvfb&#x27;de, Sway ekransız bir compositor&#x27;da, Windows Wine altında</li>

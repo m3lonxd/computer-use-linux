@@ -281,6 +281,24 @@ atspi:4:0/2/7	[checkbox] {{st_dark}}  &lt;toggle,click&gt;
         <p>{{spd3_d}}</p>
         <dl><dt>{{spd_measured}}</dt><dd>{{spd3_m}}</dd></dl>
       </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-camera"/></svg>
+        <h3>{{spd4_t}}</h3>
+        <p>{{spd4_d}}</p>
+        <dl><dt>{{spd_measured}}</dt><dd>{{spd4_m}}</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+        <h3>{{spd5_t}}</h3>
+        <p>{{spd5_d}}</p>
+        <dl><dt>{{spd_measured}}</dt><dd>{{spd5_m}}</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
+        <h3>{{spd6_t}}</h3>
+        <p>{{spd6_d}}</p>
+        <dl><dt>{{spd_measured}}</dt><dd>{{spd6_m}}</dd></dl>
+      </li>
     </ul>
     <figure class="sample speed-sample" data-reveal>
       <div class="sample-bar" aria-hidden="true"><i></i><i></i><i></i><span>bash — computer-use-linux</span></div>
@@ -427,13 +445,19 @@ tıklandı
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-viewfinder"/></svg>
         <h3>{{r_shot}}</h3>
         <p>{{r_shot_n}}</p>
-        <dl><dt>{{th_cmd}}</dt><dd><code>screenshot --window --max-width</code></dd></dl>
+        <dl><dt>{{th_cmd}}</dt><dd><code>screenshot --screen --region --window</code></dd></dl>
       </li>
       <li class="surface surface-wide2" data-surface data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
         <h3>{{r_cursor}}</h3>
         <p>{{r_cursor_n}}</p>
         <dl><dt>{{th_cmd}}</dt><dd><code>point</code> <code>cursor</code> <code>cursor-hide</code></dd></dl>
+      </li>
+      <li class="surface surface-wide3" data-surface data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-sessions"/></svg>
+        <h3>{{r_par}}</h3>
+        <p>{{r_par_n}}</p>
+        <dl><dt>{{th_cmd}}</dt><dd><code>--agent</code> <code>type --window</code> <code>key --window</code></dd></dl>
       </li>
       <li class="surface surface-caps" data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-checklist"/></svg>

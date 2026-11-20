@@ -1,8 +1,15 @@
-# Computer Use Linux
+<p align="center">
+  <img src="./docs/assets/banner.svg" alt="Computer Use Linux: AI ajanlarına gerçek masaüstünde göz ve el" width="100%">
+</p>
 
-![Computer Use Linux: Tux ve klavye](site/media/hero.jpg)
+<p align="center">
+  <a href="https://computeruselinux.vercel.app"><img src="https://img.shields.io/badge/site-computeruselinux.vercel.app-f2922b?style=flat-square" alt="Site"></a>
+  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-b18cff?style=flat-square" alt="Platform: Linux, Windows, macOS">
+  <img src="https://img.shields.io/badge/python-3.9%2B-6cb6ff?style=flat-square" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/arayüz-CLI%20%7C%20MCP%20%7C%20HTTP-8f8a7f?style=flat-square" alt="Arayüz: CLI, MCP, HTTP">
+</p>
 
-**Site:** [computeruselinux.vercel.app](https://computeruselinux.vercel.app) · [English](https://computeruselinux.vercel.app/) · [Türkçe](https://computeruselinux.vercel.app/tr/)
+<p align="center"><a href="https://computeruselinux.vercel.app/">English site</a> · <a href="https://computeruselinux.vercel.app/tr/">Türkçe site</a></p>
 
 Bir AI ajanına masaüstünü ve üzerinde açık terminalleri **görme ve
 kullanma** yetkisi verir. Linux'ta doğdu (KDE, GNOME, X11, Sway, Hyprland);
@@ -39,7 +46,8 @@ $ computer-use-linux type "Merhaba dünya — ğüşıöç"
 | **Açık terminaller** — başka bir ajanın, ssh'ın, build'in ekranını oku; ona yaz | Konsole D-Bus, tmux | konsol tamponu (AttachConsole) | Terminal.app, iTerm2, tmux |
 | **Kendi terminali** — komut çalıştır, çıktıyı al | tmux / PTY | cmd.exe | tmux / PTY |
 | **Görünür ajan imleci** — ajan nerede çalışıyor gör; senin farene dokunmaz, tıklamayı engellemez | X11/XWayland pencere · imleç teman | katmanlı pencere · sistem oku | NSWindow · sistem oku |
-| **Ekran görüntüsü** — pencereye kırp, küçült; görüntü koordinatıyla tıkla | PipeWire yayını · spectacle · grim · Xlib | GDI | screencapture |
+| **Ekran görüntüsü** — ~0,1 sn; etkin monitör, tek pencere ya da bölge (`--screen`, `--region`); görüntü koordinatıyla tıkla | PipeWire yayını (her monitör ayrı) · spectacle · grim · Xlib | GDI | screencapture |
+| **Paralel ajanlar** — `--agent AD`: her ajana ayrı servis, ayrı renkte imleç, ayrı ekran görüntüsü kaydı | Material Bibata imleçleri · ayrı daemon | katmanlı pencere | NSWindow |
 
 ### Ref'ler yanlış düğmeye basmaz
 
@@ -98,9 +106,29 @@ HTTP'de `POST /batch` aynı işi yapar.
 
 `CUL_TRACE=1` her adımın süresini yazar; `computer-use-linux bench` p50/p95 ölçer.
 
+- **Ekran görüntüsü 0,1 sn:** kare açık PipeWire yayınından alınır (çoklu
+  monitörde her ekranın yayını ayrı). Varsayılan, etkin pencerenin
+  monitörü: üç monitör tek resme küçülünce yazı okunmuyordu. Yakından bakmak
+  için `--region X Y W H`, başka ekran için `--screen DP-4 | all`.
+
 Birden çok ajan aynı makinede çalışıyorsa fare/klavye olayları bir **girdi
 kirasıyla** sıraya girer: bir ajanın sürüklemesinin ortasına ötekinin tuşu
 karışmaz. Kira yalnız gönderim süresince tutulur.
+
+### Paralel ajanlar
+
+```console
+$ computer-use-linux --agent research screenshot
+$ computer-use-linux --agent writer type "metin" --window win:{a41f…}
+```
+
+Her ad kendi arka plan servisini alır: bir ajanın `wait`/`do` beklemesi
+ötekini durdurmaz (ortak serviste 4,75 sn, ayrı ajanlarda 0,2 sn). Her ajanın
+imleci ayrı süreç ve ayrı renktir — kuruluysa Material Bibata varyantları
+(Sunset, Sky Blue, Pink Rose…), kullanıcının kendi teması hariç. `--from-shot`
+her ajanın kendi son görüntüsüne göre çevrilir. `type`/`key --window`
+pencereyi öne alma ile yazmayı tek kira içinde yapar; başka ajan araya girip
+tuşları başka pencereye götüremez.
 
 Bu iki fikir [agent-desktop](https://github.com/vercel-labs/agent-desktop)
 (Apache-2.0) projesinden uyarlandı; kod Computer Use Linux için Python'da yeniden

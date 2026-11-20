@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=dda5a6ac74">
+<link rel="stylesheet" href="/assets/site.css?v=c823d51fec">
 <script>
   // JS varsa "js" sınıfı: yalnızca o zaman, görünmeden önce gizlenecek öğeler gizlenir.
   // Tema, boyamadan önce uygulanır (yanıp sönme olmasın).
@@ -281,6 +281,24 @@ Should I fix them? (y/n, or tell me)</code></pre>
         <p><code>do</code> runs several steps in one call and stops at the first failure. <code>--after</code> reports what changed, new refs included, so checking is not a separate turn. <code>wait</code> polls inside.</p>
         <dl><dt>Measured</dt><dd>N actions + check = 1 call</dd></dl>
       </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-camera"/></svg>
+        <h3>Screenshots in 0.1 s</h3>
+        <p>The frame is copied from the screen stream that is already open, one stream per monitor, so taking a screenshot no longer goes through the slow portal round trip.</p>
+        <dl><dt>Measured</dt><dd>1.6 s → 0.1 s, three monitors</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-monitor"/></svg>
+        <h3>Readable on many monitors</h3>
+        <p>By default only the monitor of the active window is captured, so text stays sharp instead of shrinking three screens into one image. <code>--region</code> zooms in, <code>--screen</code> picks another monitor.</p>
+        <dl><dt>Measured</dt><dd>image scale 0.32 → 0.82</dd></dl>
+      </li>
+      <li class="surface" data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
+        <h3>Agents in parallel</h3>
+        <p>Give each agent a name with <code>--agent</code>. Each one gets its own service, its own pointer in its own colour and its own last screenshot, so one agent waiting never stalls another.</p>
+        <dl><dt>Measured</dt><dd>the other agent: 4.75 s → 0.2 s</dd></dl>
+      </li>
     </ul>
     <figure class="sample speed-sample" data-reveal>
       <div class="sample-bar" aria-hidden="true"><i></i><i></i><i></i><span>bash — computer-use-linux</span></div>
@@ -298,7 +316,7 @@ tıklandı
 [trace]     gönderim 1.1 ms
 [trace]   click 10.7 ms ref=@shi7xh2dc:e1
 [trace] komut click (servis) 10.8 ms</code></pre>
-      <figcaption>Real output from a GTK test app on Xvfb; the numbers come from <code>computer-use-linux bench</code> and <code>CUL_TRACE=1</code> there. Not yet measured on a real KDE desktop.</figcaption>
+      <figcaption>Real output from a GTK test app on Xvfb; the first three numbers come from <code>computer-use-linux bench</code> and <code>CUL_TRACE=1</code> there. The last three were measured on a real KDE Plasma desktop with three monitors.</figcaption>
     </figure>
   </div>
 </section>
@@ -426,14 +444,20 @@ tıklandı
       <li class="surface" data-surface data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-viewfinder"/></svg>
         <h3>Screen</h3>
-        <p>Crop and scale are remembered, so <code>click X Y --from-shot</code> lands on the right pixel. On Wayland the frame is copied from the screen stream the input service already holds, with no capture tool to start.</p>
-        <dl><dt>Commands</dt><dd><code>screenshot --window --max-width</code></dd></dl>
+        <p>Crop and scale are remembered, so <code>click X Y --from-shot</code> lands on the right pixel. On Wayland the frame is copied from the screen stream the input service already holds, one stream per monitor, in about 0.1 s. By default you get the monitor of the active window; <code>--region</code> zooms in.</p>
+        <dl><dt>Commands</dt><dd><code>screenshot --screen --region --window</code></dd></dl>
       </li>
       <li class="surface surface-wide2" data-surface data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-agentcursor"/></svg>
         <h3>Agent cursor</h3>
         <p>A second, visible arrow moves to where the agent works: short and nearly straight, so you notice it without watching it drift. Your mouse stays yours: clicks pass through it and focus never moves.</p>
         <dl><dt>Commands</dt><dd><code>point</code> <code>cursor</code> <code>cursor-hide</code></dd></dl>
+      </li>
+      <li class="surface surface-wide3" data-surface data-reveal data-tilt>
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-sessions"/></svg>
+        <h3>Several agents at once</h3>
+        <p>Name each agent with <code>--agent</code>: it gets its own background service, its own pointer in its own Material Bibata colour and its own last screenshot. Reading runs in parallel; clicks and keys take turns, and <code>type --window</code> focuses and types in one step so another agent cannot steal the focus in between.</p>
+        <dl><dt>Commands</dt><dd><code>--agent</code> <code>type --window</code> <code>key --window</code></dd></dl>
       </li>
       <li class="surface surface-caps" data-reveal data-tilt>
         <svg class="ico ico-lg" aria-hidden="true"><use href="#i-checklist"/></svg>
@@ -484,8 +508,8 @@ tıklandı
     <p class="tb-legend" data-reveal>Solid: a real desktop. Outline: a real display server, run headless or under Wine. Amber: logic checked against fakes. Dashed: not tested.</p>
 
     <div class="pm-wrap" data-reveal>
-      <p class="pm-dim">9 surfaces × 3 platforms</p>
-      <table class="pm"><caption class="sr">The channel each capability uses on Linux, Windows and macOS</caption><thead><tr><td><span class="pm-cap">Capability</span></td><th scope="col">Linux</th><th scope="col">Windows</th><th scope="col">macOS <span class="pv">Preview</span></th></tr></thead><tbody><tr><th scope="row">Every window on screen</th><td data-os="Linux"><span class="pm-ch">KWin · hyprctl · swaymsg · EWMH</span><small>GNOME: AT-SPI only</small></td><td data-os="Windows"><span class="pm-ch">EnumWindows</span></td><td data-os="macOS"><span class="pm-ch">CGWindowList + AX</span></td></tr><tr><th scope="row">Real mouse</th><td data-os="Linux"><span class="pm-ch">XTEST · RemoteDesktop portal · Sway IPC</span></td><td data-os="Windows"><span class="pm-ch">SendInput</span></td><td data-os="macOS"><span class="pm-ch">CGEvent</span></td></tr><tr><th scope="row">Real keyboard</th><td data-os="Linux"><span class="pm-ch">XTEST · portal + clipboard · wtype</span></td><td data-os="Windows"><span class="pm-ch">SendInput (Unicode)</span></td><td data-os="macOS"><span class="pm-ch">CGEvent (Unicode)</span></td></tr><tr><th scope="row">Press a button by name</th><td data-os="Linux"><span class="pm-ch">AT-SPI</span></td><td data-os="Windows"><span class="pm-ch">UI Automation</span><small>not exercised under Wine</small></td><td data-os="macOS"><span class="pm-ch">Accessibility (AX)</span></td></tr><tr><th scope="row">Electron and Chromium with their tree on</th><td data-os="Linux"><span class="pm-ch">flag + environment</span></td><td data-os="Windows"><span class="pm-ch">flag</span></td><td data-os="macOS"><span class="pm-ch">flag</span></td></tr><tr><th scope="row">Open terminals</th><td data-os="Linux"><span class="pm-ch">Konsole D-Bus, tmux</span></td><td data-os="Windows"><span class="pm-ch">console buffer (AttachConsole)</span></td><td data-os="macOS"><span class="pm-ch">Terminal.app, iTerm2, tmux</span></td></tr><tr><th scope="row">Its own terminal</th><td data-os="Linux"><span class="pm-ch">tmux / PTY</span></td><td data-os="Windows"><span class="pm-ch">cmd.exe</span></td><td data-os="macOS"><span class="pm-ch">tmux / PTY</span></td></tr><tr><th scope="row">Visible agent cursor</th><td data-os="Linux"><span class="pm-ch">X11/XWayland window · your cursor theme</span></td><td data-os="Windows"><span class="pm-ch">layered window · system arrow</span></td><td data-os="macOS"><span class="pm-ch">NSWindow · system arrow</span></td></tr><tr><th scope="row">Screenshots</th><td data-os="Linux"><span class="pm-ch">PipeWire stream · spectacle · grim · Xlib</span></td><td data-os="Windows"><span class="pm-ch">GDI</span></td><td data-os="macOS"><span class="pm-ch">screencapture</span></td></tr></tbody></table>
+      <p class="pm-dim">10 surfaces × 3 platforms</p>
+      <table class="pm"><caption class="sr">The channel each capability uses on Linux, Windows and macOS</caption><thead><tr><td><span class="pm-cap">Capability</span></td><th scope="col">Linux</th><th scope="col">Windows</th><th scope="col">macOS <span class="pv">Preview</span></th></tr></thead><tbody><tr><th scope="row">Every window on screen</th><td data-os="Linux"><span class="pm-ch">KWin · hyprctl · swaymsg · EWMH</span><small>GNOME: AT-SPI only</small></td><td data-os="Windows"><span class="pm-ch">EnumWindows</span></td><td data-os="macOS"><span class="pm-ch">CGWindowList + AX</span></td></tr><tr><th scope="row">Real mouse</th><td data-os="Linux"><span class="pm-ch">XTEST · RemoteDesktop portal · Sway IPC</span></td><td data-os="Windows"><span class="pm-ch">SendInput</span></td><td data-os="macOS"><span class="pm-ch">CGEvent</span></td></tr><tr><th scope="row">Real keyboard</th><td data-os="Linux"><span class="pm-ch">XTEST · portal + clipboard · wtype</span></td><td data-os="Windows"><span class="pm-ch">SendInput (Unicode)</span></td><td data-os="macOS"><span class="pm-ch">CGEvent (Unicode)</span></td></tr><tr><th scope="row">Press a button by name</th><td data-os="Linux"><span class="pm-ch">AT-SPI</span></td><td data-os="Windows"><span class="pm-ch">UI Automation</span><small>not exercised under Wine</small></td><td data-os="macOS"><span class="pm-ch">Accessibility (AX)</span></td></tr><tr><th scope="row">Electron and Chromium with their tree on</th><td data-os="Linux"><span class="pm-ch">flag + environment</span></td><td data-os="Windows"><span class="pm-ch">flag</span></td><td data-os="macOS"><span class="pm-ch">flag</span></td></tr><tr><th scope="row">Open terminals</th><td data-os="Linux"><span class="pm-ch">Konsole D-Bus, tmux</span></td><td data-os="Windows"><span class="pm-ch">console buffer (AttachConsole)</span></td><td data-os="macOS"><span class="pm-ch">Terminal.app, iTerm2, tmux</span></td></tr><tr><th scope="row">Its own terminal</th><td data-os="Linux"><span class="pm-ch">tmux / PTY</span></td><td data-os="Windows"><span class="pm-ch">cmd.exe</span></td><td data-os="macOS"><span class="pm-ch">tmux / PTY</span></td></tr><tr><th scope="row">Visible agent cursor</th><td data-os="Linux"><span class="pm-ch">X11/XWayland window · your cursor theme</span></td><td data-os="Windows"><span class="pm-ch">layered window · system arrow</span></td><td data-os="macOS"><span class="pm-ch">NSWindow · system arrow</span></td></tr><tr><th scope="row">Screenshots</th><td data-os="Linux"><span class="pm-ch">PipeWire stream (one per monitor) · spectacle · grim · Xlib</span></td><td data-os="Windows"><span class="pm-ch">GDI</span></td><td data-os="macOS"><span class="pm-ch">screencapture</span></td></tr><tr><th scope="row">Parallel agents</th><td data-os="Linux"><span class="pm-ch">Material Bibata cursors · own daemon</span></td><td data-os="Windows"><span class="pm-ch">layered window</span></td><td data-os="macOS"><span class="pm-ch">NSWindow</span></td></tr></tbody></table>
       <p class="pm-src">Channels are read from the project README when this page is built.</p>
     </div>
   </div>
@@ -653,10 +677,10 @@ bash-5.2$</code></pre>
       <div class="stat" data-reveal><dt>MCP tools</dt><dd data-count="28">28</dd></div>
       <div class="stat" data-reveal><dt>CLI commands</dt><dd data-count="35">35</dd></div>
       <div class="stat" data-reveal><dt>ways to plug in: shell, MCP, HTTP, text loop</dt><dd data-count="4">4</dd></div>
-      <div class="stat" data-reveal><dt>desktop surfaces it reaches</dt><dd data-count="9">9</dd></div>
+      <div class="stat" data-reveal><dt>desktop surfaces it reaches</dt><dd data-count="10">10</dd></div>
       <div class="stat" data-reveal><dt>harness setups documented</dt><dd data-count="11">11</dd></div>
-      <div class="stat" data-reveal><dt>test suites, 4 of them in a throwaway desktop</dt><dd data-count="22">22</dd></div>
-      <div class="stat stat-wide" data-reveal><dt>lines of Python, core and adapters</dt><dd data-count="14572">14,572</dd></div>
+      <div class="stat" data-reveal><dt>test suites, 4 of them in a throwaway desktop</dt><dd data-count="23">23</dd></div>
+      <div class="stat stat-wide" data-reveal><dt>lines of Python, core and adapters</dt><dd data-count="15171">15,171</dd></div>
       <div class="stat stat-zero" data-reveal><dt>root or admin rights needed</dt><dd data-count="0">0</dd></div>
     </dl>
   </div>
@@ -713,7 +737,7 @@ bash-5.2$</code></pre>
           <li data-reveal>Windows, terminals and the accessibility tree as live MCP resources</li>
           <li data-reveal>A user service for the HTTP adapter, with a token file and TLS, to drive another machine</li>
           <li data-reveal>A visible agent cursor on Linux, Windows and macOS that never touches your mouse, from every adapter: MCP, HTTP, CLI</li>
-          <li data-reveal>Faster on Linux: screenshots from the live PipeWire stream (about 0.2 s instead of 1.5 s), clicks that never wait on the cursor animation</li>
+          <li data-reveal>Faster on Linux: screenshots from the live PipeWire stream, one stream per monitor (0.1 s instead of 1.6 s), clicks that never wait on the cursor animation</li>
           <li data-reveal>v0.7 speed: a background service for the CLI, a ref fast path, batches with <code>do</code> and <code>cul_batch</code>, <code>--after</code> change reports, <code>wait</code>, <code>click-text</code>, <code>fill</code>, <code>bench</code> and per-step timing</li>
           <li data-reveal>A pip package: <code>pip install .[all]</code> on Linux, Windows and macOS</li>
           <li data-reveal>Input tests in an isolated sandbox desktop, X11 in Xvfb, Sway on a headless compositor, Windows under Wine</li>
