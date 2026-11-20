@@ -33,8 +33,15 @@ from .platforms import Desktop, Unsupported, detect
 from .platforms.base import runtime_dir as _runtime_dir
 
 
+def _shot_file(ext: str) -> str:
+    """Son ekran görüntüsü (ve ölçek kaydı) ajana özel: paralel ajanlar
+    birbirinin `--from-shot` dönüşümünü ezmesin."""
+    from .agent import suffix
+    return os.path.join(_runtime_dir(), f"computer-use-linux-shot{suffix()}.{ext}")
+
+
 def _save_shot_meta(shot: Screenshot) -> None:
-    with open(os.path.join(_runtime_dir(), "computer-use-linux-shot.json"), "w") as f:
+    with open(_shot_file("json"), "w") as f:
         json.dump(shot.to_dict(), f)
 
 
@@ -564,16 +571,36 @@ class ComputerUseLinux:
             return {"ok": ok, "ref": s.refs[cands[0].ref], "role": node.role.value,
                     "name": node.name}
 
-    def key(self, combo: str) -> bool:
+    def key(self, combo: str, window_ref: Optional[str] = None) -> bool:
         with trace.span("key", combo=combo), self._lease():
+            if window_ref:
+                self._focus_window(window_ref)
             self.desktop.key(combo)
         self._forget()
         return True
 
-    def type_text(self, text: str) -> bool:
+    def type_text(self, text: str, window_ref: Optional[str] = None) -> bool:
         with trace.span("type", n=len(text)), self._lease():
+            if window_ref:
+                self._focus_window(window_ref)
             self.desktop.type_text(text)
         return True
+
+    def _focus_window(self, window_ref: str, timeout: float = 1.0) -> None:
+        """Pencereyi öne al ve etkinleştiğini doğrula. Kira (lease) içinde
+        çağrılır: paralel bir ajan öne alma ile yazma arasına giremez,
+        tuşlar yanlış pencereye gitmez."""
+        if not self.window_action(window_ref, "activate"):
+            raise ValueError(f"pencere bulunamadı: {window_ref}")
+        wid = window_ref[4:]
+        end = time.monotonic() + timeout
+        while True:
+            aw = self.desktop.active_window()
+            if aw is not None and str(aw.id) == wid:
+                return
+            if time.monotonic() >= end:
+                raise RuntimeError(f"pencere öne alınamadı: {window_ref}")
+            time.sleep(0.02)
 
     @contextmanager
     def _lease(self) -> Iterator[None]:
@@ -678,6 +705,9 @@ class ComputerUseLinux:
             return
         # SHOW: cursor-hide sonrası da görünsün.
         cmds = ["SHOW", f"MOVE {int(x)} {int(y)} {cursor_seconds():g}"] + (["CLICK"] if click else [])
+        from . import agent
+        if agent.agent_id():
+            agent.slot()        # renk yuvası tazelensin: uzun süren ajanın rengi başkasına geçmesin
         from . import agent_cursor as ac
         with trace.span("imleç"):
             try:
@@ -790,7 +820,7 @@ class ComputerUseLinux:
         raise ValueError(f"ekran bulunamadı: {screen} (ekranlar: {names})")
 
     def _screenshot(self, path, window_ref, max_width, screen=None, region=None) -> Screenshot:
-        path = os.path.abspath(path or os.path.join(_runtime_dir(), "computer-use-linux-shot.png"))
+        path = os.path.abspath(path or _shot_file("png"))
         wbounds = None
         screen_name = ""
         if window_ref:
@@ -869,7 +899,7 @@ class ComputerUseLinux:
     @staticmethod
     def last_screenshot() -> Optional[Screenshot]:
         try:
-            with open(os.path.join(_runtime_dir(), "computer-use-linux-shot.json")) as f:
+            with open(_shot_file("json")) as f:
                 d = json.load(f)
             d["origin"] = tuple(d["origin"])
             return Screenshot(**d)

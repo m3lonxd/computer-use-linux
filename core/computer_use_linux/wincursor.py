@@ -217,7 +217,8 @@ class WinAgentCursor(AgentCursorBase):
             print(f"[cursor] DPI: {e}", file=sys.stderr)
         self.u, self.g, k = _api()
         img = None
-        if os.environ.get("CUL_CURSOR_THEME", "1") != "0":
+        if (os.environ.get("CUL_CURSOR_THEME", "1") != "0"
+                and not os.environ.get("CUL_AGENT", "").strip()):   # ajanda: kendi rengi
             img = system_arrow()
         self.img = img or builtin_arrow()
         self.box = frame_box(self.img)

@@ -123,6 +123,29 @@ computer-use-linux keys C-c --session build
 computer-use-linux cleanup                          # close only the sessions you created
 ```
 
+## 6. Several agents on one desktop
+When more than one agent (sub-agents, parallel sessions) drives this desktop,
+give EVERY command its own name with `--agent NAME`:
+```bash
+computer-use-linux --agent research screenshot
+computer-use-linux --agent research click @s7k2m9qx:e4
+computer-use-linux --agent writer type "..."
+```
+Each name gets its own pointer in its own colour (a Material Bibata cursor
+variant when installed, so the user sees who works where), its own
+background service (one agent's `wait`/`do` does not stall the others), its
+own last screenshot for `--from-shot`, and its own default `run` session.
+Reading (`tree`, `find`, `screenshot`, `term-read`) runs fully in parallel.
+Clicks and keystrokes go out one at a time machine-wide — there is one real
+pointer and one keyboard focus. Never `window ... activate` and then `type`
+as two commands: another agent can take focus in between. Name the window
+in the same command instead:
+```bash
+computer-use-linux --agent writer type "metin" --window win:{...}
+computer-use-linux --agent writer key ctrl+s --window win:{...}
+```
+`CUL_AGENT=NAME` works too.
+
 ## Rules
 - Verify what matters, cheaply: `--after` on the last action of a `do` batch,
   `term-read` for terminals. Do not assume — but do not spend a turn per click either.

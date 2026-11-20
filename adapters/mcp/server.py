@@ -269,23 +269,27 @@ def cul_set_text(ref: str, text: str) -> bool:
 
 @mcp.tool()
 @_tool_errors
-def cul_key(combo: str) -> bool:
+def cul_key(combo: str, window_ref: str = "") -> bool:
     """Press a key combination in the focused window.
 
     Examples: 'ctrl+c', 'alt+F4', 'Return', 'ctrl+shift+t', 'Escape', 'F5'.
+    window_ref (from cul_windows): focus that window first, atomically — use it
+    when several agents share the desktop.
     """
-    return bool(_get_desktop().key(combo))
+    return bool(_get_desktop().key(combo, window_ref=window_ref or None))
 
 
 @mcp.tool()
 @_tool_errors
-def cul_type(text: str) -> bool:
+def cul_type(text: str, window_ref: str = "") -> bool:
     """Type text into the focused window, exactly as given (any language, newlines included).
 
     Characters missing from the keyboard layout are pasted through the
-    clipboard, and the user's clipboard is restored afterwards.
+    clipboard, and the user's clipboard is restored afterwards. window_ref
+    (from cul_windows): focus that window first, atomically — use it when
+    several agents share the desktop.
     """
-    return bool(_get_desktop().type_text(text))
+    return bool(_get_desktop().type_text(text, window_ref=window_ref or None))
 
 
 @mcp.tool()

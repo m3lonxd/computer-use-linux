@@ -55,7 +55,20 @@ class XAgentCursor(AgentCursorBase):
         self._spans = arrow_spans()
         # Kullanıcının imleç temasından ok (SVG → Xcursor); yoksa yerleşik ok.
         # Tema imleci 32 bit ARGB pencereyle yumuşak kenarlı çizilir.
-        self.theme = theme_cursor() if os.environ.get("CUL_CURSOR_THEME", "1") != "0" else None
+        # Paralel ajanda (CUL_AGENT): ajanın Material Bibata teması; o da yoksa
+        # ajan renginde yerleşik ok (kullanıcının teması herkeste aynı olurdu).
+        try:
+            from . import agent_cursor as _ac
+        except ImportError:                      # dosya yoluyla çalıştırıldı
+            from computer_use_linux import agent_cursor as _ac
+        agent = bool(os.environ.get("CUL_AGENT", "").strip())
+        use_theme = (os.environ.get("CUL_CURSOR_THEME", "1") != "0"
+                     and (not agent or _ac.AGENT_THEME))
+        self.theme = theme_cursor(_ac.AGENT_THEME if agent else None) if use_theme else None
+        if agent and self.theme is not None:
+            ring = _ac.accent(self.theme)
+            if ring:
+                _ac.PULSE = ring
         self.box = BOX
         self._argb_visual = None
         if self.theme is not None:

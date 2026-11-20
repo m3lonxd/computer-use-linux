@@ -270,14 +270,14 @@ def cmd_set_text(nr, a) -> None:
 
 
 def cmd_key(nr, a) -> None:
-    ok = nr.key(a.combo)
+    ok = nr.key(a.combo, window_ref=a.window)
     _out({"ok": ok, "combo": a.combo}, a.json, "gönderildi" if ok else "gönderilemedi")
     if not ok:
         raise SystemExit(1)
 
 
 def cmd_type(nr, a) -> None:
-    ok = nr.type_text(a.text)
+    ok = nr.type_text(a.text, window_ref=a.window)
     _out({"ok": ok}, a.json, "yazıldı" if ok else "yazılamadı")
     if not ok:
         raise SystemExit(1)
@@ -674,10 +674,14 @@ def build_parser() -> argparse.ArgumentParser:
     st.set_defaults(fn=cmd_set_text)
     k = sub.add_parser("key", help="tuş kombinasyonu")
     k.add_argument("combo")
+    k.add_argument("--window", default=None,
+                   help="önce bu pencereyi öne al (win:{...}); paralel ajanlarda şart")
     _add_after(k)
     k.set_defaults(fn=cmd_key)
     ty = sub.add_parser("type", help="aktif pencereye yaz")
     ty.add_argument("text")
+    ty.add_argument("--window", default=None,
+                    help="önce bu pencereyi öne al (win:{...}); paralel ajanlarda şart")
     _add_after(ty)
     ty.set_defaults(fn=cmd_type)
     sc = sub.add_parser("screenshot", help="ekran görüntüsü")
@@ -708,14 +712,16 @@ def build_parser() -> argparse.ArgumentParser:
     sl.set_defaults(fn=cmd_sleep)
     r = sub.add_parser("run", help="komut çalıştır")
     r.add_argument("command")
-    r.add_argument("--session", default="default")
+    r.add_argument("--session", default=None,
+                   help="oturum adı (varsayılan: ajan adı ya da default)")
     r.add_argument("--timeout", type=float, default=30.0)
     r.set_defaults(fn=cmd_run)
     s = sub.add_parser("screen", help="terminal ekranını oku")
-    s.add_argument("--session", default="default")
+    s.add_argument("--session", default=None,
+                   help="oturum adı (varsayılan: ajan adı ya da default)")
     s.set_defaults(fn=cmd_screen)
     ks = sub.add_parser("keys", help="terminale tuş gönder")
-    ks.add_argument("keys"); ks.add_argument("--session", default="default")
+    ks.add_argument("keys"); ks.add_argument("--session", default=None)
     ks.set_defaults(fn=cmd_keys)
     sub.add_parser("terms", help="masaüstündeki açık terminaller").set_defaults(fn=cmd_terms)
     tr = sub.add_parser("term-read", help="terminal ekranını oku")
@@ -770,8 +776,17 @@ def _norm_argv(argv: list[str]) -> list[str]:
     return head + tail
 
 
+def _default_session(args) -> None:
+    """`--session` verilmediyse: ajan adı (paralel ajanlar aynı terminale
+    yazmasın), kimlik yoksa "default"."""
+    if hasattr(args, "session") and args.session is None:
+        from computer_use_linux.agent import agent_id
+        args.session = agent_id() or "default"
+
+
 def _execute(nr, args) -> int:
     """Komutu çalıştır; hata biçimi ve çıkış kodu tek yerde."""
+    _default_session(args)
     try:
         if getattr(args, "after", False):
             _with_after(nr, args)
@@ -858,8 +873,11 @@ def _run_local(args, long_lived: bool = False) -> int:
 SERVICE_CMDS = {"caps", "observe", "windows", "window", "tree", "find", "click", "click-text",
                 "fill", "move", "scroll", "drag", "set-text", "key", "type", "screenshot",
                 "cursor", "cursor-hide", "point", "do", "wait", "sleep", "bench"}
+# CUL_AGENT: her paralel ajanın kendi servisi olur — servis istekleri sırayla
+# işler; ortak servis bir ajanın `wait`/`sleep`/`do` beklemesinde diğerlerini durdururdu.
 _ENV_KEYS = ("DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS", "XDG_CURRENT_DESKTOP",
-             "XDG_SESSION_TYPE", "SWAYSOCK", "HYPRLAND_INSTANCE_SIGNATURE", "CUL_HOME")
+             "XDG_SESSION_TYPE", "SWAYSOCK", "HYPRLAND_INSTANCE_SIGNATURE", "CUL_HOME",
+             "CUL_AGENT")
 
 
 def _service_wanted() -> bool:
@@ -996,6 +1014,13 @@ def _serve(path: str) -> int:
     except ValueError:
         idle = 600.0
     srv.settimeout(idle if idle > 0 else None)
+    import signal
+
+    def _term(_sig, _frame):
+        # SIGTERM (kill/pkill): `finally` çalışsın — KWin izleyici betiği
+        # kaldırılmazsa KWin'de kalır ve sonraki betik çağrılarını bozar.
+        raise SystemExit(0)
+    signal.signal(signal.SIGTERM, _term)
     from computer_use_linux import trace
     nr = _get_nr(long_lived=True)
     parser = build_parser()
@@ -1124,11 +1149,39 @@ def cmd_service(a) -> int:
     return int(r.get("code", 0))
 
 
+def _take_agent(argv: list[str]) -> list[str]:
+    """Genel `--agent AD` (ya da `--agent=AD`) bayrağını komuttan önce ya da
+    sonra kabul et, CUL_AGENT'a yaz ve argv'den çıkar. `launch` sonrası
+    argümanlar programa aittir; dokunulmaz."""
+    stop = argv.index("launch") if "launch" in argv else len(argv)
+    out, i = [], 0
+    while i < len(argv):
+        x = argv[i]
+        if i < stop and x == "--agent" and i + 1 < stop:
+            os.environ["CUL_AGENT"] = argv[i + 1]
+            i += 2
+            continue
+        if i < stop and x.startswith("--agent="):
+            os.environ["CUL_AGENT"] = x.split("=", 1)[1]
+            i += 1
+            continue
+        out.append(x)
+        i += 1
+    if "CUL_AGENT" in os.environ:
+        from computer_use_linux.agent import clean
+        name = clean(os.environ["CUL_AGENT"])
+        if name:
+            os.environ["CUL_AGENT"] = name
+        else:
+            del os.environ["CUL_AGENT"]
+    return out
+
+
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv[:1] == ["__serve__"]:
         return _serve(argv[1] if len(argv) > 1 else _service_path())
-    argv = _norm_argv(argv)
+    argv = _norm_argv(_take_agent(argv))
     args = build_parser().parse_args(argv)
     if args.cmd == "service":
         return cmd_service(args)

@@ -108,6 +108,17 @@ def main() -> int:
                                                             if e["type"] == "text" and e["value"] == ""])))
         r = nx("key", "hyper+q")
         check("bilinmeyen değiştirici → hata", r.returncode != 0)
+        nxj("window", ref, "minimize")
+        wait_for(lambda: kwin.windows()[0]["minimized"], 3)
+        target2 = "pencereye özel"
+        nxj("--agent", "sbx", "type", target2, "--window", ref)
+        hit = wait_for(lambda: [e for e in events() if e["type"] == "text" and e["value"].endswith(target2)], 8)
+        w0 = kwin.windows()[0]
+        check("type --window: pencere öne alındı, metin ona gitti (--agent ile)",
+              bool(hit) and w0["active"] and not w0["minimized"],
+              f"{w0['active']} {w0['minimized']} {[e['value'] for e in events() if e['type'] == 'text'][-1:]}")
+        r = nx("type", "x", "--window", "win:{yok}")
+        check("type --window olmayan pencere → hata, yazmaz", r.returncode != 0)
 
         print("\n5. Masaüstündeki terminaller")
         procs.append(subprocess.Popen(["konsole", "--separate", "--nofork", "-e", "bash",

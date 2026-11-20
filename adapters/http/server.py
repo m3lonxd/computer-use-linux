@@ -194,9 +194,9 @@ def _dispatch(method: str, body: dict):
     if method == "set_text":
         return {"ok": nr.set_text(_need(body, "ref"), body.get("text", ""))}
     if method == "key":
-        return {"ok": nr.key(body.get("combo", ""))}
+        return {"ok": nr.key(body.get("combo", ""), window_ref=body.get("window_ref"))}
     if method == "type":
-        return {"ok": nr.type_text(body.get("text", ""))}
+        return {"ok": nr.type_text(body.get("text", ""), window_ref=body.get("window_ref"))}
     if method == "screenshot":
         region = body.get("region")
         return nr.screenshot(body.get("path"), window_ref=body.get("window_ref"),

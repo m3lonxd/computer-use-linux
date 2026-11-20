@@ -78,10 +78,104 @@ def available() -> bool:
         return False
 
 
+# ------------------------------------------------- artık izleyici temizliği
+# Kapanırken betiğini kaldıramayan (SIGKILL, çökme) izleyici KWin'de yüklü
+# kalır. KWin betik kimliğini yeniden kullanınca yeni betiğe ESKİ betiğin
+# kimliği döner: `run` eskisini çalıştırır, yanıt gelmez, her KWin çağrısı
+# 4 sn zaman aşımına düşer. İzleyiciler bir kayıt dosyasında tutulur; sahibi
+# ölmüş olanlar kaldırılır.
+WATCH_PREFIX = "cul_watch_"
+
+
+def _registry_path() -> str:
+    from .platforms.base import runtime_dir
+    return os.path.join(os.environ.get("CUL_HOME") or runtime_dir(),
+                        "computer-use-linux-kwin-watchers.json")
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def _registry_update(add: Optional[str] = None, remove: Optional[str] = None) -> list[str]:
+    """Kayıt dosyasını kilitle güncelle; güncel listeyi döndür."""
+    import fcntl
+    path = _registry_path()
+    fd = os.open(path + ".lock", os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        try:
+            with open(path) as f:
+                names = [n for n in json.load(f) if isinstance(n, str)]
+        except (OSError, ValueError, TypeError):
+            names = []
+        if remove in names:
+            names.remove(remove)
+        if add and add not in names:
+            names.append(add)
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(names, f)
+        os.replace(tmp, path)
+        return names
+    finally:
+        os.close(fd)
+
+
+def reap_stale(scripting=None, scan: bool = False) -> list[str]:
+    """Sahibi ölmüş izleyici betiklerini KWin'den kaldır. scan=True: kayıtta
+    olmayanları da ara (eski sürümün artıkları) — çalışan PID aralığında
+    isScriptLoaded taraması, ~1 sn. Dönüş: kaldırılan eklenti adları."""
+    try:
+        if scripting is None:
+            import dbus
+
+            from ._dbus import session_bus
+            scripting = dbus.Interface(session_bus().get_object("org.kde.KWin", "/Scripting"),
+                                       "org.kde.kwin.Scripting")
+        names = set(_registry_update())
+        if scan:
+            top = max((int(x) for x in os.listdir("/proc") if x.isdigit()), default=0) + 5000
+            for pid in range(1, top):
+                if not _pid_alive(pid) and scripting.isScriptLoaded(f"{WATCH_PREFIX}{pid}"):
+                    names.add(f"{WATCH_PREFIX}{pid}")
+        removed = []
+        for name in names:
+            try:
+                pid = int(name[len(WATCH_PREFIX):])
+            except ValueError:
+                continue
+            if _pid_alive(pid):
+                continue
+            try:
+                scripting.unloadScript(name)
+            except Exception:
+                pass
+            _registry_update(remove=name)
+            removed.append(name)
+        return removed
+    except Exception:
+        return []
+
+
 def _run_script(js_template: str, timeout: float = 4.0, **fields: str) -> Any:
-    """Betiği KWin'de çalıştır, callDBus ile dönen JSON'u bekle ve döndür."""
+    """Betiği KWin'de çalıştır, callDBus ile dönen JSON'u bekle ve döndür.
+    Yanıt gelmezse artık izleyicileri temizleyip bir kez daha dener."""
     with trace.span("kwin betiği"):
-        return _run_script_impl(js_template, timeout, **fields)
+        try:
+            return _run_script_impl(js_template, timeout, **fields)
+        except TimeoutError:
+            if not reap_stale(scan=True):
+                raise
+            sys.stderr.write("computer-use-linux: KWin'de kalmış eski izleyici betikleri "
+                             "kaldırıldı; yeniden deneniyor\n")
+            return _run_script_impl(js_template, timeout, **fields)
 
 
 def _run_script_impl(js_template: str, timeout: float = 4.0, **fields: str) -> Any:
@@ -265,6 +359,11 @@ class Watcher:
             self._scripting.unloadScript(self._plugin)
         except Exception:
             pass
+        reap_stale(self._scripting)
+        try:
+            _registry_update(add=self._plugin)
+        except OSError:
+            pass
         fd, path = tempfile.mkstemp(prefix="computer-use-linux-kwin-watch-", suffix=".js")
         try:
             with os.fdopen(fd, "w") as f:
@@ -313,6 +412,7 @@ class Watcher:
         try:
             if self._scripting is not None:
                 self._scripting.unloadScript(self._plugin)
+                _registry_update(remove=self._plugin)
         except Exception:
             pass
         try:

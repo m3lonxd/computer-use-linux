@@ -49,6 +49,17 @@ HOT = 16                       # okun ucunun pencere içindeki yeri (x = y); hed
 COLOR = (0x6e, 0xe7, 0xa8)     # yerleşik ok dolgusu #6ee7a8
 EDGE = (0x10, 0x14, 0x12)      # yerleşik ok kenarı
 PULSE = (0x6e, 0xe7, 0xa8)     # tık halkası
+# Paralel ajanlar (CUL_AGENT): her ajanın daemon'ı ayrı süreçtir ve kendi
+# renginde yerleşik oku çizer (tema imleci herkeste aynı görünürdü).
+# Material Bibata teması kuruluysa ok o temadan çizilir, halka temanın rengini alır.
+AGENT_THEME: Optional[str] = None
+if os.environ.get("CUL_AGENT", "").strip():
+    try:
+        from . import agent as _agent
+    except ImportError:                       # betik olarak çalıştırıldı
+        from computer_use_linux import agent as _agent
+    COLOR = PULSE = _agent.color()
+    AGENT_THEME = _agent.theme()
 RINGS = (6, 10, 14)            # tık halkasının kareleri (yarıçap, px) — kısa ve sade
 
 # Standart ok imleci (ucu 0,0'da; birim = piksel). Breeze/Adwaita oranları.
@@ -150,14 +161,34 @@ def builtin_arrow():
     return CursorImage(w, h, 0, 0, bytes(buf), "yerleşik ok")
 
 
-def theme_cursor():
-    """Kullanıcının imleç temasından ok (cursor_theme.load); olmazsa None."""
+def theme_cursor(theme: Optional[str] = None):
+    """İmleç temasından ok (cursor_theme.load): theme verilmezse kullanıcının
+    teması. Olmazsa None."""
     try:
         from . import cursor_theme
-        return cursor_theme.load()
+        return cursor_theme.load(theme=theme)
     except Exception as e:
         print(f"[cursor] tema imleci yüklenemedi: {e}", file=sys.stderr)
         return None
+
+
+def accent(img) -> Optional[tuple[int, int, int]]:
+    """İmlecin vurgu rengi: tam opak piksellerin en doygun üçte birinin
+    ortalaması (tık halkası imleçle aynı renkte olsun). Bulunamazsa None."""
+    px = []
+    a = img.argb
+    for i in range(0, len(a), 4):
+        if a[i + 3] == 255:
+            b, g, r = a[i], a[i + 1], a[i + 2]
+            px.append((max(r, g, b) - min(r, g, b), r, g, b))
+    if not px:
+        return None
+    px.sort(reverse=True)
+    top = px[:max(1, len(px) // 3)]
+    if top[0][0] < 40:                         # gri/siyah/beyaz tema: halka varsayılan
+        return None
+    n = len(top)
+    return (sum(p[1] for p in top) // n, sum(p[2] for p in top) // n, sum(p[3] for p in top) // n)
 
 
 def frame_box(img) -> int:
@@ -312,10 +343,20 @@ def use_tcp() -> bool:
 PROTO = 2
 
 
+def _agent_suffix() -> str:
+    """Ajan başına ayrı daemon (ayrı imleç): kimlik yoksa "" — eski yollar."""
+    try:
+        from .agent import suffix
+    except ImportError:
+        from computer_use_linux.agent import suffix
+    return suffix()
+
+
 def sock_path() -> str:
     """POSIX Unix soketi (CUL_CURSOR_SOCK ile değiştirilebilir)."""
     uid = os.getuid() if hasattr(os, "getuid") else _user()
-    return os.environ.get("CUL_CURSOR_SOCK", f"/tmp/computer-use-linux-cursor-{uid}-{PROTO}.sock")
+    return os.environ.get("CUL_CURSOR_SOCK",
+                          f"/tmp/computer-use-linux-cursor-{uid}-{PROTO}{_agent_suffix()}.sock")
 
 
 def endpoint_file() -> str:
@@ -323,7 +364,8 @@ def endpoint_file() -> str:
     if os.environ.get("CUL_CURSOR_ENDPOINT"):
         return os.environ["CUL_CURSOR_ENDPOINT"]
     import tempfile
-    return os.path.join(tempfile.gettempdir(), f"computer-use-linux-cursor-{_user()}-{PROTO}.json")
+    return os.path.join(tempfile.gettempdir(),
+                        f"computer-use-linux-cursor-{_user()}-{PROTO}{_agent_suffix()}.json")
 
 
 def lock_path() -> str:
