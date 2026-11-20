@@ -18,7 +18,7 @@ API (hepsi POST, JSON gövde; GET /health ve GET /caps de var):
   POST /set_text{ref, text}
   POST /key     {combo}
   POST /type    {text}
-  POST /screenshot {path, window_ref, max_width}  -> meta (+ GET /screenshot.png)
+  POST /screenshot {path, window_ref, max_width, screen, region}  -> meta (+ GET /screenshot.png)
   POST /window_action {ref, action}         activate | close | minimize
   POST /click_at {x, y, button, double, from_screenshot}
   POST /scroll  {steps, x, y}   POST /drag {x1, y1, x2, y2}
@@ -198,8 +198,11 @@ def _dispatch(method: str, body: dict):
     if method == "type":
         return {"ok": nr.type_text(body.get("text", ""))}
     if method == "screenshot":
+        region = body.get("region")
         return nr.screenshot(body.get("path"), window_ref=body.get("window_ref"),
-                             max_width=int(body.get("max_width", 0))).to_dict()
+                             max_width=int(body.get("max_width", 0)),
+                             screen=body.get("screen"),
+                             region=tuple(float(v) for v in region) if region else None).to_dict()
     if method == "window_action":
         return {"ok": nr.window_action(_need(body, "ref"), _need(body, "action"))}
     if method == "click_at":

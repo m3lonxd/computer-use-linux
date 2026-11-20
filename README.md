@@ -22,7 +22,7 @@ Açık terminaller (4):
 
 $ computer-use-linux term-read konsole:29769:1          # başka bir terminalin ekranı
 $ computer-use-linux term-send konsole:7891:1 "testleri çalıştır" --enter
-$ computer-use-linux screenshot --window win:{…} --max-width 1568
+$ computer-use-linux screenshot --window win:{…}      # ya da --screen DP-4 | --region X Y W H
 $ computer-use-linux click 412 230 --from-shot          # görüntüde gördüğün yere tıkla
 $ computer-use-linux type "Merhaba dünya — ğüşıöç"
 ```

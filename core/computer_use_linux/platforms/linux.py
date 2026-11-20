@@ -320,6 +320,27 @@ class LinuxDesktop(Desktop):
         raise Unsupported("fare için RemoteDesktop portalı (xdg-desktop-portal), "
                           "X11 oturumu ya da ydotool gerekli")
 
+    def screens(self) -> list[dict]:
+        """KWin'den; KWin yoksa açık giriş servisinin ekran yayınlarından."""
+        try:
+            if self._wm_kind() == "kwin":
+                from .. import kwin
+                return [{k: o[k] for k in ("name", "x", "y", "w", "h")} for o in kwin.screens()]
+        except Exception:
+            pass
+        from .. import portal_input
+        if not portal_input.running():
+            return []
+        try:
+            reply = portal_input.send("STATUS")
+            if reply.startswith("OK "):
+                return [{"name": st.get("output", ""), "x": st["x"], "y": st["y"],
+                         "w": st["w"], "h": st["h"]}
+                        for st in json.loads(reply[3:]).get("screens") or []]
+        except (OSError, ValueError, KeyError):
+            pass
+        return []
+
     def pointer_pos(self) -> Optional[tuple[int, int]]:
         kind = self._wm_kind()
         try:

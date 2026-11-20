@@ -56,6 +56,8 @@ busctl --user get-property org.freedesktop.portal.Desktop /org/freedesktop/porta
     org.freedesktop.portal.RemoteDesktop version >/dev/null 2>&1 \
     && echo "  ✓ RemoteDesktop portalı (fare+klavye)" \
     || echo "  ✗ RemoteDesktop portalı — sudo apt install xdg-desktop-portal-kde pipewire"
+pychk "import gi; gi.require_version('Gst','1.0'); from gi.repository import Gst; Gst.init(None); assert Gst.ElementFactory.find('pipewiresrc')" \
+    "hızlı ekran görüntüsü (GStreamer pipewiresrc, ~0.1 sn)" "sudo apt install gstreamer1.0-pipewire (yoksa portal: ~1.5 sn)"
 chk wl-copy   "Türkçe/emoji yazma için: sudo apt install wl-clipboard"
 chk tmux      "terminal oturumları için: sudo apt install tmux (yoksa PTY)"
 command -v spectacle >/dev/null 2>&1 || command -v grim >/dev/null 2>&1 \

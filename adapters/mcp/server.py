@@ -290,18 +290,25 @@ def cul_type(text: str) -> bool:
 
 @mcp.tool()
 @_tool_errors
-def cul_screenshot(window_ref: str = "", max_width: int = 1568) -> list:
+def cul_screenshot(window_ref: str = "", max_width: int = 1568, screen: str = "active",
+                   region: list[float] | None = None) -> list:
     """See the screen: returns the image itself plus how to click on it.
 
-    window_ref (from cul_windows) crops to one window, which keeps
-    detail readable. The image is downscaled to max_width; click on what you
-    see with computer_use_linux_click_at(x, y) using this image's pixel coordinates.
+    By default only the monitor holding the active window is captured, so text
+    stays readable on multi-monitor desktops. screen: "active", "all", or a
+    monitor name/index. window_ref (from cul_windows) crops to one window;
+    region [x, y, w, h] (screen coordinates) zooms into an area. The image is
+    downscaled to max_width; click on what you see with
+    computer_use_linux_click_at(x, y) using this image's pixel coordinates.
     """
     from mcp.server.mcpserver import Image
     shot = _get_desktop().screenshot(None, window_ref=window_ref or None,
-                                       max_width=max_width)
+                                       max_width=max_width, screen=screen or None,
+                                       region=tuple(region) if region else None)
     note = (f"{shot.width}x{shot.height} image; screen = origin {list(shot.origin)} + "
             f"image / {shot.scale:.4f}. Use computer_use_linux_click_at(x, y) with image pixels.")
+    if shot.screen:
+        note += f" Monitor: {shot.screen}."
     return [Image(path=shot.path), note]
 
 

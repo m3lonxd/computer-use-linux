@@ -173,6 +173,8 @@ class Screenshot:
     # Görüntü pikseli → ekran koordinatı: ekran = origin + görüntü / scale
     scale: float = 1.0
     origin: tuple[int, int] = (0, 0)
+    # Görüntünün kapsadığı ekran (çıkış) adı; tüm masaüstü ya da bilinmiyorsa ""
+    screen: str = ""
 
     def to_screen(self, x: float, y: float) -> tuple[int, int]:
         return (round(self.origin[0] + x / self.scale),

@@ -736,23 +736,78 @@ class ComputerUseLinux:
         return True
 
     def screenshot(self, path: Optional[str] = None, window_ref: Optional[str] = None,
-                   max_width: int = 0) -> Screenshot:
-        """Ekran görüntüsü; istenirse tek pencereye kırpılır ve küçültülür.
+                   max_width: int = 0, screen: Optional[str] = None,
+                   region: Optional[tuple] = None) -> Screenshot:
+        """Ekran görüntüsü; istenirse tek pencereye, tek ekrana ya da bir
+        bölgeye kırpılır ve küçültülür.
+
+        screen: None/"all" = tüm masaüstü; "active" = etkin pencerenin
+        (yoksa imlecin) bulunduğu ekran; ad ("DP-4") ya da sıra ("0").
+        region: (x, y, w, h) ekran koordinatı. Öncelik: pencere > bölge > ekran.
 
         Ölçek ve orijin kaydedilir: `click_at(..., from_shot=True)` görüntü
         üzerindeki koordinatı ekran koordinatına kendisi çevirir.
         """
         with trace.span("screenshot"), self._scope():
-            return self._screenshot(path, window_ref, max_width)
+            return self._screenshot(path, window_ref, max_width, screen, region)
 
-    def _screenshot(self, path, window_ref, max_width) -> Screenshot:
+    def screens(self) -> list[dict]:
+        """Monitörler: [{name, x, y, w, h}]; platform bilmiyorsa []."""
+        try:
+            return list(self.desktop.screens())
+        except Exception:
+            return []
+
+    def _pick_screen(self, screen: str) -> Optional[dict]:
+        """Ekran seçimi. None: tüm masaüstü (tek ekran, ekran bilinmiyor ya da "all")."""
+        if not screen or screen == "all":
+            return None
+        scr = self.screens()
+        if screen == "active":
+            if len(scr) <= 1:
+                return None
+            box = None
+            aw = self.desktop.active_window()
+            if aw is not None and aw.w and aw.h and not getattr(aw, "minimized", False):
+                box = (aw.x, aw.y, aw.w, aw.h)
+            else:
+                pos = self.desktop.pointer_pos()
+                if pos:
+                    box = (pos[0], pos[1], 1, 1)
+            if box is None:
+                return None
+
+            def overlap(s):
+                w = min(box[0] + box[2], s["x"] + s["w"]) - max(box[0], s["x"])
+                h = min(box[1] + box[3], s["y"] + s["h"]) - max(box[1], s["y"])
+                return w * h if w > 0 and h > 0 else 0
+            best = max(scr, key=overlap)
+            return best if overlap(best) else None
+        for i, s in enumerate(scr):
+            if screen.lower() == str(s.get("name", "")).lower() or screen == str(i):
+                return s
+        names = ", ".join(f"{i}={s.get('name', '?')}" for i, s in enumerate(scr)) or "yok"
+        raise ValueError(f"ekran bulunamadı: {screen} (ekranlar: {names})")
+
+    def _screenshot(self, path, window_ref, max_width, screen=None, region=None) -> Screenshot:
         path = os.path.abspath(path or os.path.join(_runtime_dir(), "computer-use-linux-shot.png"))
         wbounds = None
+        screen_name = ""
         if window_ref:
             w = next((w for w in self.windows() if w.ref == window_ref), None)
             if w is None or not w.bounds:
                 raise ValueError(f"pencere bulunamadı: {window_ref}")
             wbounds = w.bounds
+        elif region:
+            x, y, ww, hh = (float(v) for v in region)
+            if ww <= 0 or hh <= 0:
+                raise ValueError("bölge genişliği ve yüksekliği pozitif olmalı")
+            wbounds = (x, y, ww, hh)
+        else:
+            picked = self._pick_screen(screen)
+            if picked is not None:
+                wbounds = (picked["x"], picked["y"], picked["w"], picked["h"])
+                screen_name = str(picked.get("name", ""))
         # Bellekteki kare varsa kırp/küçült, PNG'yi yalnızca son boyutta bir kez kodla.
         # Yayın servisi kırpmayı kendisi yapabiliyorsa yalnızca pencerenin baytları gelir.
         grab = getattr(self.desktop, "screenshot_image", None)
@@ -780,7 +835,8 @@ class ComputerUseLinux:
                     min(shot.width, round((x + ww - ox) * sc)),
                     min(shot.height, round((y + hh - oy) * sc)))
             if crop[2] <= crop[0] or crop[3] <= crop[1]:
-                raise ValueError(f"pencere ekranın dışında: {window_ref}")
+                raise ValueError(f"pencere ekranın dışında: {window_ref}" if window_ref
+                                 else "bölge ekranın dışında")
             if crop == (0, 0, shot.width, shot.height):
                 crop = None                    # kare zaten pencereye kırpılmış
         if crop or (max_width and shot.width > max_width):
@@ -806,6 +862,7 @@ class ComputerUseLinux:
         elif img is not None:
             with trace.span("png"):
                 img.save(path, compress_level=1)
+        shot.screen = screen_name
         _save_shot_meta(shot)
         return shot
 

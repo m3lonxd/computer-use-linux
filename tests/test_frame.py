@@ -46,6 +46,7 @@ class FakeGrab:
 
 class FakePortal:
     streams = [{"node": 1, "x": 100, "y": 0, "w": 2, "h": 1}]   # HiDPI: 2x
+    devices = 3
 
 
 with tempfile.TemporaryDirectory() as tmp:
@@ -70,7 +71,11 @@ with tempfile.TemporaryDirectory() as tmp:
     check("ekran orijini ve HiDPI ölçeği", origin == (100, 0) and scale == 2.0, f"{origin} {scale}")
     check("ham dosya silinir", not os.path.exists(os.path.join(tmp, "computer-use-linux-frame.raw")))
 
+    def _down(line):
+        raise FileNotFoundError(pi.SOCK)
+
     with mock.patch.object(pi, "running", lambda: False), \
+            mock.patch.object(pi, "send", _down), \
             mock.patch.object(pi, "_load_token", lambda: None), \
             mock.patch.object(pi, "ensure", lambda **k: (_ for _ in ()).throw(AssertionError)):
         try:
@@ -105,6 +110,74 @@ with tempfile.TemporaryDirectory() as tmp:
     with mock.patch.object(pi, "RUNTIME", tmp), mock.patch.object(pi, "send", old):
         img, origin, scale = pi.frame_image(crop=(100.5, 0, 0.5, 1))
     check("eski servis: tam kare döner (geriye uyum)", img.size == (W, H) and origin == (100, 0))
+
+# ------------------------------------------------- çoklu ekran (her ekran ayrı yayın)
+# Sol ekran 2x1 mantıksal, sağdaki 3x2 (dikey hizasız). Her ekranın karesi tek
+# renk: sol kırmızı, sağ yeşil. Ölçek 1.
+class MultiPortal:
+    streams = [{"node": 10, "x": 0, "y": 0, "w": 2, "h": 1},
+               {"node": 11, "x": 2, "y": 0, "w": 3, "h": 2}]
+    devices = 3
+
+
+class MultiGrab:
+    COLORS = {10: bytes([0, 0, 255, 0]), 11: bytes([0, 255, 0, 0])}
+    calls: list = []
+
+    def frame(self, path, crop=None, stream=None):
+        st = stream or MultiPortal.streams[0]
+        self.calls.append(st["node"])
+        w, h = st["w"], st["h"]
+        data = self.COLORS[st["node"]] * (w * h)
+        stride = w * 4
+        cx = cy = 0
+        if crop is not None:
+            data, w2, h2, stride, cx, cy = pi.crop_raw(data, w, h, stride, crop, st)
+            with open(path, "wb") as f:
+                f.write(data)
+            return w2, h2, stride, "BGRA", cx, cy, w, h
+        with open(path, "wb") as f:
+            f.write(data)
+        return w, h, stride, "BGRA"
+
+    def stop(self):
+        pass
+
+
+with tempfile.TemporaryDirectory() as tmp:
+    d = pi.Daemon.__new__(pi.Daemon)
+    d.p, d.last, d.grab = MultiPortal(), (0.0, 0.0), MultiGrab()
+    with mock.patch.object(pi, "RUNTIME", tmp), \
+            mock.patch.object(pi, "running", lambda: True), \
+            mock.patch.object(pi, "send", lambda line: d.handle(line)):
+        MultiGrab.calls = []
+        img, origin, scale = pi.frame_image()
+        check("çoklu ekran: tüm masaüstü birleştirilir",
+              img.size == (5, 2) and origin == (0, 0) and scale == 1.0
+              and img.getpixel((0, 0)) == (255, 0, 0) and img.getpixel((4, 1)) == (0, 255, 0)
+              and img.getpixel((0, 1)) == (0, 0, 0) and sorted(MultiGrab.calls) == [10, 11],
+              f"{img.size} {origin} {img.getpixel((0, 0))} {img.getpixel((4, 1))} {MultiGrab.calls}")
+        MultiGrab.calls = []
+        img, origin, scale = pi.frame_image(crop=(3, 1, 2, 1))
+        check("çoklu ekran: tek ekrandaki bölge tek istekle gelir",
+              img.size == (2, 1) and origin == (3, 1) and MultiGrab.calls == [11]
+              and img.getpixel((0, 0)) == (0, 255, 0), f"{img.size} {origin} {MultiGrab.calls}")
+        MultiGrab.calls = []
+        img, origin, scale = pi.frame_image(crop=(1, 0, 2, 1))
+        check("çoklu ekran: iki ekrana yayılan bölge birleştirilir",
+              img.size == (2, 1) and origin == (1, 0)
+              and img.getpixel((0, 0)) == (255, 0, 0) and img.getpixel((1, 0)) == (0, 255, 0),
+              f"{img.size} {origin} {[img.getpixel((i, 0)) for i in range(img.width)]}")
+        try:
+            pi.frame_image(crop=(50, 50, 1, 1))
+            check("çoklu ekran: ekran dışı bölge → ValueError", False)
+        except ValueError:
+            check("çoklu ekran: ekran dışı bölge → ValueError", True)
+    try:
+        pi.pick_stream(MultiPortal.streams, None)
+        check("pick_stream: çoklu ekranda kırpmasız istek reddedilir", False)
+    except ValueError:
+        check("pick_stream: çoklu ekranda kırpmasız istek reddedilir", True)
 
 ok = sum(1 for _, o in results if o)
 print(f"KARE: {ok} geçti, {len(results) - ok} başarısız")

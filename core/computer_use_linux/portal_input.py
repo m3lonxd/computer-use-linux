@@ -443,8 +443,7 @@ class Grabber:
 
     def __init__(self, portal: PortalSession) -> None:
         self.p = portal
-        self.pipe = None
-        self.sink = None
+        self.pipes: dict[int, tuple] = {}   # PipeWire düğümü → (boru hattı, appsink)
         self.last_use = 0.0
 
     @staticmethod
@@ -458,64 +457,78 @@ class Grabber:
         except Exception:
             return False
 
-    def _start(self) -> None:
+    def _start(self, node: int):
+        """Bir ekranın (PipeWire düğümü) yayınını aç. Her ekranın ayrı boru
+        hattı ve ayrı PipeWire uzak bağlantısı (fd) vardır; çoklu ekranda
+        yalnızca istenen ekranlar açılır."""
         import gi
         gi.require_version("Gst", "1.0")
         from gi.repository import Gst
         Gst.init(None)
-        if len(self.p.streams) != 1:
-            raise RuntimeError("çoklu ekranda yayından kare alma desteklenmiyor")
         fd = self.p.sc.OpenPipeWireRemote(self.p.dbus.ObjectPath(self.p.session), {})
         fd = fd.take()
-        node = self.p.streams[0]["node"]
         pipe = Gst.parse_launch(
             f"pipewiresrc fd={fd} path={node} do-timestamp=true ! "
             "video/x-raw,format={BGRx,BGRA,RGBx,RGBA,xRGB,ARGB} ! "
             "appsink name=sink max-buffers=1 drop=true sync=false "
             "emit-signals=false enable-last-sample=true")
-        self.sink = pipe.get_by_name("sink")
+        sink = pipe.get_by_name("sink")
         if pipe.set_state(Gst.State.PLAYING) == Gst.StateChangeReturn.FAILURE:
             pipe.set_state(Gst.State.NULL)
             raise RuntimeError("PipeWire akışı başlatılamadı")
-        self.pipe = pipe
-        from gi.repository import GLib
-        GLib.timeout_add_seconds(5, self._idle_check)
+        if not self.pipes:
+            from gi.repository import GLib
+            GLib.timeout_add_seconds(5, self._idle_check)
+        self.pipes[node] = (pipe, sink)
+        return pipe, sink
 
     def _idle_check(self) -> bool:
-        if self.pipe is not None and time.monotonic() - self.last_use > self.IDLE:
+        if self.pipes and time.monotonic() - self.last_use > self.IDLE:
             self.stop()
             return False
-        return self.pipe is not None
+        return bool(self.pipes)
 
-    def stop(self) -> None:
-        if self.pipe is not None:
-            from gi.repository import Gst
-            self.pipe.set_state(Gst.State.NULL)
-        self.pipe = self.sink = None
-
-    def _error(self) -> Optional[str]:
+    def stop(self, node: Optional[int] = None) -> None:
+        """Yayın(lar)ı kapat: node verilirse yalnızca o ekranınkini."""
         from gi.repository import Gst
-        msg = self.pipe.get_bus().pop_filtered(Gst.MessageType.ERROR)
+        for n in ([node] if node is not None else list(self.pipes)):
+            entry = self.pipes.pop(n, None)
+            if entry is not None:
+                entry[0].set_state(Gst.State.NULL)
+
+    @staticmethod
+    def _error(pipe) -> Optional[str]:
+        from gi.repository import Gst
+        msg = pipe.get_bus().pop_filtered(Gst.MessageType.ERROR)
         return msg.parse_error()[0].message if msg else None
 
     def frame(self, path: str, crop=None, stream=None):
+        """stream: kare alınacak ekran (self.p.streams öğesi); None = ilk ekran."""
         self.last_use = time.monotonic()
-        if self.pipe is not None and self._error():
-            self.stop()                       # akış koptu (ör. ekran değişti): yeniden kur
-        if self.pipe is None:
-            self._start()
-        sample = self.sink.get_property("last-sample")
+        if stream is None:
+            if not self.p.streams:
+                raise RuntimeError("ekran yayını yok")
+            stream = self.p.streams[0]
+        node = stream["node"]
+        entry = self.pipes.get(node)
+        if entry is not None and self._error(entry[0]):
+            self.stop(node)                   # akış koptu (ör. ekran değişti): yeniden kur
+            entry = None
+        if entry is None:
+            entry = self._start(node)
+        pipe, sink = entry
+        sample = sink.get_property("last-sample")
         if sample is None:                    # yeni akış: ilk kare birazdan gelir
             # (pipewiresrc kendi iş parçacığında çalışır; ana döngüyü
             # döndürmeye gerek yok — döndürmek soket işleyicisini iç içe çağırırdı)
             end = time.monotonic() + self.FIRST_FRAME
             while sample is None and time.monotonic() < end:
-                err = self._error()
+                err = self._error(pipe)
                 if err:
-                    self.stop()
+                    self.stop(node)
                     raise RuntimeError(f"PipeWire: {err}")
                 time.sleep(0.005)
-                sample = self.sink.get_property("last-sample")
+                sample = sink.get_property("last-sample")
         if sample is None:
             raise RuntimeError("yayından kare gelmedi")
         return self._save(sample, path, crop, stream)
@@ -557,6 +570,29 @@ class Grabber:
         if crop is not None:
             return w, h, stride, raw, cx, cy, full[0], full[1]
         return w, h, stride, raw
+
+
+def _overlap(a, b) -> float:
+    """İki (x, y, w, h) dikdörtgeninin kesişim alanı."""
+    w = min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0])
+    h = min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1])
+    return w * h if w > 0 and h > 0 else 0.0
+
+
+def pick_stream(streams: list, crop=None) -> dict:
+    """FRAME için ekran seç. Tek ekranda o ekran. Çoklu ekranda kırpma şart:
+    dikdörtgenle en çok kesişen ekran seçilir (birden çok ekrana yayılan
+    dikdörtgeni istemci ekran ekran ister ve birleştirir)."""
+    if not streams:
+        raise RuntimeError("ekran yayını yok")
+    if crop is None:
+        if len(streams) > 1:
+            raise ValueError("çoklu ekranda FRAME kırpma (x y w h) ister")
+        return streams[0]
+    best = max(streams, key=lambda st: _overlap(crop, (st["x"], st["y"], st["w"], st["h"])))
+    if not _overlap(crop, (best["x"], best["y"], best["w"], best["h"])):
+        raise ValueError("kırpma dikdörtgeni ekranın dışında")
+    return best
 
 
 def crop_raw(data: bytes, w: int, h: int, stride: int, crop, stream):
@@ -679,7 +715,7 @@ class Daemon:
                 raise ValueError("FRAME kırpma: x y w h")
             if isinstance(p, MutterSession):
                 return "ERR FRAME yalnız portal oturumunda (Mutter oturumunda ekran yayını yok)"
-            s = p.streams[0]   # Grabber tek ekranı destekler
+            s = pick_stream(p.streams, crop)
             if crop is None:
                 w, h, stride, raw = self.grab.frame(path)
                 return f"OK {w} {h} {stride} {raw} {s['x']} {s['y']} {s['w']} {s['h']}"
@@ -862,7 +898,70 @@ def frame_image(crop=None):
     ölçek = görüntü pikseli / mantıksal piksel). crop=(x, y, w, h) mantıksal
     piksel verilirse servis yalnızca o bölgeyi yazar (eski servis bunu bilmez:
     tam kare gelir, çağıran kırpar). Servis yoksa ve kayıtlı izin de yoksa
-    başlatmaz (izin diyaloğu açmamak için) — RuntimeError."""
+    başlatmaz (izin diyaloğu açmamak için) — RuntimeError.
+
+    Çoklu ekranda her ekranın yayını ayrıdır: dikdörtgen (crop yoksa tüm
+    masaüstü) ekranlara bölünür, her parça ayrı istenir ve tek görüntüde
+    birleştirilir. Tek ekrana düşen dikdörtgen tek istekle gelir."""
+    screens = _screens()
+    if len(screens) <= 1:
+        return _frame_one(crop)
+    if crop is None:
+        x0 = min(st["x"] for st in screens)
+        y0 = min(st["y"] for st in screens)
+        x1 = max(st["x"] + st["w"] for st in screens)
+        y1 = max(st["y"] + st["h"] for st in screens)
+        crop = (x0, y0, x1 - x0, y1 - y0)
+    parts = []
+    for st in screens:
+        ix0, iy0 = max(crop[0], st["x"]), max(crop[1], st["y"])
+        ix1 = min(crop[0] + crop[2], st["x"] + st["w"])
+        iy1 = min(crop[1] + crop[3], st["y"] + st["h"])
+        if ix1 > ix0 and iy1 > iy0:
+            parts.append((ix0, iy0, ix1 - ix0, iy1 - iy0))
+    if not parts:
+        raise ValueError("kırpma dikdörtgeni ekranın dışında")
+    if len(parts) == 1:
+        return _frame_one(parts[0])
+    pieces = [_frame_one(r) for r in parts]
+    from PIL import Image
+    scale = max(sc for _, _, sc in pieces)
+    ox, oy = round(crop[0]), round(crop[1])
+    canvas = Image.new("RGB", (max(1, round(crop[2] * scale)), max(1, round(crop[3] * scale))))
+    for img, (px, py), sc in pieces:
+        if abs(sc - scale) > 1e-6:
+            img = img.resize((round(img.width * scale / sc), round(img.height * scale / sc)),
+                             Image.LANCZOS)
+        canvas.paste(img, (round((px - ox) * scale), round((py - oy) * scale)))
+    return canvas, (ox, oy), scale
+
+
+def _screens() -> list:
+    """Servisin yayın açtığı ekranlar (STATUS). Servis kapalıysa ve kayıtlı
+    izin varsa başlatır (FRAME'in yaptığı gibi). Okunamazsa []: tek ekran gibi
+    davranılır, FRAME kendi hatasını verir."""
+    try:
+        reply = send("STATUS")
+    except (FileNotFoundError, ConnectionRefusedError):
+        if not _load_token():
+            return []            # izin yok: FRAME kendi hatasını verir, diyalog açılmaz
+        ensure(wait=10.0)
+        try:
+            reply = send("STATUS")
+        except OSError:
+            return []
+    except OSError:
+        return []
+    if not reply.startswith("OK "):
+        return []
+    try:
+        return list(json.loads(reply[3:]).get("screens") or [])
+    except ValueError:
+        return []
+
+
+def _frame_one(crop=None):
+    """Tek FRAME isteği: tek ekranın (ya da kırpmanın) karesi."""
     path = os.path.join(RUNTIME, "computer-use-linux-frame.raw")
     line = "FRAME " + json.dumps(path)
     if crop is not None:

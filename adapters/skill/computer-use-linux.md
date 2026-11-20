@@ -75,13 +75,19 @@ their app to relaunch it.
 
 When the app still publishes no tree (games, canvas apps):
 ```bash
-computer-use-linux screenshot --window win:{...} --max-width 1568   # then look at the image
+computer-use-linux screenshot                       # monitor of the active window (default)
+computer-use-linux screenshot --window win:{...}    # one window: sharpest
+computer-use-linux screenshot --region 1080 420 640 360   # zoom: screen x y w h, full detail
+computer-use-linux screenshot --screen DP-4 | --screen all  # another monitor / whole desktop
 computer-use-linux click 412 230 --from-shot        # pixel coords from THAT image
 computer-use-linux click 412 230 --from-shot --right | --double
 computer-use-linux scroll 5 --at 600 400            # + down / - up (screen coords)
 computer-use-linux drag 100 200 400 200             # screen coords
 ```
 The user's pointer is moved back where it was right after each click.
+A screenshot takes ~0.1 s. On several monitors `--screen all` shrinks text
+until it is unreadable: look at one monitor, a window or a region instead.
+Text too small? Take a `--region` around it rather than guessing.
 
 Show the user where you are working with your OWN visible pointer (a second
 arrow; it never moves their mouse or takes clicks):

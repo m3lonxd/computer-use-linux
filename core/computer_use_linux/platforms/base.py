@@ -113,6 +113,11 @@ class Desktop(ABC):
     def window_action(self, wid: str, action: str) -> bool:
         """activate | close | minimize. Pencere yoksa False."""
 
+    def screens(self) -> list[dict]:
+        """Ekranlar (monitörler): [{name, x, y, w, h}] — ekran koordinatında.
+        Bilinmiyorsa []: ekran görüntüsü tüm masaüstünü kapsar."""
+        return []
+
     def active_window(self) -> Optional[WinInfo]:
         try:
             return next((w for w in self.windows() if w.active), None)

@@ -354,11 +354,21 @@ def cmd_screenshot(nr, a) -> None:
     if mw is None:
         # varsayılan: modele giden görüntü küçük olsun (Pillow varsa)
         mw = int(os.environ.get("CUL_SHOT_MAX_WIDTH", "1568")) if _pil_ok() else 0
-    s = nr.screenshot(a.path, window_ref=a.window, max_width=mw)
+    screen = a.screen
+    if screen is None and not a.window and not a.region:
+        # varsayılan: etkin pencerenin ekranı — çoklu monitörde tüm masaüstünü
+        # küçültmek yazıyı okunmaz yapar
+        screen = os.environ.get("CUL_SHOT_SCREEN", "active")
+    s = nr.screenshot(a.path, window_ref=a.window, max_width=mw, screen=screen,
+                      region=tuple(a.region) if a.region else None)
     note = ""
     if s.scale != 1.0 or s.origin != (0, 0):
         note = (f"\ngörüntü ölçeği {s.scale:.4f}, orijin {s.origin}: görüntüdeki noktaya "
                 f"tıklamak için `computer-use-linux click X Y --from-shot`")
+    if s.screen:
+        others = [x.get("name") for x in nr.screens() if x.get("name") != s.screen]
+        note += (f"\nekran: {s.screen}"
+                 + (f" (diğerleri: {', '.join(others)}; --screen AD | all)" if others else ""))
     _out(s.to_dict(), a.json, f"ekran görüntüsü: {s.path} ({s.width}x{s.height}){note}")
 
 
@@ -675,6 +685,10 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("--window", default=None, help="yalnızca bu pencere (win:{...})")
     sc.add_argument("--max-width", type=int, default=None,
                     help="genişliği en fazla N piksele küçült (varsayılan 1568; 0 = tam boyut)")
+    sc.add_argument("--screen", default=None,
+                    help="active (varsayılan: etkin pencerenin ekranı) | all | ekran adı | sıra")
+    sc.add_argument("--region", type=float, nargs=4, metavar=("X", "Y", "W", "H"),
+                    default=None, help="yalnızca bu ekran dikdörtgeni (yakından bakmak için)")
     sc.set_defaults(fn=cmd_screenshot)
     d = sub.add_parser("do", help="birden çok adımı tek çağrıda çalıştır")
     d.add_argument("steps", nargs="+", help="her biri bir computer-use-linux komutu: 'click @s…:e4'")
